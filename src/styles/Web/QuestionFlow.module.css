@@ -1,0 +1,75 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(to bottom, #0099ff, #66ccff);
+  padding: 20px;
+  text-align: center;
+}
+
+.wave-svg {
+  width: 100%;
+  height: auto;
+  max-height: 80px;
+}
+
+.content {
+  max-width: 600px;
+  width: 100%;
+}
+
+h1 {
+  font-size: 2rem;
+  color: white;
+}
+
+.input {
+  width: 80%;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+}
+
+.button {
+  margin-top: 20px;
+  padding: 12px 20px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #fff;
+  color: #0099ff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.button:hover {
+  background-color: #eeeeee;
+}
+
+/* 📱 Responsive cho mobile */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .input {
+    width: 90%;
+    font-size: 1rem;
+  }
+
+  .button {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .wave-svg {
+    max-height: 60px;
+  }
+}
