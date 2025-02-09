@@ -1,47 +1,65 @@
 import { motion } from "framer-motion";
 
 const WavyLine = ({ step, totalSteps }) => {
-  const stepSpacing = 300; // Khoảng cách giữa các step
-  const waveShift = -step * stepSpacing; // Dịch chuyển sóng khi đổi step
+  const stepSpacing = 1000;
+  const waveShift = -step * stepSpacing;
 
-  // Tạo sóng dài hơn với biên độ và tần số đều nhau
   const wavePath =
-    "M -750 62 Q -650 112 -500 112 T -250 62 T 0 12 T 250 62 T 500 112 T 750 62 T 1000 12 T 1250 62 T 1500 112 T 1750 62 T 2000 12 T 2250 62 T 2500 112 T 2750 62";
+    "M -90 -110.88 T -90 105.12 T 410 105.12 T 1410 105.12 T 2410 105.12 T 3410 105.12 T 4410 105.12";
 
-  // Tính vị trí X của từng step trên sóng
-  const stepPositions = Array.from(
-    { length: totalSteps },
-    (_, i) => i * stepSpacing
-  );
+  const icons = [
+    "waving-hand-svgrepo-com.svg",
+    "eye-svgrepo-com.svg",
+    "heart-svgrepo-com.svg",
+    "share-svgrepo-com.svg",
+  ];
 
   return (
-    <svg className="wave-svg" viewBox="0 0 2250 300" preserveAspectRatio="none">
-      {/* Nhóm chứa sóng và vòng tròn, di chuyển ngang khi đổi step */}
+    <svg
+      className="wave-svg "
+      viewBox="200 -300 2400 600"
+      preserveAspectRatio="none">
       <motion.g
         animate={{ x: waveShift }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}>
-        {/* Đường sóng */}
+        transition={{ duration: 1.2, ease: "easeInOut" }}>
         <path d={wavePath} fill="transparent" stroke="white" strokeWidth="3" />
 
-        {/* Các vòng tròn step nằm trên sóng */}
-        {stepPositions.map((xPos, i) => {
+        {Array.from({ length: totalSteps }).map((_, i) => {
+          const xPos = i * stepSpacing;
           const isActive = i === step;
-          const size = isActive ? 60 : 40; // Step hiện tại lớn nhất
-          const opacity = isActive ? 1 : 0.5;
-          const yPos = 150; // Vòng tròn nằm đúng trên sóng
 
           return (
-            <motion.circle
-              key={i}
-              cx={xPos}
-              cy={yPos}
-              r={size}
-              fill="white"
-              stroke="rgba(255, 255, 255, 0.5)"
-              strokeWidth={4}
-              animate={{ opacity, scale: isActive ? 1.2 : 1 }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-            />
+            <motion.g key={i}>
+              {/* Vòng tròn */}
+              <motion.circle
+                cx={xPos + 1400}
+                cy={105.12}
+                r={isActive ? 50 : 40}
+                fill="#97D5FF"
+                stroke="white"
+                strokeWidth={isActive ? 3 : 1}
+                animate={{
+                  opacity: isActive ? 1 : 1,
+                  scale: isActive ? 1.5 : 1,
+                  filter: isActive
+                    ? "drop-shadow(0px 0px 15px rgba(255, 255, 255, 0.8))"
+                    : "none",
+                }}
+                transition={{ duration: 0.8, ease: "easeIn" }}
+              />
+              {/* Icon tương ứng từng step */}
+              <motion.image
+                href={icons[i % icons.length]}
+                x={xPos + 1375}
+                y={80}
+                width={50}
+                height={50}
+                animate={{
+                  opacity: isActive ? 1 : 0.6,
+                  scale: isActive ? 1.2 : 1,
+                }}
+              />
+            </motion.g>
           );
         })}
       </motion.g>
