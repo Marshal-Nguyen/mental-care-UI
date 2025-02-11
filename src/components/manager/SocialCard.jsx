@@ -53,7 +53,7 @@ const SocialCard = () => {
                     >
                         <span className="absolute inset-0 rounded-full bg-yellow-500 opacity-20 group-hover:translate-x-1 group-hover:translate-y-1 transition-transform"></span>
                         <span className="absolute inset-0 rounded-full bg-yellow-500 opacity-40 group-hover:translate-x-2 group-hover:translate-y-2 transition-transform"></span>
-                        <span className="absolute inset-0 rounded-full bg-yellow-500 opacity-60 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform"></span>
+                        <span className="absolute inset-0 rounded-full bg-yellow-500 opacity-60 group-hover:translate-x-3 group-hover:translate-y-3 transition-transform">{link.icon}</span>
                         <a href={link.url} className="relative z-10">
                             {link.icon}
                         </a>
