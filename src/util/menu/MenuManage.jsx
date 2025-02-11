@@ -48,7 +48,7 @@ export const sidebarMenuManager = [
     //     ]
     // },
     // {
-    //     // path: 'productManager',
+    //     //  path: 'productManager',
 
     //     text: 'Product',
     //     subMenu: [
