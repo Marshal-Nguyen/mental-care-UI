@@ -5,6 +5,7 @@ import WavyLine from "./WavyLine";
 
 const questions = [
   "Hello! Welcome to our site! 😊",
+  "This is a simple form to get to know you better.",
   "What's your name?",
   "What brings you here today?",
   "Do you want to explore more?",

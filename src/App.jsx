@@ -3,7 +3,7 @@ import Home from "./pages/user/Web/Home";
 //import NavigaForWeb from "./components/NavigaForWeb";
 import TestEmo from "./pages/user/Web/TestEmo";
 import Intro from "./pages/user/Web/Intro";
-
+import SocialCard from "../src/components/manager/SocialCard";
 // manager
 import Manager from "./pages/manager/manager";
 function App() {
@@ -17,6 +17,8 @@ function App() {
         <Route path="/Home" element={<Home />} />
         <Route path="/TestEmo" element={<TestEmo />} />
         <Route path="/Manager" element={<Manager />} />
+        <Route path="/SocialCard" element={<SocialCard />} />
+
       </Routes>
     </Router>
   );
