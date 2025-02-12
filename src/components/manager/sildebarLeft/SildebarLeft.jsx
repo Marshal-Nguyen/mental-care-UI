@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useEffect } from "react";
 import { AiFillApple } from "react-icons/ai";
 import { AiFillCaretDown } from "react-icons/ai";
 import logo from "../../../assets/images/logo.png";
@@ -67,10 +68,21 @@ const menuItemsData = [
 
 
 const SildebarLeft = () => {
-    const [activeItem, setActiveItem] = useState(null);
-    const [showSubMenu, setShowSubMenu] = useState({});
-    const [isReportOpen, setIsReportOpen] = useState(null);
+    const [activeItem, setActiveItem] = useState(menuItemsData[0]?.id); // Phần tử đầu tiên
+    const [showSubMenu, setShowSubMenu] = useState({ [menuItemsData[0]?.id]: true }); // Hiển thị submenu nếu có
+    const [isReportOpen, setIsReportOpen] = useState(menuItemsData[0]?.text.toLowerCase());
     const actionRef = useRef(null);
+
+    useEffect(() => {
+        const currentItem = document.getElementById(`menu-item-${menuItemsData[0]?.id}`);
+        if (currentItem) {
+            document.documentElement.style.setProperty("--height-end", `${currentItem.offsetHeight}px`);
+            document.documentElement.style.setProperty("--top-end", `${currentItem.getBoundingClientRect().top}px`);
+        }
+        if (actionRef.current) {
+            actionRef.current.classList.add("runanimation");
+        }
+    }, []);
 
     const handleItemClick = (item) => {
         // setShowSubMenu({});
@@ -223,7 +235,6 @@ const SildebarLeft = () => {
                 ref={actionRef}
                 className="absolute w-10 h-[var(--height-end)] rounded-full bg-gradient-to-b from-[#C45AB3] to-[#DD789A] top-[var(--top-end)] left-4 transition-all duration-1000 flex items-center justify-center scale-100"
             >
-
             </div>
 
         </div>

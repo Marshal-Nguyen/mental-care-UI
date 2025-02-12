@@ -31,6 +31,7 @@ function App() {
 
         {/* Route Manager */}
         <Route path="/Manager" element={<Manager />}>
+          <Route path="/Manager" element={<DashboardManager />} />
           {/* Route con của Manager */}
           <Route path="Button" element={<TestButton />} />
           <Route path="dashboard" element={<DashboardManager />} />

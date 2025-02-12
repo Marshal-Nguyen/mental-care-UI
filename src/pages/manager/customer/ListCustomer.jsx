@@ -1,111 +1,95 @@
-import React, { useState } from "react";
+import React from "react";
+import { AiFillEdit, AiFillDelete, AiFillEye } from "react-icons/ai";
+
+const customerData = [
+    { id: 1, name: "John Doe", email: "john@example.com", phone: "1234567890", vipLevel: "VIP 1" },
+    { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "0987654321", vipLevel: "VIP 2" },
+    { id: 3, name: "Alice Johnson", email: "alice@example.com", phone: "1112223333", vipLevel: "VIP 1" },
+    { id: 4, name: "Bob Brown", email: "bob@example.com", phone: "4445556666", vipLevel: "VIP 2" },
+    { id: 5, name: "Charlie White", email: "charlie@example.com", phone: "7778889999", vipLevel: "VIP 1" },
+];
 
 const CustomerList = () => {
-    const [customers, setCustomers] = useState([
-        { id: 1, name: "John Doe", email: "john@example.com", phone: "1234567890" },
-        { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "0987654321" },
-    ]);
+    const handleEdit = (id) => {
+        console.log("Edit customer with ID:", id);
+    };
 
-    const [editingCustomer, setEditingCustomer] = useState(null); // Lưu khách hàng đang được sửa
-    const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
-
-    // Xử lý xóa
     const handleDelete = (id) => {
-        const updatedCustomers = customers.filter((customer) => customer.id !== id);
-        setCustomers(updatedCustomers);
+        console.log("Delete customer with ID:", id);
     };
 
-    // Xử lý sửa
-    const handleEdit = (customer) => {
-        setEditingCustomer(customer.id);
-        setFormData(customer);
+    const handleViewDetails = (id) => {
+        console.log("View details of customer with ID:", id);
     };
 
-    // Lưu thông tin đã sửa
-    const handleSave = () => {
-        const updatedCustomers = customers.map((customer) =>
-            customer.id === editingCustomer ? { ...customer, ...formData } : customer
-        );
-        setCustomers(updatedCustomers);
-        setEditingCustomer(null);
-        setFormData({ name: "", email: "", phone: "" });
+    const groupByVipLevel = (data) => {
+        return data.reduce((acc, customer) => {
+            if (!acc[customer.vipLevel]) {
+                acc[customer.vipLevel] = [];
+            }
+            acc[customer.vipLevel].push(customer);
+            return acc;
+        }, {});
     };
 
-    // Xử lý thay đổi input
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
+    const groupedCustomers = groupByVipLevel(customerData);
 
     return (
-        <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Customer List</h2>
-            <ul className="space-y-4">
-                {customers.map((customer) => (
-                    <li
-                        key={customer.id}
-                        className="flex justify-between items-center p-4 border rounded-lg"
-                    >
-                        {editingCustomer === customer.id ? (
-                            <div className="flex-1">
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="w-full p-2 mb-2 border rounded-lg"
-                                    placeholder="Name"
-                                />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full p-2 mb-2 border rounded-lg"
-                                    placeholder="Email"
-                                />
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border rounded-lg"
-                                    placeholder="Phone"
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex-1">
-                                <p className="font-medium">{customer.name}</p>
-                                <p className="text-sm text-gray-600">{customer.email}</p>
-                                <p className="text-sm text-gray-600">{customer.phone}</p>
-                            </div>
-                        )}
-                        <div className="flex space-x-2">
-                            {editingCustomer === customer.id ? (
-                                <button
-                                    onClick={handleSave}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                                >
-                                    Save
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleEdit(customer)}
-                                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
-                                >
-                                    Edit
-                                </button>
-                            )}
-                            <button
-                                onClick={() => handleDelete(customer.id)}
-                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
+        <div className="container mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
+            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+                Customer List by VIP Levels
+            </h2>
+            {Object.keys(groupedCustomers).map((vipLevel) => (
+                <div key={vipLevel} className="mb-8">
+                    <h3 className="text-xl font-semibold mb-4 text-purple-600">{vipLevel}</h3>
+                    <table className="table-auto w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="border border-gray-300 px-4 py-2 text-left">#</th>
+                                <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
+                                <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
+                                <th className="border border-gray-300 px-4 py-2 text-left">Phone</th>
+                                <th className="border border-gray-300 px-4 py-2 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {groupedCustomers[vipLevel].map((customer, index) => (
+                                <tr key={customer.id} className="hover:bg-gray-50">
+                                    <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
+                                    <td className="border border-gray-300 px-4 py-2">{customer.name}</td>
+                                    <td className="border border-gray-300 px-4 py-2">{customer.email}</td>
+                                    <td className="border border-gray-300 px-4 py-2">{customer.phone}</td>
+                                    <td className="border border-gray-300 px-4 py-2 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => handleViewDetails(customer.id)}
+                                                className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                                title="View Details"
+                                            >
+                                                <AiFillEye size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEdit(customer.id)}
+                                                className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
+                                                title="Edit"
+                                            >
+                                                <AiFillEdit size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(customer.id)}
+                                                className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                                title="Delete"
+                                            >
+                                                <AiFillDelete size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ))}
         </div>
     );
 };
