@@ -6,6 +6,7 @@ import logo from "../../../assets/images/logo.png";
 import "./SildebarLeft.css"; // CSS của bạn
 import { NavLink } from "react-router-dom";
 import IconManager from "../../../util/icon/icon";
+import { useLocation } from "react-router-dom";
 
 const { GrDocumentStore, FaUserDoctor,
     FaChartSimple,
@@ -67,12 +68,37 @@ const menuItemsData = [
 ];
 
 
-const SildebarLeft = () => {
+const SildebarLeft = ({ onMenuClick }) => {
     const [activeItem, setActiveItem] = useState(menuItemsData[0]?.id); // Phần tử đầu tiên
     const [showSubMenu, setShowSubMenu] = useState({ [menuItemsData[0]?.id]: true }); // Hiển thị submenu nếu có
     const [isReportOpen, setIsReportOpen] = useState(menuItemsData[0]?.text.toLowerCase());
     const actionRef = useRef(null);
+    const location = useLocation();
 
+    useEffect(() => {
+        const currentPath = location.pathname.split("/manager/")[1];
+
+        // Tìm menu khớp với đường dẫn
+        const activeMenuItem = menuItemsData.find(
+            (item) =>
+                item.path.toLowerCase() === currentPath.toLowerCase() ||
+                item.subMenu.some((subItem) => subItem.path.toLowerCase() === currentPath.toLowerCase())
+        );
+
+        if (activeMenuItem) {
+            setShowSubMenu({ [activeMenuItem.id]: true }); // Hiển thị submenu
+            handleItemClick(activeMenuItem);
+
+            // Đợi submenu mở trước khi tính offsetHeight
+            setTimeout(() => {
+                const currentItem = document.getElementById(`menu-item-${activeMenuItem.id}`);
+                if (currentItem) {
+                    document.documentElement.style.setProperty("--height-end", `${currentItem.offsetHeight}px`);
+                    document.documentElement.style.setProperty("--top-end", `${currentItem.getBoundingClientRect().top}px`);
+                }
+            }, 300); // Thời gian phải tương ứng với CSS transition (duration)
+        }
+    }, [location.pathname]);
     useEffect(() => {
         const currentItem = document.getElementById(`menu-item-${menuItemsData[0]?.id}`);
         if (currentItem) {
@@ -85,7 +111,6 @@ const SildebarLeft = () => {
     }, []);
 
     const handleItemClick = (item) => {
-        // setShowSubMenu({});
         switch (item.text) {
             case "Staff":
                 handleReportOpenToggle("staff");
@@ -105,10 +130,14 @@ const SildebarLeft = () => {
             default:
                 handleReportOpenToggle("");
         }
-
         setActiveItem(item.id);
+        setActionRef(item.id);
+
+    };
+    const setActionRef = (id) => {
         setTimeout(() => {
-            const currentItem = document.getElementById(`menu-item-${item.id}`);
+            const currentItem = document.getElementById(`menu-item-${id}`);
+            console.log(">>> check currentItem", currentItem, currentItem.offsetHeight, id);
             if (currentItem) {
                 document.documentElement.style.setProperty(
                     "--height-end",
@@ -125,8 +154,7 @@ const SildebarLeft = () => {
                 action.classList.add("runanimation");
             }
         }, 0);
-    };
-
+    }
     const handleReportOpenToggle = (menuItem) => {
 
         setIsReportOpen((prevState) => {
@@ -169,59 +197,96 @@ const SildebarLeft = () => {
 
             {/* Menu chính */}
             <div className="relative p-0 m-0 text-xl">
-                {menuItemsData.map((item) => (
-                    <div key={item.id} id={`menu-item-${item.id}`} className={`my-2  ${activeItem === item.id ? " text-white font-bold" : ""
-                        }`}>
-                        <NavLink
-                            to={item.path}
-                            end={item.end}
-                            value={item.text}
-                            className={`flex items-center px-2 py-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""
-                                }`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleItemClick(item);
-
-                                handleSubMenuToggle(item.id);
-
-                            }}
-                        >
-                            <span className="w-8 text-center text-base z-10 mr-8 scale-120">{item.icon}</span>
-                            <span>{item.text}</span>
-
-                            {item.subMenu?.length > 0 && (
-                                <span
-                                    className={`ml-auto transform transition-transform ${showSubMenu[item.id] ? "rotate-180" : ""
-                                        }`}
+                {menuItemsData.map((item) => {
+                    // Trường hợp có submenu
+                    if (item.subMenu?.length > 0) {
+                        return (
+                            <div
+                                key={item.id}
+                                id={`menu-item-${item.id}`}
+                                className={`my-2 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                            >
+                                <div
+                                    className={`flex items-center px-2 py-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        // handleItemClick(item);
+                                        setActionRef(activeItem);
+                                        handleSubMenuToggle(item.id);
+                                    }}
                                 >
-                                    <AiFillCaretDown />
-                                </span>
-                            )}
-                        </NavLink>
-
-                        <div
-                            className={` 
-                                 ${showSubMenu[item.id] ? 'max-h-screen opacity-100 ' : 'max-h-0 opacity-0 '}`}
-                        >
-                            {showSubMenu[item.id] && item.subMenu.length > 0 && (
-                                <div >
-                                    {item.subMenu.map(subItem => (
-                                        <NavLink
-                                            to={subItem.path}
-                                            key={subItem.path}
-                                            className={({ isActive }) => isActive ? 'text-black font-bold' : ''}
-                                        >
-                                            <div className=" flex items-center py-4 px-2 hover:bg-gray-500 rounded-full">
-                                                <span className="w-8 text-center text-base z-10 mr-8 scale-120"><AiFillHeart /></span>
-                                                <span className="ml-4 text-white">{subItem.text}</span>
-                                            </div>
-                                        </NavLink>
-                                    ))}
+                                    <span className="w-8 text-center text-base z-10 mr-8 scale-120">{item.icon}</span>
+                                    <span>{item.text}</span>
+                                    <span
+                                        className={`ml-auto transform transition-transform ${showSubMenu[item.id] ? "rotate-180" : ""
+                                            }`}
+                                    >
+                                        <AiFillCaretDown />
+                                    </span>
                                 </div>
-                            )}
+
+                                {/* Hiển thị submenu */}
+                                <div
+                                    className={`${showSubMenu[item.id] ? "max-h-screen opacity-100 " : "max-h-0 opacity-0"}`}
+                                >
+                                    {showSubMenu[item.id] && (
+                                        <div >
+                                            {item.subMenu.map((subItem) => (
+                                                <NavLink
+                                                    to={subItem.path}
+                                                    key={subItem.path}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleItemClick(item);
+                                                        onMenuClick(subItem.text);
+                                                    }}
+                                                    className={({ isActive }) =>
+                                                        isActive ? "text-black font-bold" : ""
+                                                    }
+                                                >
+                                                    <div className="flex items-center py-4 px-2 hover:bg-gray-500 rounded-full">
+                                                        <span
+                                                            className={`w-8 text-center text-base z-10 mr-8 scale-120 ${activeItem === item.id ? "" : "text-[#757474] pl-4"}`}
+                                                        >
+                                                            <AiFillHeart />
+                                                        </span>
+
+                                                        <span className={`ml-4 ${activeItem === item.id ? "text-white" : "text-[#757474]"}`}
+                                                        >{subItem.text}</span>
+                                                    </div>
+                                                </NavLink>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    // Trường hợp không có submenu
+                    return (
+                        <div
+                            key={item.id}
+                            id={`menu-item-${item.id}`}
+                            className={`my-2 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                        >
+                            <NavLink
+                                to={item.path}
+                                className={`flex items-center px-2 py-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleItemClick(item);
+                                    onMenuClick(item.text);
+                                }}
+                            >
+                                <span className="w-8 text-center text-base z-10 mr-8 scale-120">{item.icon}</span>
+                                <span>{item.text}</span>
+                            </NavLink>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
+
+
                 <NavLink to="/login" onClick={handleLogOut}>
                     <div className="flex items-center w-full p-2 my-3 bg-[#faf3e0] hover:bg-gray-100 rounded">
                         <BiLogOut size={24} className="mr-2 text-red-500" />
