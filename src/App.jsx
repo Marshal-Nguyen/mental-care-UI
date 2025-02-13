@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/user/Web/Home";
+
+import Home from "./pages/User/Web/Home";
+import Intro from "./pages/User/Web/Intro";
+
 // import NavigaForWeb from "./components/NavigaForWeb";
-import TestEmo from "./pages/user/Web/TestEmo";
-import Intro from "./pages/user/Web/Intro";
+
 import { Outlet } from "react-router-dom";
 // manager
 import TestButton from "../src/components/manager/TestButton";
@@ -28,7 +30,7 @@ function App() {
         {/* Các route chính */}
         <Route path="/" element={<Intro />} />
         <Route path="/Home" element={<Home />} />
-        <Route path="/TestEmo" element={<TestEmo />} />
+        {/* <Route path="/TestEmo" element={<TestEmo />} /> */}
 
         {/* Route Manager */}
         <Route path="/Manager" element={<Manager />}>
@@ -52,7 +54,6 @@ function App() {
           {/* <Route path="feedback" element={<ListFeedback />} /> */}
           <Route path="view-feedback" element={<ListFeedback />} />
           <Route path="respond-feedback" element={<ResponseFeedback />} />
-
         </Route>
         {/* Route Staff */}
         <Route path="/staff" element={<Staff />}>

@@ -1,1 +1,8 @@
 @import "tailwindcss";
+@import "@fontsource/knewave";
+@import "@fontsource/gayathri"; /* Mặc định Regular */
+
+html,
+body {
+  overflow-x: hidden;
+}
