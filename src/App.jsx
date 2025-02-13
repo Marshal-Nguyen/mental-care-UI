@@ -1,13 +1,10 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-<<<<<<< HEAD
+
 import Home from "./pages/User/Web/Home";
-import TestEmo from "./pages/User/Web/TestEmo";
 import Intro from "./pages/User/Web/Intro";
-=======
-import Home from "./pages/user/Web/Home";
+
 // import NavigaForWeb from "./components/NavigaForWeb";
-import TestEmo from "./pages/user/Web/TestEmo";
-import Intro from "./pages/user/Web/Intro";
+
 import { Outlet } from "react-router-dom";
 // manager
 import TestButton from "../src/components/manager/TestButton";
@@ -24,7 +21,6 @@ import AddPromo from "./pages/manager/promotion/AddPromo";
 import ListPromo from "./pages/manager/promotion/ListPromo";
 import ListFeedback from "./pages/manager/feedback/ListFeedback";
 import ResponseFeedback from "./pages/manager/feedback/ResponseFeedback";
->>>>>>> 22b40eca92cc616761b9aa5c0b42feee01c6a6ad
 
 function App() {
   return (
@@ -33,7 +29,7 @@ function App() {
         {/* Các route chính */}
         <Route path="/" element={<Intro />} />
         <Route path="/Home" element={<Home />} />
-        <Route path="/TestEmo" element={<TestEmo />} />
+        {/* <Route path="/TestEmo" element={<TestEmo />} /> */}
 
         {/* Route Manager */}
         <Route path="/Manager" element={<Manager />}>
@@ -57,7 +53,6 @@ function App() {
           <Route path="feedback" element={<ListFeedback />} />
           <Route path="view-feedback" element={<ListFeedback />} />
           <Route path="respond-feedback" element={<ResponseFeedback />} />
-
         </Route>
 
         {/* Các route khác */}
