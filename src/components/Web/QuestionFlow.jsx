@@ -3,11 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import styles from "../../styles/Web/QuestionFlow.module.css";
 import WavyLine from "./WavyLine";
 import "animate.css";
+import { useNavigate } from "react-router-dom";
 
 const QuestionFlow = ({ onFinish }) => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
-
+  const navigate = useNavigate();
+  const handleNavigae = () => {
+    navigate("/Home");
+  };
   useEffect(() => {
     if (step === 0) {
       const timer = setTimeout(() => setStep(1), 3000);
@@ -159,7 +163,7 @@ const QuestionFlow = ({ onFinish }) => {
               <h1 className={`${styles.shareWith}`}>
                 Would you like to share your story with us?
               </h1>
-              <button class="cursor-pointer" onClick={handleNextStep}>
+              <button class="cursor-pointer" onClick={handleNavigae}>
                 <div class="w-[83px] h-[83px] bg-blue-50 rounded-full relative shadow-[inset_0px_0px_1px_1px_rgba(0,0,0,0.3),_2px_3px_5px_rgba(0,0,0,0.1)] flex items-center justify-center">
                   <div class="absolute w-[72px] h-[72px] z-10 bg-black rounded-full left-1/2 -translate-x-1/2 top-[5px] blur-[1px]"></div>
                   <label class="group cursor-pointer absolute w-[72px] h-[72px] bg-gradient-to-b from-blue-600 to-blue-400 rounded-full left-1/2 -translate-x-1/2 top-[5px] shadow-[inset_0px_4px_2px_#60a5fa,inset_0px_-4px_0px_#1e3a8a,0px_0px_2px_rgba(0,0,0,10)] active:shadow-[inset_0px_4px_2px_rgba(96,165,250,0.5),inset_0px_-4px_2px_rgba(37,99,235,0.5),0px_0px_2px_rgba(0,0,0,10)] z-20 flex items-center justify-center">

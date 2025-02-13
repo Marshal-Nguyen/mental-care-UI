@@ -1,0 +1,43 @@
+.card {
+  --p: 32px;
+  --h-form: auto;
+  --w-form: 380px;
+  width: var(--w-form);
+  height: var(--h-form);
+  border-radius: 16px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  padding: var(--p);
+}
+
+.avatar {
+  --sz-avatar: 166px;
+  width: var(--sz-avatar);
+  height: var(--sz-avatar);
+  border-radius: 9999px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.monkey {
+  transition: all 0.2s ease;
+}
+
+.monkeyHands {
+  transform-style: preserve-3d;
+  transform: translateY(calc(var(--sz-avatar) / 1.25)) rotateX(-21deg);
+}
+
+.blindInput {
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  bottom: 60px;
+}
+
+.blindCheck:checked ~ .avatar .monkeyHands {
+  transform: translate3d(0, 0, 0) rotateX(0deg);
+}
