@@ -19,7 +19,8 @@ import AddPromo from "./pages/manager/promotion/AddPromo";
 import ListPromo from "./pages/manager/promotion/ListPromo";
 import ListFeedback from "./pages/manager/feedback/ListFeedback";
 import ResponseFeedback from "./pages/manager/feedback/ResponseFeedback";
-
+//staff
+import Staff from "./pages/staff/Staff";
 function App() {
   return (
     <Router>
@@ -31,29 +32,31 @@ function App() {
 
         {/* Route Manager */}
         <Route path="/Manager" element={<Manager />}>
-          <Route path="/Manager" element={<DashboardManager />} />
+          {/* <Route path="/manager" element={<DashboardManager />} /> */}
           {/* Route con của Manager */}
           <Route path="Button" element={<TestButton />} />
           <Route path="dashboard" element={<DashboardManager />} />
 
-          <Route path="customer" element={<AddCustomerManager />} />
+          {/* <Route path="customer" element={<AddCustomerManager />} /> */}
           <Route path="addCustomer" element={<AddCustomerManager />} />
           <Route path="viewCustomer" element={<ListCustomerManager />} />
-          <Route path="staff" element={<AddStaff />} />
+          {/* <Route path="staff" element={<AddStaff />} /> */}
           <Route path="addStaff" element={<AddStaff />} />
           <Route path="viewStaff" element={<ListStaff />} />
-          <Route path="doctor" element={<AcceptDoctor />} />
+          {/* <Route path="doctor" element={<AcceptDoctor />} /> */}
           <Route path="addDoctor" element={<AcceptDoctor />} />
           <Route path="viewDoctor" element={<ListDoctor />} />
-          <Route path="promotion" element={<AddPromo />} />
+          {/* <Route path="promotion" element={<AddPromo />} /> */}
           <Route path="addPromo" element={<AddPromo />} />
           <Route path="managePromo" element={<ListPromo />} />
-          <Route path="feedback" element={<ListFeedback />} />
+          {/* <Route path="feedback" element={<ListFeedback />} /> */}
           <Route path="view-feedback" element={<ListFeedback />} />
           <Route path="respond-feedback" element={<ResponseFeedback />} />
 
         </Route>
-
+        {/* Route Staff */}
+        <Route path="/staff" element={<Staff />}>
+        </Route>
         {/* Các route khác */}
         <Route path="/Manager1" element={<Manager1 />} />
       </Routes>
