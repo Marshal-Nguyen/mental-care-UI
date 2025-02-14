@@ -17,12 +17,12 @@ const Home = () => {
       </header>
 
       {/* Nội dung chính */}
-      <main className="flex-grow">
+      <main className="flex justify-center">
         <Outlet />
       </main>
 
       {/* Chỉ render Footer nếu đường dẫn là "/learnAboutEmo" */}
-      {location.pathname === "/learnAboutEmo" && <Footer />}
+      {location.pathname === "/HomeUser/learnAboutEmo" && <Footer />}
     </div>
   );
 };

@@ -4,8 +4,16 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import "animate.css";
+import AOS from "aos";
+import "aos/dist/aos.css";
+AOS.init({
+  duration: 1000, // Thời gian animation (ms)
+  easing: "ease-in-out", // Hiệu ứng chuyển động
+  once: false, // Chạy một lần khi cuộn
+});
 
-import Home from "./pages/User/Web/Home";
+import Home from "./pages/User/Web/HomeUser";
 import Intro from "./pages/User/Web/Intro";
 import { ToastContainer, Zoom, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -39,8 +47,8 @@ function App() {
       <Router>
         <Routes>
           {/* Các route chính */}
-          <Route path="/Intro" element={<Intro />} />
-          <Route path="/" element={<Home />}>
+          <Route index path="/" element={<Intro />} />
+          <Route path="/HomeUser" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
             <Route path="dashboardUser" element={<DashboardForUser />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
