@@ -16,38 +16,43 @@ const BackGround = () => {
   }, []);
 
   return (
-    <>
-      <div>
-        <DownloadSection />
-      </div>
-      <div
-        className={`${styles.background} relative w-screen h-screen overflow-hidden`}>
-        {/* Ảnh 1 - Xa nhất, di chuyển ít nhất */}
-        <motion.img
+    <div className="relative w-screen h-[160vh] overflow-hidden">
+      {/* Nền chính - Không di chuyển */}
+      <div className="absolute top-30 left-0 w-full h-screen">
+        <img
           src="/2.png"
           alt=""
-          animate={{ y: -scrollY * 0.1 }}
-          className={`${styles.layer} absolute top-0 left-0 w-full h-[120vh] object-cover`}
+          className="w-full h-full scale-125 object-cover"
         />
-        {/* Ảnh 2 - Gần hơn, di chuyển nhanh hơn */}
-        <motion.img
-          src="/4.png"
-          alt=""
-          animate={{ y: -scrollY * 0.2 }}
-          className={`${styles.layer} absolute top-[40%] left-[5%] w-full h-[120vh] scale-120 object-cover`}
-        />
-        {/* Ảnh 3 - Gần nhất, di chuyển nhanh nhất */}
-        <motion.img
-          src="/3.png"
-          alt=""
-          animate={{ y: -scrollY * 0.3 }}
-          className={`${styles.layer} absolute top-[30%] left-[-5%] w-full h-[120vh] scale-135 object-cover`}
-        />
-
-        {/* Lớp phủ tối màu để tránh lộ khoảng trống */}
-        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/50 to-transparent"></div>
       </div>
-    </>
+
+      {/* Component DownloadSection nằm chính giữa ảnh nền */}
+      <div className="absolute top-1/7 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+        <DownloadSection />
+      </div>
+
+      {/* Các lớp ảnh di chuyển */}
+      <motion.img
+        src="/4.png"
+        alt=""
+        animate={{ y: -scrollY * 0.2 }}
+        className="absolute top-[40%] left-[5%] w-full h-[120vh] scale-140 object-cover"
+      />
+
+      <motion.img
+        src="/3.png"
+        alt=""
+        animate={{ y: -scrollY * 0.3 }}
+        className="absolute top-[40%] left-[-5%] w-full h-[120vh] scale-140 object-cover"
+      />
+
+      <motion.img
+        src="/5P0yf46mR9Xn8sL5xA0qFSA.avif"
+        alt=""
+        animate={{ y: -scrollY * 0.4 }}
+        className="absolute top-[120%] left-[-5%] w-full h-[120vh] scale-140 object-cover"
+      />
+    </div>
   );
 };
 
