@@ -241,17 +241,17 @@ const SildebarLeft = ({ onMenuClick }) => {
                                                         onMenuClick(subItem.text);
                                                     }}
                                                     className={({ isActive }) =>
-                                                        isActive ? "text-black font-bold" : ""
+                                                        isActive ? "text-black font-bold " : ""
                                                     }
                                                 >
-                                                    <div className="flex items-center py-4 px-2 hover:bg-gray-500 rounded-full">
+                                                    <div className={`flex items-center py-4 px-2 hover:bg-gray-500 rounded-full ${activeItem === item.id ? "" : "hover:text-white text-[#757474]"}`}>
                                                         <span
-                                                            className={`w-8 text-center text-base z-10 mr-8 scale-120 ${activeItem === item.id ? "" : "text-[#757474] pl-4"}`}
+                                                            className={`w-8 text-center text-base z-10 mr-8 scale-120  ${activeItem === item.id ? "" : " pl-4 "}`}
                                                         >
                                                             <AiFillHeart />
                                                         </span>
 
-                                                        <span className={`ml-4 ${activeItem === item.id ? "text-white" : "text-[#757474]"}`}
+                                                        <span className={`ml-4 ${activeItem === item.id ? "text-white" : ""}`}
                                                         >{subItem.text}</span>
                                                     </div>
                                                 </NavLink>
