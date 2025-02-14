@@ -31,21 +31,39 @@ export default function Manager() {
             <div className="w-full flex h-[100vh] bg-gray-100">
                 {/* <SildebarManager /> */}
                 <SildebarManager onMenuClick={handleMenuClick} />
-                <div className="flex-auto  overflow-y-auto relative">
+                <div className="flex-auto overflow-y-auto relative">
                     <div>
-                        {/* <div className="fixed top-0 left-0 w-full flex justify-end space-x-2 px-[30px] py-[5px] bg-white  z-10">
-                             <span className="text-blue-800 text-lg font-medium">{localStorage.getItem("name")} (Manager)</span> 
-                          
-                            <Tab
-                                history={history}
-                                setHistory={setHistory}
-                                activeTab={activeTab}
-                                setActiveTab={setActiveTab}
-                            />
+                        {/* Thanh Manager */}
+                        {/* <div className="fixed top-0 py-2  left-0 w-full border border-gray-200 bg-white z-20 ml-56 ">
+                            <span className="text-blue-800 text-lg font-medium ">
+                                Manager Dashboard
+                            </span>
                         </div> */}
-                        <div className="fixed top-0 left-0 w-full bg-white z-10 pl-72">
-                            {/* <span className="text-blue-800 text-lg font-medium">{localStorage.getItem("name")} (Manager)</span> */}
-                            {/* <Tab /> */}
+                        <div className="fixed top-0 py-2 left-0 w-full border border-gray-200 bg-white z-20 ml-56">
+                            <div className="flex justify-end items-center space-x-2 mr-58">
+                                <span className="text-blue-800 text-lg font-medium">
+                                    Manager Dashboard
+                                </span>
+                                {/* Icon */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6 text-blue-800"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M4 6h16M4 12h16m-7 6h7"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Thanh Tab */}
+                        <div className="fixed top-11 border border-gray-200 left-0 w-full bg-white z-10 pl-56 ">
                             <Tab
                                 history={history}
                                 setHistory={setHistory}
@@ -53,12 +71,15 @@ export default function Manager() {
                                 setActiveTab={setActiveTab}
                             />
                         </div>
-                        <div className="pt-[60px]">
+
+                        {/* Nội dung bên dưới */}
+                        <div className="pt-[120px]">
                             <Outlet />
                         </div>
                     </div>
                 </div>
             </div>
+
 
         </>
     );

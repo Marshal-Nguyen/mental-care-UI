@@ -49,11 +49,11 @@ const Tab = ({ history, setHistory, activeTab, setActiveTab }) => {
     };
 
     return (
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 h-8">
             {history.map((menuText, index) => (
                 <div
                     key={index}
-                    className={`flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow hover:bg-blue-200 ${menuText === activeTab ? "bg-blue-200 font-bold" : ""
+                    className={`flex items-center px-4 my-1  bg-blue-100 text-blue-700 rounded-lg shadow hover:bg-blue-200 ${menuText === activeTab ? "bg-blue-200 font-bold" : ""
                         }`}
                 >
                     <span

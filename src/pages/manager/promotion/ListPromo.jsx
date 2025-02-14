@@ -43,7 +43,7 @@ const DiscountProgramManagement = () => {
     };
 
     return (
-        <div className="container mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
+        <div className="container mt-10 p-10 bg-white shadow-md rounded-xl">
             <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
                 Quản lý chương trình giảm giá
             </h2>
@@ -54,12 +54,11 @@ const DiscountProgramManagement = () => {
                 </Button>
             </div> */}
 
-            <table className="table-auto w-full border-collapse border border-gray-300">
+            <table className="table-auto border-collapse border border-gray-300">
                 <thead>
                     <tr className="bg-gray-100">
                         <th className="border border-gray-300 px-4 py-2 text-left">#</th>
                         <th className="border border-gray-300 px-4 py-2 text-left">Tên chương trình</th>
-                        <th className="border border-gray-300 px-4 py-2 text-left">Mô tả</th>
                         <th className="border border-gray-300 px-4 py-2 text-left">Ngày bắt đầu</th>
                         <th className="border border-gray-300 px-4 py-2 text-left">Ngày kết thúc</th>
                         <th className="border border-gray-300 px-4 py-2 text-center">Gói áp dụng</th>
@@ -71,7 +70,7 @@ const DiscountProgramManagement = () => {
                         <tr key={program.id} className="hover:bg-gray-50">
                             <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
                             <td className="border border-gray-300 px-4 py-2">{program.name}</td>
-                            <td className="border border-gray-300 px-4 py-2">{program.description}</td>
+                            {/* <td className="border border-gray-300 px-4 py-2">{program.description}</td> */}
                             <td className="border border-gray-300 px-4 py-2">{program.startDate}</td>
                             <td className="border border-gray-300 px-4 py-2">{program.endDate}</td>
                             <td className="border border-gray-300 px-4 py-2 text-center">

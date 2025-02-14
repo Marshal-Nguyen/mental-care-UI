@@ -43,7 +43,7 @@ const menuItemsData = [
     },
     {
         id: 2, text: "Customer", path: 'customer', icon: <CgUserList />, subMenu: [
-            { path: 'addCustomer', text: 'Add customer' },
+            { path: 'addCustomer', text: 'Add Customer' },
             { path: 'viewCustomer', text: 'List customer' },
         ]
     },
@@ -184,9 +184,9 @@ const SildebarLeft = ({ onMenuClick }) => {
     }
 
     return (
-        <div className="bg-[#2D193B] w-72 p-5 rounded-xl z-20">
+        <div className="bg-[#2D193B] w-56  z-20">
             {/* Phần logo và tiêu đề */}
-            <div className="w-full mb-14 h-20 py-12 flex flex-col gap-2 font-serif text-pink-500 text-2xl justify-center items-center">
+            <div className="w-full mb-14 h-20 py-12 flex flex-col gap-2 font-serif text-pink-500 text-xl justify-center items-center">
                 <img
                     className="object-contain w-24 transition-all duration-300"
                     src={logo}
@@ -196,7 +196,7 @@ const SildebarLeft = ({ onMenuClick }) => {
             </div>
 
             {/* Menu chính */}
-            <div className="relative p-0 m-0 text-xl">
+            <div className="relative p-0 m-0 text-16">
                 {menuItemsData.map((item) => {
                     // Trường hợp có submenu
                     if (item.subMenu?.length > 0) {
@@ -207,7 +207,7 @@ const SildebarLeft = ({ onMenuClick }) => {
                                 className={`my-2 ${activeItem === item.id ? "text-white font-bold" : ""}`}
                             >
                                 <div
-                                    className={`flex items-center px-2 py-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                                    className={`flex items-center py-2 p-5 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         // handleItemClick(item);
@@ -244,14 +244,14 @@ const SildebarLeft = ({ onMenuClick }) => {
                                                         isActive ? "text-black font-bold " : ""
                                                     }
                                                 >
-                                                    <div className={`flex items-center py-4 px-2 hover:bg-gray-500 rounded-full ${activeItem === item.id ? "" : "hover:text-white text-[#757474]"}`}>
+                                                    <div className={`flex items-center m-5 hover:bg-gray-500 rounded-full ${activeItem === item.id ? "" : "hover:text-white text-[#757474]"}`}>
                                                         <span
                                                             className={`w-8 text-center text-base z-10 mr-8 scale-120  ${activeItem === item.id ? "" : " pl-4 "}`}
                                                         >
                                                             <AiFillHeart />
                                                         </span>
 
-                                                        <span className={`ml-4 ${activeItem === item.id ? "text-white" : ""}`}
+                                                        <span className={` ${activeItem === item.id ? "text-white" : "pl-4"}`}
                                                         >{subItem.text}</span>
                                                     </div>
                                                 </NavLink>
@@ -272,7 +272,7 @@ const SildebarLeft = ({ onMenuClick }) => {
                         >
                             <NavLink
                                 to={item.path}
-                                className={`flex items-center px-2 py-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                                className={`flex items-center p-5  py-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleItemClick(item);
@@ -298,7 +298,7 @@ const SildebarLeft = ({ onMenuClick }) => {
             <div
                 id="action"
                 ref={actionRef}
-                className="absolute w-10 h-[var(--height-end)] rounded-full bg-gradient-to-b from-[#C45AB3] to-[#DD789A] top-[var(--top-end)] left-4 transition-all duration-1000 flex items-center justify-center scale-100"
+                className="absolute w-10 h-[var(--height-end)] rounded-full bg-gradient-to-b from-[#C45AB3] to-[#DD789A] top-[var(--top-end)] left-2 transition-all duration-1000 flex items-center justify-center scale-100"
             >
             </div>
 
