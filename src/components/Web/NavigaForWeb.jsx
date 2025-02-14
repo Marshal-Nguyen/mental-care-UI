@@ -9,10 +9,10 @@ const NavigaForWeb = () => {
         <Link to="/TestEmo" className="text-[#9553f2]">
           <img src="public/eye-svgrepo-com.svg" alt="" className="h-10" />
         </Link>
-        <Link to="/learn" className="hover:text-purple-500">
+        <Link to="learnAboutEmo" className="hover:text-purple-500">
           Learn about EmoEase
         </Link>
-        <Link to="/counselor" className="hover:text-purple-500">
+        <Link to="counselor" className="hover:text-purple-500">
           Counselor
         </Link>
       </div>
@@ -27,14 +27,14 @@ const NavigaForWeb = () => {
 
       {/* Right Navigation */}
       <div className="flex space-x-20 text-gray-600 font-medium items-center">
-        <Link to="/services" className="hover:text-purple-500">
+        <Link to="service" className="hover:text-purple-500">
           Services
         </Link>
-        <Link to="/blog" className="hover:text-purple-500">
+        <Link to="blog" className="hover:text-purple-500">
           Blog
         </Link>
         <Link
-          to="/TestEmo"
+          to="testEmotion"
           className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
           Take the test
         </Link>

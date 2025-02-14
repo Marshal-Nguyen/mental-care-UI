@@ -10,7 +10,7 @@ const QuestionFlow = ({ onFinish }) => {
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const handleNavigae = () => {
-    navigate("/Home");
+    navigate("/");
   };
   useEffect(() => {
     if (step === 0) {
