@@ -29,6 +29,8 @@ import ListFeedback from "./pages/manager/feedback/ListFeedback";
 import ResponseFeedback from "./pages/manager/feedback/ResponseFeedback";
 //staff
 import Staff from "./pages/staff/Staff";
+
+//user
 import DashboardForUser from "./components/Dashboard/DashboardForUser";
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
 import Counselor from "./pages/User/Web/Counselor";
@@ -41,8 +43,8 @@ function App() {
       <Router>
         <Routes>
           {/* Các route chính */}
-          <Route path="/Intro" element={<Intro />} />
-          <Route path="/" element={<Home />}>
+          <Route path="/" element={<Intro />} />
+          <Route path="/HomeUser" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
             <Route path="dashboardUser" element={<DashboardForUser />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />

@@ -22,7 +22,7 @@ const Home = () => {
       </main>
 
       {/* Chỉ render Footer nếu đường dẫn là "/learnAboutEmo" */}
-      {location.pathname === "/learnAboutEmo" && <Footer />}
+      {location.pathname === "/HomeUser/learnAboutEmo" && <Footer />}
     </div>
   );
 };
