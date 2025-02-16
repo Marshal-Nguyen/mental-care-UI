@@ -17,7 +17,7 @@ const Home = () => {
       </header>
 
       {/* Nội dung chính */}
-      <main className="flex-grow">
+      <main className="flex justify-center">
         <Outlet />
       </main>
 

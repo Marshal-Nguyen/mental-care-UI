@@ -4,6 +4,14 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import "animate.css";
+import AOS from "aos";
+import "aos/dist/aos.css";
+AOS.init({
+  duration: 1000, // Thời gian animation (ms)
+  easing: "ease-in-out", // Hiệu ứng chuyển động
+  once: false, // Chạy một lần khi cuộn
+});
 
 import Home from "./pages/User/Web/HomeUser";
 import Intro from "./pages/User/Web/Intro";

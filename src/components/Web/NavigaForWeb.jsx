@@ -6,9 +6,7 @@ const NavigaForWeb = () => {
     <nav className="flex items-center px-6 py-5  bg-white   rounded-4xl ">
       {/* Left Navigation */}
       <div className="flex space-x-20 text-gray-600 font-medium items-center">
-        <Link to="/TestEmo" className="text-[#9553f2]">
-          <img src="public/eye-svgrepo-com.svg" alt="" className="h-10" />
-        </Link>
+        <div />
         <Link to="learnAboutEmo" className="hover:text-purple-500">
           Learn about EmoEase
         </Link>

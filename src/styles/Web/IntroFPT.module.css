@@ -1,0 +1,108 @@
+.buttonParrot {
+  position: relative;
+}
+
+.button {
+  background: transparent;
+  color: #000;
+  border: 1px solid #000;
+  border-radius: 50px;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-family: "Source Serif Pro", serif;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s ease-in-out;
+  letter-spacing: 1px;
+}
+
+.parrot {
+  position: absolute;
+  width: 60px;
+  text-align: center;
+  animation: blink 0.8s infinite;
+  color: transparent;
+}
+
+.parrot::before {
+  content: "Emo!";
+}
+
+.button:hover .parrot::before {
+  content: "Do it!";
+  width: 10px;
+}
+
+/* Các vị trí của từng parrot */
+.parrot:nth-child(1) {
+  top: -30px;
+  left: -40px;
+  font: 12px/1 "Margarine", sans-serif;
+  transform: rotate(-20deg);
+  animation-duration: 0.5s;
+}
+
+.parrot:nth-child(2) {
+  font: 12px/1 "Margarine", sans-serif;
+  right: -40px;
+  top: -20px;
+  transform: rotate(15deg);
+  animation-duration: 0.3s;
+}
+
+.parrot:nth-child(3) {
+  font: 16px/1 "Margarine", sans-serif;
+  top: -40px;
+  left: 15px;
+  transform: rotate(10deg);
+  animation-duration: 1s;
+}
+
+.parrot:nth-child(4) {
+  font: 18px/1 "Margarine", sans-serif;
+  top: -50px;
+  left: 95px;
+  transform: rotate(2deg);
+  animation-duration: 0.7s;
+}
+
+.parrot:nth-child(5) {
+  font: 14px/1 "Margarine", sans-serif;
+  top: 60px;
+  left: 105px;
+  transform: rotate(-20deg);
+  animation-duration: 0.8s;
+}
+
+.parrot:nth-child(6) {
+  font: 12px/1 "Margarine", sans-serif;
+  top: 60px;
+  left: 5px;
+  transform: rotate(10deg);
+  animation-duration: 1.2s;
+}
+
+@keyframes blink {
+  25%,
+  75% {
+    color: transparent;
+  }
+
+  40%,
+  60% {
+    color: #4d1a76;
+    font-family: fantasy;
+    font-style: oblique;
+  }
+}
+.sourceSerif {
+  font-family: "Source Serif Pro", serif;
+}
+/* Live Lightly */
+.listenYour {
+  font-family: "Solitreo", cursive;
+  font-size: 1.2rem;
+  color: #4d1a76;
+  text-align: center;
+}
