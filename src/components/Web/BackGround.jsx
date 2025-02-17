@@ -22,9 +22,9 @@ const BackGround = () => {
 
   return (
     <>
-      <div className="relative w-screen h-[150vh] overflow-hidden">
+      <div className="relative w-full h-[150vh] overflow-hidden">
         {/* Nền chính - Không di chuyển */}
-        <div className="absolute top-30 left-0 w-full h-screen">
+        <div className="absolute top-50 left-0 w-full h-screen">
           <img
             src="/2.png"
             alt=""
