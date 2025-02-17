@@ -37,7 +37,11 @@ import ListFeedback from "./pages/manager/feedback/ListFeedback";
 import ResponseFeedback from "./pages/manager/feedback/ResponseFeedback";
 //staff
 import Staff from "./pages/staff/Staff";
-
+import Chatbox from "./components/staff/Chatbox";
+import HomeStaff from "./pages/staff/home/HomeStaff";
+import ListCustomer from "./pages/staff/listCustomer/ListCustomer";
+import MessengerUI from "./pages/staff/messager/Message";
+import DashboardStaff from "./pages/staff/dashboard/Dashboard";
 //user
 import DashboardForUser from "./components/Dashboard/DashboardForUser";
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
@@ -86,6 +90,13 @@ function App() {
           </Route>
           {/* Route Staff */}
           <Route path="/staff" element={<Staff />}>
+            <Route index element={<Navigate to="home" replace />} />
+            <Route path="chat" element={<Chatbox />} />
+            <Route path="customer" element={<ListCustomer />} />
+            <Route path="message" element={<MessengerUI />} />
+            <Route path="home" element={<LearnAboutEmo />} />
+            {/* <Route path="home" element={<HomeStaff />} /> */}
+            <Route path="dashboard" element={<DashboardStaff />} />
           </Route>
           {/* Các route khác */}
           <Route path="/Manager1" element={<Manager1 />} />
