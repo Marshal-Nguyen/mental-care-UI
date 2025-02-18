@@ -94,8 +94,8 @@ function App() {
             <Route path="chat" element={<Chatbox />} />
             <Route path="customer" element={<ListCustomer />} />
             <Route path="message" element={<MessengerUI />} />
-            <Route path="home" element={<LearnAboutEmo />} />
-            {/* <Route path="home" element={<HomeStaff />} /> */}
+            {/* <Route path="home" element={<LearnAboutEmo />} /> */}
+            <Route path="home" element={<HomeStaff />} />
             <Route path="dashboard" element={<DashboardStaff />} />
           </Route>
           {/* Các route khác */}
