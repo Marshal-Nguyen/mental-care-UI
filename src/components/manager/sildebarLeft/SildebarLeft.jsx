@@ -36,42 +36,39 @@ const { GrDocumentStore, FaUserDoctor,
 const menuItemsData = [
     { id: 0, text: "Dashboard", path: 'dashboard', icon: <FaChartSimple />, subMenu: [] },
     {
-        id: 1, text: "Staff", path: 'staff', icon: <GrUserManager />, subMenu: [
-            { path: 'addStaff', text: 'Add staff' },
-            { path: 'viewStaff', text: 'List staff' },
+        id: 1, text: "Customer", path: 'customer', icon: <CgUserList />, subMenu: [
+            { path: 'viewCustomer', text: 'List customer' },
+            { path: 'addCustomer', text: 'Add Customer' },
+
         ]
     },
     {
-        id: 2, text: "Customer", path: 'customer', icon: <CgUserList />, subMenu: [
-            { path: 'addCustomer', text: 'Add Customer' },
-            { path: 'viewCustomer', text: 'List customer' },
+        id: 2, text: "Staff", path: 'staff', icon: <GrUserManager />, subMenu: [
+            { path: 'viewStaff', text: 'List staff' },
+            { path: 'addStaff', text: 'Add staff' },
+
         ]
     },
     {
         id: 3, text: "Doctor", path: 'doctor', icon: <FaUserDoctor />, subMenu: [
-            { path: 'addDoctor', text: 'Add doctor' },
             { path: 'viewDoctor', text: 'List doctor' },
+            { path: 'addDoctor', text: 'Add doctor' },
+
         ]
     },
     {
-        id: 4, text: "Promotion", path: 'promotion', icon: <CiGift />, subMenu: [
-            { path: 'addPromo', text: 'Add promotion' },
-            { path: 'managePromo', text: 'List promotions' },
+        id: 4, text: "Service Packages", path: 'promotion', icon: <CiGift />, subMenu: [
+            { path: 'managePackages', text: 'List Packages' },
+            { path: 'addPackages', text: 'Add Packages' },
         ]
     },
-    {
-        id: 5, text: "Feedback", path: 'feedback', icon: <RiFeedbackFill />, subMenu: [
-            { path: 'view-feedback', text: 'View feedback' },
-            { path: 'respond-feedback', text: 'Respond feedback' },
-        ]
-    },
+    { id: 5, text: "Pending Replies", path: 'view-message', icon: <RiFeedbackFill />, subMenu: [] },
 ];
 
 
 const SildebarLeft = ({ onMenuClick }) => {
     const [activeItem, setActiveItem] = useState(menuItemsData[0]?.id); // Phần tử đầu tiên
     const [showSubMenu, setShowSubMenu] = useState({ [menuItemsData[0]?.id]: true }); // Hiển thị submenu nếu có
-    const [isReportOpen, setIsReportOpen] = useState(menuItemsData[0]?.text.toLowerCase());
     const actionRef = useRef(null);
     const location = useLocation();
 
@@ -111,25 +108,6 @@ const SildebarLeft = ({ onMenuClick }) => {
     }, []);
 
     const handleItemClick = (item) => {
-        switch (item.text) {
-            case "Staff":
-                handleReportOpenToggle("staff");
-                break;
-            case "Customer":
-                handleReportOpenToggle("customer");
-                break;
-            case "Doctor":
-                handleReportOpenToggle("doctor");
-                break;
-            case "Promotion":
-                handleReportOpenToggle("promotion");
-                break;
-            case "Feedback":
-                handleReportOpenToggle("feedback");
-                break;
-            default:
-                handleReportOpenToggle("");
-        }
         setActiveItem(item.id);
         setActionRef(item.id);
 
@@ -155,16 +133,6 @@ const SildebarLeft = ({ onMenuClick }) => {
             }
         }, 0);
     }
-    const handleReportOpenToggle = (menuItem) => {
-
-        setIsReportOpen((prevState) => {
-            if (prevState === menuItem) {
-                return null;
-            } else {
-                return menuItem;
-            }
-        });
-    };
     const handleSubMenuToggle = (index) => {
         setShowSubMenu((prev) => {
             // Tạo một object mới với tất cả các giá trị là null
@@ -207,15 +175,14 @@ const SildebarLeft = ({ onMenuClick }) => {
                                 className={`my-2 ${activeItem === item.id ? "text-white font-bold" : ""}`}
                             >
                                 <div
-                                    className={`flex items-center py-2 p-5 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
+                                    className={`flex items-center py-2 pl-5 pr-2 relative cursor-pointer text-[#757474] hover:bg-gray-500 hover:text-white rounded-full transition-all duration-500 ${activeItem === item.id ? "text-white font-bold" : ""}`}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        // handleItemClick(item);
                                         setActionRef(activeItem);
                                         handleSubMenuToggle(item.id);
                                     }}
                                 >
-                                    <span className="w-8 text-center text-base z-10 mr-8 scale-120">{item.icon}</span>
+                                    <span className="w-8 text-center text-base z-10 mr-2 ml-0.5 scale-130">{item.icon}</span>
                                     <span>{item.text}</span>
                                     <span
                                         className={`ml-auto transform transition-transform ${showSubMenu[item.id] ? "rotate-180" : ""
@@ -246,7 +213,7 @@ const SildebarLeft = ({ onMenuClick }) => {
                                                 >
                                                     <div className={`flex items-center m-5 hover:bg-gray-500 rounded-full ${activeItem === item.id ? "" : "hover:text-white text-[#757474]"}`}>
                                                         <span
-                                                            className={`w-8 text-center text-base z-10 mr-8 scale-120  ${activeItem === item.id ? "" : " pl-4 "}`}
+                                                            className={`w-8 text-center text-base z-10 mr-2 ml-0.5 scale-130  ${activeItem === item.id ? "" : " pl-4 "}`}
                                                         >
                                                             <AiFillHeart />
                                                         </span>
@@ -279,7 +246,7 @@ const SildebarLeft = ({ onMenuClick }) => {
                                     onMenuClick(item.text);
                                 }}
                             >
-                                <span className="w-8 text-center text-base z-10 mr-8 scale-120">{item.icon}</span>
+                                <span className="w-8 text-center text-base z-10 mr-2 ml-0.5 scale-130">{item.icon}</span>
                                 <span>{item.text}</span>
                             </NavLink>
                         </div>

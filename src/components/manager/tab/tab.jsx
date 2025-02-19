@@ -95,8 +95,8 @@ const menuItemsData = [
         text: "Customer",
         path: "customer",
         subMenu: [
-            { path: "addCustomer", text: "Add customer" },
-            { path: "viewCustomer", text: "List customer" },
+            { path: 'viewCustomer', text: 'List customer' },
+            { path: 'addCustomer', text: 'Add Customer' },
         ],
     },
     {
@@ -109,21 +109,17 @@ const menuItemsData = [
         ],
     },
     {
-        id: 4,
-        text: "Promotion",
-        path: "promotion",
-        subMenu: [
-            { path: "addPromo", text: "Add promotion" },
-            { path: "managePromo", text: "List promotions" },
-        ],
+        id: 4, text: "Service Packages", path: 'promotion', subMenu: [
+            { path: 'managePackages', text: 'List Packages' },
+            { path: 'addPackages', text: 'Add Packages' },
+
+        ]
     },
     {
         id: 5,
-        text: "Feedback",
-        path: "feedback",
+        text: "Pending Replies",
+        path: "view-message",
         subMenu: [
-            { path: "view-feedback", text: "View feedback" },
-            { path: "respond-feedback", text: "Respond feedback" },
         ],
     },
 ];

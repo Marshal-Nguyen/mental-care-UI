@@ -29,12 +29,13 @@ import AddCustomerManager from "./pages/manager/customer/AddCustomer";
 import ListCustomerManager from "./pages/manager/customer/ListCustomer";
 import AddStaff from "./pages/manager/staff/AddStaff";
 import ListStaff from "./pages/manager/staff/ListStaff";
+import CustomerDetail from "./components/manager/customer/CustomerDetail";
 import AcceptDoctor from "./pages/manager/doctor/AcceptDoctor";
 import ListDoctor from "./pages/manager/doctor/ListDoctor";
-import AddPromo from "./pages/manager/promotion/AddPromo";
-import ListPromo from "./pages/manager/promotion/ListPromo";
-import ListFeedback from "./pages/manager/feedback/ListFeedback";
-import ResponseFeedback from "./pages/manager/feedback/ResponseFeedback";
+import AddPackages from "./pages/manager/packages/AddPackages";
+import ListPackages from "./pages/manager/packages/ListPackages";
+import ListPendingReplies from "./pages/manager/pending_replies/ListPendingReplies";
+import ProfileManager from "./pages/manager/profile/Profile";
 //staff
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
@@ -42,6 +43,7 @@ import HomeStaff from "./pages/staff/home/HomeStaff";
 import ListCustomer from "./pages/staff/listCustomer/ListCustomer";
 import MessengerUI from "./pages/staff/messager/Message";
 import DashboardStaff from "./pages/staff/dashboard/Dashboard";
+import Regit from "./pages/staff/Regit";
 //user
 import DashboardForUser from "./components/Dashboard/DashboardForUser";
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
@@ -67,31 +69,31 @@ function App() {
           </Route>
           {/* Route Manager */}
           <Route path="/Manager" element={<Manager />}>
-            {/* <Route path="/manager" element={<DashboardManager />} /> */}
-            {/* Route con của Manager */}
             <Route path="Button" element={<TestButton />} />
             <Route path="dashboard" element={<DashboardManager />} />
 
             {/* <Route path="customer" element={<AddCustomerManager />} /> */}
             <Route path="addCustomer" element={<AddCustomerManager />} />
             <Route path="viewCustomer" element={<ListCustomerManager />} />
+            <Route path="viewCustomer/:id" element={<CustomerDetail />} />
             {/* <Route path="staff" element={<AddStaff />} /> */}
             <Route path="addStaff" element={<AddStaff />} />
             <Route path="viewStaff" element={<ListStaff />} />
             {/* <Route path="doctor" element={<AcceptDoctor />} /> */}
             <Route path="addDoctor" element={<AcceptDoctor />} />
             <Route path="viewDoctor" element={<ListDoctor />} />
-            {/* <Route path="promotion" element={<AddPromo />} /> */}
-            <Route path="addPromo" element={<AddPromo />} />
-            <Route path="managePromo" element={<ListPromo />} />
-            {/* <Route path="feedback" element={<ListFeedback />} /> */}
-            <Route path="view-feedback" element={<ListFeedback />} />
-            <Route path="respond-feedback" element={<ResponseFeedback />} />
+            {/* <Route path="promotion" element={<AddPackages />} /> */}
+            <Route path="addPackages" element={<AddPackages />} />
+            <Route path="managePackages" element={<ListPackages />} />
+            {/* <Route path="feedback" element={<ListPendingReplies />} /> */}
+            <Route path="view-message" element={<ListPendingReplies />} />
           </Route>
+          <Route path="/manager/profile" element={<ProfileManager />} />
           {/* Route Staff */}
           <Route path="/staff" element={<Staff />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="chat" element={<Chatbox />} />
+            <Route path="regit" element={<Regit />} />
             <Route path="customer" element={<ListCustomer />} />
             <Route path="message" element={<MessengerUI />} />
             {/* <Route path="home" element={<LearnAboutEmo />} /> */}
@@ -99,7 +101,7 @@ function App() {
             <Route path="dashboard" element={<DashboardStaff />} />
           </Route>
           {/* Các route khác */}
-          <Route path="/Manager1" element={<Manager1 />} />
+
         </Routes >
       </Router >
 

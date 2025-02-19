@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { AiFillEdit, AiFillDelete, AiFillEye } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import Modal from "react-modal";
 
 const customerData = [
     { id: 1, name: "John Doe", email: "john@example.com", phone: "1234567890", vipLevel: "VIP 1" },
@@ -9,9 +11,14 @@ const customerData = [
     { id: 5, name: "Charlie White", email: "charlie@example.com", phone: "7778889999", vipLevel: "VIP 1" },
 ];
 
-const CustomerList = () => {
-    const handleEdit = (id) => {
-        console.log("Edit customer with ID:", id);
+const ListCustomerManager = () => {
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [currentCustomer, setCurrentCustomer] = useState(null);
+    const navigate = useNavigate();
+
+    const handleEdit = (customer) => {
+        setCurrentCustomer(customer);
+        setModalIsOpen(true);
     };
 
     const handleDelete = (id) => {
@@ -19,7 +26,17 @@ const CustomerList = () => {
     };
 
     const handleViewDetails = (id) => {
-        console.log("View details of customer with ID:", id);
+        navigate(`/manager/viewCustomer/${id}`);
+    };
+
+    const handleCloseModal = () => {
+        setModalIsOpen(false);
+        setCurrentCustomer(null);
+    };
+
+    const handleSave = () => {
+        console.log("Save updated customer:", currentCustomer);
+        handleCloseModal();
     };
 
     const groupByVipLevel = (data) => {
@@ -36,9 +53,8 @@ const CustomerList = () => {
 
     return (
         <div className="container mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-                Customer List by VIP Levels
-            </h2>
+            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Customer List by VIP Levels</h2>
+
             {Object.keys(groupedCustomers).map((vipLevel) => (
                 <div key={vipLevel} className="mb-8">
                     <h3 className="text-xl font-semibold mb-4 text-purple-600">{vipLevel}</h3>
@@ -69,7 +85,7 @@ const CustomerList = () => {
                                                 <AiFillEye size={18} />
                                             </button>
                                             <button
-                                                onClick={() => handleEdit(customer.id)}
+                                                onClick={() => handleEdit(customer)}
                                                 className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
                                                 title="Edit"
                                             >
@@ -90,8 +106,57 @@ const CustomerList = () => {
                     </table>
                 </div>
             ))}
+
+            <Modal
+                isOpen={modalIsOpen}
+                onRequestClose={handleCloseModal}
+                contentLabel="Edit Customer"
+                className="w-96 mx-auto mt-40 bg-white p-6 rounded-xl shadow-lg"
+                overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-50"
+            >
+                <h2 className="text-xl font-semibold mb-4">Edit Customer</h2>
+                {currentCustomer && (
+                    <div>
+                        <div className="mb-4">
+                            <label>Name</label>
+                            <input
+                                type="text"
+                                value={currentCustomer.name}
+                                onChange={(e) => setCurrentCustomer({ ...currentCustomer, name: e.target.value })}
+                                className="border p-2 w-full"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                value={currentCustomer.email}
+                                onChange={(e) => setCurrentCustomer({ ...currentCustomer, email: e.target.value })}
+                                className="border p-2 w-full"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label>Phone</label>
+                            <input
+                                type="text"
+                                value={currentCustomer.phone}
+                                onChange={(e) => setCurrentCustomer({ ...currentCustomer, phone: e.target.value })}
+                                className="border p-2 w-full"
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button onClick={handleCloseModal} className="bg-gray-500 text-white p-2 rounded">
+                                Cancel
+                            </button>
+                            <button onClick={handleSave} className="bg-blue-500 text-white p-2 rounded">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };
 
-export default CustomerList;
+export default ListCustomerManager;
