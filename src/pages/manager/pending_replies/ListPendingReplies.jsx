@@ -89,8 +89,8 @@ const FeedbackChatbox = ({ feedback, onClose }) => {
                         >
                             <p
                                 className={`inline-block px-4 py-2 rounded-lg ${chat.sender === "admin"
-                                        ? "bg-blue-500 text-white"
-                                        : "bg-gray-200 text-gray-800"
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-gray-200 text-gray-800"
                                     }`}
                             >
                                 {chat.content}
