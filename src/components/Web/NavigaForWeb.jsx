@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import styles from "../../styles/Web/Navigation.module.css";
 const NavigaForWeb = () => {
   return (
-    <nav className="flex items-center px-6 py-5  bg-white   rounded-4xl ">
+    <nav className="flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
       {/* Left Navigation */}
       <div className="flex space-x-20 text-gray-600 font-medium items-center">
         <div />

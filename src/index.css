@@ -4,6 +4,7 @@
 @import "@fontsource/holtwood-one-sc";
 @import "@fontsource/source-serif-pro";
 @import "@fontsource/solitreo";
+@import "react-datepicker/dist/react-datepicker.css";
 
 html,
 body {
@@ -17,7 +18,7 @@ body {
 
 /* Phần nền thanh scroll */
 ::-webkit-scrollbar-track {
-  background: #58565a; /* Màu nền */
+  background: #58565a2c; /* Màu nền */
 }
 
 /* Thanh cuộn chính */
