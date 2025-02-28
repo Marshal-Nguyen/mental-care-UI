@@ -32,8 +32,8 @@ import ListStaff from "./pages/manager/staff/ListStaff";
 import CustomerDetail from "./components/manager/customer/CustomerDetail";
 import AcceptDoctor from "./pages/manager/doctor/AcceptDoctor";
 import ListDoctor from "./pages/manager/doctor/ListDoctor";
-import AddPackages from "./pages/manager/packages/AddPackages";
-import ListPackages from "./pages/manager/packages/ListPackages";
+import AddPackages from "./pages/manager/packages/AddService";
+import ListPackages from "./pages/manager/packages/ListService";
 import ListPendingReplies from "./pages/manager/pending_replies/ListPendingReplies";
 import ProfileManager from "./pages/manager/profile/Profile";
 //staff
