@@ -40,10 +40,13 @@ import ProfileManager from "./pages/manager/profile/Profile";
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
 import HomeStaff from "./pages/staff/home/HomeStaff";
-import ListCustomer from "./pages/staff/listCustomer/ListCustomer";
+import ListCustomerStaff from "./pages/staff/listCustomer/ListCustomer";
 import MessengerUI from "./pages/staff/messager/Message";
 import DashboardStaff from "./pages/staff/dashboard/Dashboard";
 import Regit from "./pages/staff/Regit";
+import ListDoctorStaff from "./pages/staff/doctor/ListOfDoctor";
+import StaffProfile from "./pages/staff/profile/StaffProfile";
+import BlogStaff from "../src/pages/staff/blog/Blog";
 //user
 import DashboardForUser from "./components/Dashboard/DashboardForUser";
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
@@ -94,8 +97,11 @@ function App() {
             <Route index element={<Navigate to="home" replace />} />
             <Route path="chat" element={<Chatbox />} />
             <Route path="regit" element={<Regit />} />
-            <Route path="customer" element={<ListCustomer />} />
+            <Route path="customer" element={<ListCustomerStaff />} />
+            <Route path="doctor" element={<ListDoctorStaff />} />
             <Route path="message" element={<MessengerUI />} />
+            <Route path="profile" element={<StaffProfile />} />
+            <Route path="blog" element={<BlogStaff />} />
             {/* <Route path="home" element={<LearnAboutEmo />} /> */}
             <Route path="home" element={<HomeStaff />} />
             <Route path="dashboard" element={<DashboardStaff />} />

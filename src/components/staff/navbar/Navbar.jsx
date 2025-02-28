@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import styles from "../../../styles/Web/Navigation.module.css";
@@ -11,6 +11,8 @@ const App = () => {
         { to: "dashboard", label: "Dashboard" },
         { to: "customer", label: "List Of Customer" },
         { to: "message", label: "Message" },
+        { to: "doctor", label: "List Of Doctor" },
+        { to: "blog", label: "Blog" },
         { to: "regit", label: "Regit" },
     ];
 
@@ -56,12 +58,17 @@ const App = () => {
 
                 {/* Take the test button */}
                 <div className="flex gap-x-10 text-gray-600 font-medium">
-                    <Link
-                        to="home"
-                        className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700"
-                    >
-                        Take the test
+                    <span className="text-blue-800 text-lg font-medium">
+                        Staff Name
+                    </span>
+                    <Link to="/staff/profile">
+                        <img
+                            src="https://i.pravatar.cc/150?img=4"
+                            alt="Avatar"
+                            className="w-7 h-7 rounded-full border-4 border-blue-500"
+                        />
                     </Link>
+
                 </div>
             </div>
         </nav>
