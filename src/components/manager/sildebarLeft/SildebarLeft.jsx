@@ -78,8 +78,8 @@ const SildebarLeft = ({ onMenuClick }) => {
         // Tìm menu khớp với đường dẫn
         const activeMenuItem = menuItemsData.find(
             (item) =>
-                item.path.toLowerCase() === currentPath.toLowerCase() ||
-                item.subMenu.some((subItem) => subItem.path.toLowerCase() === currentPath.toLowerCase())
+                item.path?.toLowerCase() === currentPath?.toLowerCase() ||
+                item.subMenu.some((subItem) => subItem.path?.toLowerCase() === currentPath?.toLowerCase())
         );
 
         if (activeMenuItem) {
@@ -115,7 +115,6 @@ const SildebarLeft = ({ onMenuClick }) => {
     const setActionRef = (id) => {
         setTimeout(() => {
             const currentItem = document.getElementById(`menu-item-${id}`);
-            console.log(">>> check currentItem", currentItem, currentItem.offsetHeight, id);
             if (currentItem) {
                 document.documentElement.style.setProperty(
                     "--height-end",

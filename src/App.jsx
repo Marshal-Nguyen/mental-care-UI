@@ -72,6 +72,7 @@ function App() {
           </Route>
           {/* Route Manager */}
           <Route path="/Manager" element={<Manager />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="Button" element={<TestButton />} />
             <Route path="dashboard" element={<DashboardManager />} />
 
@@ -91,6 +92,7 @@ function App() {
             {/* <Route path="feedback" element={<ListPendingReplies />} /> */}
             <Route path="view-message" element={<ListPendingReplies />} />
           </Route>
+
           <Route path="/manager/profile" element={<ProfileManager />} />
           {/* Route Staff */}
           <Route path="/staff" element={<Staff />}>
