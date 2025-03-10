@@ -5,13 +5,16 @@ const NavigaForWeb = () => {
   return (
     <nav className="flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
       {/* Left Navigation */}
-      <div className="flex space-x-20 text-gray-600 font-medium items-center">
+      <div className="flex space-x-10 text-gray-600 font-medium items-center">
         <div />
         <Link to="learnAboutEmo" className="hover:text-purple-500">
           Learn about EmoEase
         </Link>
         <Link to="counselor" className="hover:text-purple-500">
           Counselor
+        </Link>
+        <Link to="service" className="hover:text-purple-500">
+          Services
         </Link>
       </div>
 
@@ -24,12 +27,16 @@ const NavigaForWeb = () => {
       </div>
 
       {/* Right Navigation */}
-      <div className="flex space-x-20 text-gray-600 font-medium items-center">
-        <Link to="service" className="hover:text-purple-500">
-          Services
-        </Link>
+      <div className="flex space-x-15 text-gray-600 font-medium items-center">
+
         <Link to="blog" className="hover:text-purple-500">
           Blog
+        </Link>
+        <Link to="workshop" className="hover:text-purple-500">
+          Workshop
+        </Link>
+        <Link to="shop" className="hover:text-purple-500">
+          Shop
         </Link>
         <Link
           to="testEmotion"

@@ -17,6 +17,9 @@ import Home from "./pages/User/Web/HomeUser";
 import Intro from "./pages/User/Web/Intro";
 import { ToastContainer, Zoom, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Booking from "./pages/User/Web/Booking";
+import Shop from "./pages/User/Web/Shop";
+import Workshop from "./pages/User/Web/Workshop";
 // import NavigaForWeb from "./components/NavigaForWeb";
 
 import { Outlet } from "react-router-dom";
@@ -43,7 +46,7 @@ import HomeStaff from "./pages/staff/home/HomeStaff";
 import ListCustomerStaff from "./pages/staff/listCustomer/ListCustomer";
 import MessengerUI from "./pages/staff/messager/Message";
 import DashboardStaff from "./pages/staff/dashboard/Dashboard";
-import Regit from "./pages/staff/Regit";
+import Regist from "./components/Web/Regist";
 import ListDoctorStaff from "./pages/staff/doctor/ListOfDoctor";
 import StaffProfile from "./pages/staff/profile/StaffProfile";
 import BlogStaff from "../src/pages/staff/blog/Blog";
@@ -61,14 +64,19 @@ function App() {
         <Routes>
           {/* Các route chính */}
           <Route path="/" element={<Intro />} />
+          <Route path="regist" element={<Regist />} />
           <Route path="/HomeUser" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
             <Route path="dashboardUser" element={<DashboardForUser />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
             <Route path="counselor" element={<Counselor />} />
+            <Route path="booking/:doctorId" element={<Booking />} />
             <Route path="service" element={<Service />} />
-            <Route path="blog" element={<Blog />} />
+            <Route path="blog" element={<BlogStaff />} />
+            <Route path="shop" element={<Shop />} />
+            <Route path="workshop" element={<Workshop />} />
             <Route path="testEmotion" element={<TestEmotion />} />
+
           </Route>
           {/* Route Manager */}
           <Route path="/Manager" element={<Manager />}>
@@ -98,7 +106,7 @@ function App() {
           <Route path="/staff" element={<Staff />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="chat" element={<Chatbox />} />
-            <Route path="regit" element={<Regit />} />
+            <Route path="regit" element={<Regist />} />
             <Route path="customer" element={<ListCustomerStaff />} />
             <Route path="doctor" element={<ListDoctorStaff />} />
             <Route path="message" element={<MessengerUI />} />

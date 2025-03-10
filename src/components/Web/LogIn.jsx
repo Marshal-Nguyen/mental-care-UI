@@ -4,12 +4,91 @@ import styles from "../../styles/Web/LogIn.module.css";
 import { auth, provider, signInWithPopup } from "../../util/firebase/firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
 const LogIn = () => {
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
   const [userImage, setUserImage] = useState(null); // Lưu ảnh đại diện
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Xử lý đăng nhập
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const input = formData.email; // Ô input nhập vào
+    const isEmail = /.+@.+\..+/.test(input); // Kiểm tra có phải email không
+
+    const data = {
+      [isEmail ? "email" : "phoneNumber"]: input,
+      password: formData.password,
+    };
+    try {
+      const response = await axios.post(
+        "https://psychologysupportauth-gqdkbafkbpf5a4gf.eastasia-01.azurewebsites.net/Auth/login",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const token = response.data.token;
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken.role;
+      // Lưu token vào localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", userRole);
+      setFormData({
+        email: "",
+        password: "",
+      });
+      console.log("User role:", userRole);
+      switch (userRole) {
+        case 'Manager':
+          navigate("/manager", { replace: true });
+          toast.success('Login successful, welcome to Manager');
+          break;
+        case 'Staff':
+          navigate("/staff", { replace: true });
+          break;
+        // chú g tự set đường dẫn ở đây nha
+        case 'User':
+          toast.success("Đăng nhập thành công!", { position: "top-right" });
+          setIsLoggedIn(true); // Cập nhật trạng thái đăng nhập
+          setUserImage('https://i.pravatar.cc/150?img=3'); // Lưu ảnh đại diện
+          setIsModalOpen(false);
+          break;
+        case 'Doctor':
+          navigate("/manager", { replace: true });
+          break;
+        default:
+          toast.error('Unknown user role');
+          break;
+      }
+    } catch (err) {
+      setError("Login failed. Please check your information again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -45,6 +124,8 @@ const LogIn = () => {
       await auth.signOut();
       toast.success("Đã đăng xuất thành công!", { position: "top-right" });
       console.log("Đã đăng xuất thành công!");
+      // toast.success('Logout successful. See you next time!');
+      localStorage.clear();
       setIsLoggedIn(false); // Đặt lại trạng thái đăng nhập
       setUserImage(null); // Xóa ảnh đại diện khi đăng xuất
       setOpen(false);
@@ -109,30 +190,47 @@ const LogIn = () => {
                     ✖
                   </button>
                   <h1 className="text-[#4e0986] text-2xl font-serif">
-                    SOLTECH
+                    Login
                   </h1>
+
                 </div>
+                {error && <p className="text-red-500 text-center">{error}</p>}
                 <div class="mt-5">
+
+
                   <label
                     class="font-semibold text-sm text-gray-600 pb-1 block"
                     for="login">
-                    E-mail
+                    E-mail or Phone Number
                   </label>
                   <input
-                    class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full"
-                    type="text"
-                    id="login"
+                    type="email"
+                    name="email"
+                    className="w-full p-2 border rounded mt-1 focus:ring focus:ring-blue-300"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
                   />
-                  <label
-                    class="font-semibold text-sm text-gray-600 pb-1 block"
-                    for="password">
+                  <label className="font-semibold text-sm text-gray-600 pb-1 block" htmlFor="password">
                     Password
                   </label>
-                  <input
-                    class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full"
-                    type="password"
-                    id="password"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      className="w-full p-2 border rounded mt-1 focus:ring focus:ring-blue-300 pr-10"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-2 flex items-center text-gray-600"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
                 </div>
                 <div class="text-right mb-4">
                   <a
@@ -210,15 +308,22 @@ const LogIn = () => {
                   </div>
                 </div>
                 <div class="mt-5">
-                  <button class="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                  <button class="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+
+                    onClick={handleLogin}
+                    disabled={loading}>
                     Log in
                   </button>
                 </div>
                 <div class="flex items-center justify-between mt-4">
                   <span class="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
                   <a
-                    class="text-xs text-gray-500 uppercase dark:text-gray-400 hover:underline"
-                    href="#">
+                    className="text-xs text-blue-500 underline hover:text-blue-700 cursor-pointer"
+                    onClick={() => {
+                      navigate("/regist", { replace: true }); // Chỉ giữ lại "/regist"
+                      setIsModalOpen(false);
+                    }}
+                  >
                     or sign up
                   </a>
                   <span class="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
