@@ -48,12 +48,20 @@ import ListDoctorStaff from "./pages/staff/doctor/ListOfDoctor";
 import StaffProfile from "./pages/staff/profile/StaffProfile";
 import BlogStaff from "../src/pages/staff/blog/Blog";
 //user
-import DashboardForUser from "./components/Dashboard/DashboardForUser";
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
 import Counselor from "./pages/User/Web/Counselor";
 import Service from "./pages/User/Web/Service";
 import Blog from "./pages/User/Web/Blog";
 import TestEmotion from "./pages/User/Web/TestEmotion";
+import DashboardPartient from "./pages/User/Dashboard/DashboardPartient";
+import StatictisPatient from "./pages/User/Dashboard/StatictisPatient";
+import RoadMapPatient from "./pages/User/Dashboard/RoadMapPatient";
+import ProfilePatient from "./pages/User/Dashboard/ProfilePatient";
+import HistoryPatient from "./pages/User/Dashboard/HistoryPatient";
+import WeeklyPlanner from "./components/Dashboard/Patient/WeeklyPlanner";
+import DashboarDoctor from "./pages/doctor/Dashboard/DashboarDoctor";
+import StatictisDoctor from "./pages/doctor/Dashboard/StatictisDoctor";
+import ProfileDoctor from "./pages/doctor/Dashboard/ProfileDoctor";
 function App() {
   return (
     <>
@@ -63,13 +71,29 @@ function App() {
           <Route path="/" element={<Intro />} />
           <Route path="/HomeUser" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
-            <Route path="dashboardUser" element={<DashboardForUser />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
             <Route path="counselor" element={<Counselor />} />
             <Route path="service" element={<Service />} />
             <Route path="blog" element={<Blog />} />
             <Route path="testEmotion" element={<TestEmotion />} />
           </Route>
+
+          <Route path="/DashboardPartient" element={<DashboardPartient />}>
+            <Route index element={<Navigate to="StatictisPatient" />} />
+            <Route path="StatictisPatient" element={<StatictisPatient />} />
+            <Route path="Roadmap" element={<WeeklyPlanner />} />
+            <Route path="ProfilePatient" element={<ProfilePatient />} />
+            <Route path="History" element={<HistoryPatient />} />
+          </Route>
+
+          <Route path="/DashboardDoctor" element={<DashboarDoctor />}>
+            <Route index element={<Navigate to="StatictisDoctor" />} />
+            <Route path="StatictisDoctor" element={<StatictisDoctor />} />
+            <Route path="Roadmap" element={<WeeklyPlanner />} />
+            <Route path="ProfileDoctor" element={<ProfileDoctor />} />
+            <Route path="History" element={<HistoryPatient />} />
+          </Route>
+
           {/* Route Manager */}
           <Route path="/Manager" element={<Manager />}>
             <Route path="Button" element={<TestButton />} />
@@ -107,13 +131,11 @@ function App() {
             <Route path="dashboard" element={<DashboardStaff />} />
           </Route>
           {/* Các route khác */}
-
-        </Routes >
-      </Router >
+        </Routes>
+      </Router>
 
       <ToastContainer />
     </>
-
   );
 }
 

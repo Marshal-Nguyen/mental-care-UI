@@ -8,246 +8,6 @@
   background-color: rgb(255, 255, 255);
   padding: 20px;
 }
-
-/* Phần cho cho thẻ type */
-.card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  color: #2e2d31;
-  background: #ffffff;
-  overflow: hidden;
-  border-radius: 20px;
-  -webkit-box-shadow: 0.5px -0.5px 14px -2.5px #000000;
-  -moz-box-shadow: 0.5px -0.5px 14px -2.5px #000000;
-  box-shadow: 0.5px -0.5px 14px -2.5px #00000041;
-}
-
-.temporaryText {
-  font-weight: lighter;
-  font-size: 60px;
-  padding: 15px 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  display: flex;
-  justify-content: center;
-  font-family: "Knewave", cursive;
-}
-
-.cardTitle {
-  font-weight: bold;
-  font-weight: 100;
-  color: white;
-  line-height: 10px;
-  font-size: 25px;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  font-family: "gayathri";
-}
-
-.cardContent {
-  position: absolute;
-  left: 0;
-  bottom: 0px;
-  /* edit the width to fit card */
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-top-left-radius: 20px;
-  /* edit here to change the height of the content box */
-  transform: translateY(190px);
-  transition: transform 0.25s;
-  z-index: 10;
-}
-
-.cardSubtitle {
-  display: flex;
-  font-size: 12px;
-  margin-top: 10px;
-  justify-content: center;
-}
-
-.cardDescription {
-  margin-top: 15px;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.5s;
-  color: white;
-}
-
-.card:hover .cardContent {
-  transform: translateY(0);
-}
-
-.card:hover .cardDescription {
-  opacity: 1;
-  transition-delay: 0.25s;
-}
-/*  */
-/* Phần cho cho thẻ type */
-.card1 {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  color: #2e2d31;
-  background: #ffffff;
-  overflow: hidden;
-  border-radius: 20px;
-  -webkit-box-shadow: 0.5px -0.5px 14px -2.5px #000000;
-  -moz-box-shadow: 0.5px -0.5px 14px -2.5px #000000;
-  box-shadow: 0.5px -0.5px 14px -2.5px #00000041;
-}
-
-.temporaryText1 {
-  font-weight: lighter;
-  font-size: 60px;
-  padding: 15px 10px;
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  display: flex;
-  justify-content: center;
-  font-family: "Knewave", cursive;
-}
-
-.cardTitle1 {
-  font-weight: bold;
-  font-weight: 100;
-  color: white;
-  line-height: 10px;
-  font-size: 25px;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  font-family: "gayathri";
-}
-
-.cardContent1 {
-  position: absolute;
-  left: 0;
-  bottom: 0px;
-  /* edit the width to fit card */
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-
-  border-top-left-radius: 20px;
-  /* edit here to change the height of the content box */
-  transform: translateY(190px);
-  transition: transform 0.25s;
-  z-index: 10;
-}
-
-.cardSubtitle1 {
-  display: flex;
-  font-size: 12px;
-  margin-top: 10px;
-  justify-content: center;
-}
-
-.cardDescription1 {
-  margin-top: 15px;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.5s;
-  color: white;
-  margin-bottom: 20px;
-}
-
-.card1:hover .cardContent1 {
-  transform: translateY(0);
-}
-
-.card1:hover .cardDescription1 {
-  opacity: 1;
-  transition-delay: 0.25s;
-}
-/*  */
-/* Phần cho cho thẻ type */
-.card2 {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  color: #2e2d31;
-  background: #ffffff;
-  overflow: hidden;
-  border-radius: 20px;
-  -webkit-box-shadow: 0.5px -0.5px 14px -2.5px #000000;
-  -moz-box-shadow: 0.5px -0.5px 14px -2.5px #000000;
-  box-shadow: 0.5px -0.5px 14px -2.5px #00000041;
-}
-
-.temporaryText2 {
-  font-weight: lighter;
-  font-size: 60px;
-  padding: 15px 10px;
-  background: linear-gradient(135deg, #fdc830 0%, #f37335 100%);
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  display: flex;
-  justify-content: center;
-  font-family: "Knewave", cursive;
-}
-
-.cardTitle2 {
-  font-weight: bold;
-  font-weight: 100;
-  color: white;
-  line-height: 10px;
-  font-size: 25px;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  font-family: "gayathri";
-}
-
-.cardContent2 {
-  position: absolute;
-  left: 0;
-  bottom: 0px;
-  /* edit the width to fit card */
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(135deg, #fdc830 0%, #c56b3d 100%);
-
-  border-top-left-radius: 20px;
-  /* edit here to change the height of the content box */
-  transform: translateY(190px);
-  transition: transform 0.25s;
-  z-index: 10;
-}
-
-.cardSubtitle2 {
-  display: flex;
-  font-size: 12px;
-  margin-top: 10px;
-  justify-content: center;
-}
-
-.cardDescription2 {
-  margin-top: 15px;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.5s;
-  color: white;
-  margin-bottom: 40px;
-}
-
-.card2:hover .cardContent2 {
-  transform: translateY(0);
-}
-
-.card2:hover .cardDescription2 {
-  opacity: 1;
-  transition-delay: 0.25s;
-}
 /* Cho chẩn đoán */
 .card3 {
   width: 100%;
@@ -439,4 +199,232 @@
 }
 .cardQuestion .bottomSectionQuestion .rowQuestion .itemQuestion:hover {
   color: #000000;
+}
+/* test */
+.cardContainerTest {
+  width: 160px;
+  height: 160px;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.cardTest {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.cardTest .frontContentTest {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cardTest .frontContentTest p {
+  font-family: "Knewave", cursive;
+  font-size: 60px;
+  font-weight: 700;
+  opacity: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cardTest .contentTest {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #e8e8e8;
+  line-height: 1.5;
+  border-radius: 5px;
+  pointer-events: none;
+  transform: translateY(-96%);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  padding: 8px;
+}
+
+.cardTest .contentTest .headingTest {
+  font-size: 22px;
+  font-family: "gayathri";
+}
+
+.cardTest:hover .contentTest {
+  transform: translateY(0%);
+}
+
+.cardTest:hover .frontContentTest {
+  transform: translateY(20%);
+}
+
+.cardTest:hover .frontContentTest p {
+  opacity: 0;
+}
+/* test1 */
+.cardContainerTest1 {
+  width: 160px;
+  height: 160px;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.cardTest1 {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.cardTest1 .frontContentTest1 {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cardTest1 .frontContentTest1 p {
+  font-family: "Knewave", cursive;
+  font-size: 60px;
+  font-weight: 700;
+  opacity: 1;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cardTest1 .contentTest1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: #e8e8e8;
+  line-height: 1.5;
+  border-radius: 5px;
+  pointer-events: none;
+  transform: translateY(-96%);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  padding: 8px;
+}
+
+.cardTest1 .contentTest1 .headingTest1 {
+  font-size: 22px;
+  font-family: "gayathri";
+}
+
+.cardTest1:hover .contentTest1 {
+  transform: translateY(0%);
+}
+
+.cardTest1:hover .frontContentTest1 {
+  transform: translateY(20%);
+}
+
+.cardTest1:hover .frontContentTest1 p {
+  opacity: 0;
+}
+/* test2 */
+.cardContainerTest2 {
+  width: 160px;
+  height: 160px;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.cardTest2 {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.cardTest2 .frontContentTest2 {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cardTest2 .frontContentTest2 p {
+  font-family: "Knewave", cursive;
+  font-size: 60px;
+  font-weight: 700;
+  opacity: 1;
+  background: linear-gradient(135deg, #fdc830 0%, #c56b3d 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.cardTest2 .contentTest2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fdc830 0%, #c56b3d 100%);
+  color: #e8e8e8;
+  line-height: 1.5;
+  border-radius: 5px;
+  pointer-events: none;
+  transform: translateY(-96%);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  padding: 8px;
+}
+
+.cardTest2 .contentTest2 .headingTest2 {
+  font-size: 22px;
+  font-family: "gayathri";
+}
+
+.cardTest2:hover .contentTest2 {
+  transform: translateY(0%);
+}
+
+.cardTest2:hover .frontContentTest2 {
+  transform: translateY(20%);
+}
+
+.cardTest2:hover .frontContentTest2 p {
+  opacity: 0;
 }

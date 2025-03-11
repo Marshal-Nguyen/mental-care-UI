@@ -1,0 +1,18 @@
+.container {
+  height: 100%;
+  padding: 20px;
+  border-radius: 15px;
+  background: #e2d4f7;
+  background: -webkit-linear-gradient(
+    181deg,
+    #b487f7 0%,
+    rgba(146, 95, 227, 0.82) 50%,
+    #925fe2 100%
+  );
+  background: linear-gradient(
+    181deg,
+    #bf99f7 0%,
+    rgba(146, 95, 227, 0.82) 50%,
+    #925fe2 100%
+  );
+}

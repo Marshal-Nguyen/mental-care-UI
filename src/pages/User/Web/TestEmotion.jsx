@@ -6,6 +6,13 @@ import checkMap from "../../../util/icon/checkmark.json";
 import Lottie from "lottie-react";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import Loader from "../../../components/Web/Loader";
+const colorMap = {
+  Never: "bg-green-500 border-green-700",
+  Sometimes: "bg-yellow-500 border-yellow-700",
+  Often: "bg-orange-500 border-orange-700",
+  Always: "bg-red-500 border-red-700",
+};
+
 const TestEmotion = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -73,10 +80,10 @@ const TestEmotion = () => {
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   return (
-    <div className=" grid grid-cols-7 grid-rows-5 w-full min-h-[calc(100vh-120px)]">
-      <div className=" col-span-4 row-span-5 pl-5 py-5 h-full">
-        <div className={`h-[650px] overflow-y-scroll `}>
-          <div className={` flex flex-col items-center justify-center`}>
+    <div className=" grid grid-cols-7 grid-rows-5 w-full">
+      <div className=" col-span-4 row-span-5 pl-5 py-5 h-[84%]">
+        <div className={`h-[550px] overflow-y-scroll `}>
+          <div className="flex flex-col items-center justify-center">
             {questions.map((question, index) => (
               <div
                 key={index}
@@ -85,35 +92,32 @@ const TestEmotion = () => {
                     ? "bg-gray-100 opacity-100"
                     : "bg-gray-50 opacity-50"
                 }`}>
-                <p className="text-2xl font-semibold mb-4 p-5 text-center italic ">
+                <p className="text-2xl font-semibold mb-4 p-5 text-center italic">
                   {index + 1}. {question.question}
                 </p>
                 <div className="flex justify-between items-center w-full px-6">
-                  <span className="text-green-500 font-semibold text-xl">
-                    Agree
-                  </span>
-                  <div className="flex space-x-4">
-                    {question.options.map((option, optIndex) => (
-                      <label key={optIndex} className="relative cursor-pointer">
-                        <input
-                          type="radio"
-                          name={`question-${index}`}
-                          className="hidden"
-                          onChange={() => handleOptionChange(index, option)}
-                          checked={answers[index] === option}
-                        />
-                        <div
-                          className={`w-10 h-10 border-4 rounded-full flex items-center justify-center transition-all ${
-                            answers[index] === option
-                              ? "border-blue-500 bg-blue-500"
-                              : "border-gray-400 hover:border-gray-600"
-                          }`}></div>
-                      </label>
-                    ))}
-                  </div>
-                  <span className="text-purple-500 font-semibold text-xl">
-                    Disagree
-                  </span>
+                  {question.options.map((option, optIndex) => (
+                    <label
+                      key={optIndex}
+                      className="relative cursor-pointer flex flex-col items-center">
+                      <input
+                        type="radio"
+                        name={`question-${index}`}
+                        className="hidden"
+                        onChange={() => handleOptionChange(index, option)}
+                        checked={answers[index] === option}
+                      />
+                      <div
+                        className={`w-14 h-14 border-4 rounded-full flex items-center justify-center transition-all ${
+                          answers[index] === option
+                            ? colorMap[option]
+                            : "border-gray-400 hover:border-gray-600"
+                        }`}></div>
+                      <span className="mt-2 text-sm text-gray-700 font-semibold">
+                        {option}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
             ))}
@@ -148,91 +152,102 @@ const TestEmotion = () => {
       </div>
       <div className=" col-span-3 p-5 row-span-5 col-start-5">
         <div className={styles.containerRight}>
-          <div className="grid  grid-cols-3 grid-rows-9 gap-4 h-full">
+          <div className="grid  grid-cols-3 grid-rows-9 gap-4 min-h-[calc(100vh-220px)]">
             <div className=" row-span-3">
-              <article class={styles.card}>
-                <div class={styles.temporaryText}>17</div>
-                <div class={styles.cardContent}>
-                  <span class={styles.cardTitle}>Depression </span>
-                  <span class={styles.cardSubtitle}>
-                    <div
-                      style={{
-                        filter: "invert(1)",
-                      }}>
-                      <Lottie
-                        animationData={arrowDownAnimation}
-                        loop={true}
-                        style={{ width: 20, height: 20 }}
-                      />
+              <div class={styles.cardContainerTest}>
+                <div class={styles.cardTest}>
+                  <div class={styles.frontContentTest}>
+                    <p className="w-full">17</p>
+                  </div>
+
+                  <div class={styles.contentTest}>
+                    <p class={styles.headingTest}>Depression</p>
+                    <p className="text-[10px]">
+                      is more than just sadness; it’s a lingering emptiness, a
+                      loss of motivation, and constant fatigue. The things you
+                      once loved feel meaningless.
+                    </p>
+                    <div className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div
+                        style={{
+                          filter: "invert(0)",
+                        }}>
+                        <Lottie
+                          animationData={arrowDownAnimation}
+                          loop={true}
+                          style={{ width: 20, height: 20 }}
+                        />
+                      </div>
                     </div>
-                  </span>
-                  <p class={styles.cardDescription}>
-                    <span className="text-black font-bold"> Depression </span>{" "}
-                    is more than just sadness; it’s a lingering emptiness, a
-                    loss of motivation, and constant fatigue. The things you
-                    once loved feel meaningless, and even the simplest tasks
-                    become a struggle.
-                  </p>
+                  </div>
                 </div>
-              </article>
+              </div>
             </div>
             <div className=" row-span-3">
-              <article class={styles.card1}>
-                <div class={styles.temporaryText1}>20</div>
-                <div class={styles.cardContent1}>
-                  <span class={styles.cardTitle1}>Anxiety</span>
-                  <span class={styles.cardSubtitle1}>
-                    <div
-                      style={{
-                        filter: "invert(1)",
-                      }}>
-                      <Lottie
-                        animationData={arrowDownAnimation}
-                        loop={true}
-                        style={{ width: 20, height: 20 }}
-                      />
+              <div class={styles.cardContainerTest1}>
+                <div class={styles.cardTest1}>
+                  <div class={styles.frontContentTest1}>
+                    <p className="w-full">20</p>
+                  </div>
+
+                  <div class={styles.contentTest1}>
+                    <p class={styles.headingTest1}>Anxiety</p>
+                    <p className="text-[10px]">
+                      keeps your mind racing with endless worries and fears. A
+                      pounding heart, short breaths, and restless thoughts—like
+                      your brain is running a marathon with no finish line.
+                    </p>
+                    <div className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div
+                        style={{
+                          filter: "invert(0)",
+                        }}>
+                        <Lottie
+                          animationData={arrowDownAnimation}
+                          loop={true}
+                          style={{ width: 20, height: 20 }}
+                        />
+                      </div>
                     </div>
-                  </span>
-                  <p class={styles.cardDescription1}>
-                    <span className="text-black font-bold"> Anxiety </span>{" "}
-                    keeps your mind racing with endless worries and fears. A
-                    pounding heart, short breaths, and restless thoughts—like
-                    your brain is running a marathon with no finish line.
-                  </p>
+                  </div>
                 </div>
-              </article>
+              </div>
             </div>
             <div className=" row-span-3">
-              <article class={styles.card2}>
-                <div class={styles.temporaryText2}>50</div>
-                <div class={styles.cardContent2}>
-                  <span class={styles.cardTitle2}>Stress</span>
-                  <span class={styles.cardSubtitle2}>
-                    <div
-                      style={{
-                        filter: "invert(1)",
-                      }}>
-                      <Lottie
-                        animationData={arrowDownAnimation}
-                        loop={true}
-                        style={{ width: 20, height: 20 }}
-                      />
+              <div class={styles.cardContainerTest2}>
+                <div class={styles.cardTest2}>
+                  <div class={styles.frontContentTest2}>
+                    <p className="w-full">25</p>
+                  </div>
+
+                  <div class={styles.contentTest2}>
+                    <p class={styles.headingTest2}>Stress</p>
+                    <p className="text-[10px]">
+                      feels like carrying the weight of the world on your
+                      shoulders. A little can help you stay focused, but too
+                      much can leave you mentally and physically drained.
+                    </p>
+                    <div className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div
+                        style={{
+                          filter: "invert(0)",
+                        }}>
+                        <Lottie
+                          animationData={arrowDownAnimation}
+                          loop={true}
+                          style={{ width: 20, height: 20 }}
+                        />
+                      </div>
                     </div>
-                  </span>
-                  <p class={styles.cardDescription2}>
-                    <span className="text-black font-bold">Stress</span> feels
-                    like carrying the weight of the world on your shoulders. A
-                    little can help you stay focused, but too much can leave you
-                    mentally and physically drained.
-                  </p>
+                  </div>
                 </div>
-              </article>
+              </div>
             </div>
             <div className=" col-span-3 row-span-6 row-start-4">
               <div class={styles.card3}>
                 <div class={styles.topSection}>
                   <div class={styles.border}> Diagnosis Report</div>
-                  <div className="p-4 overflow-y-scroll h-[340px]">
+                  <div className="p-4 overflow-y-scroll h-[280px]">
                     <div
                       className={`${styles.title1} flex items-center text-[20px]`}>
                       <div

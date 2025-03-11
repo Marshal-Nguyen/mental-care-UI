@@ -12,18 +12,18 @@ body {
 }
 /* Thanh scroll tổng thể */
 ::-webkit-scrollbar {
-  width: 10px; /* Độ rộng thanh cuộn */
-  height: 8px; /* Chiều cao khi là thanh ngang */
+  width: 5px; /* Độ rộng thanh cuộn */
+  height: 5px; /* Chiều cao khi là thanh ngang */
 }
 
 /* Phần nền thanh scroll */
 ::-webkit-scrollbar-track {
-  background: #58565a2c; /* Màu nền */
+  background: #b4b4b42c; /* Màu nền */
 }
 
 /* Thanh cuộn chính */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #8138c5, #5101b9); /* Gradient màu */
+  background: linear-gradient(180deg, #b995da, #833edf); /* Gradient màu */
   border-radius: 10px;
   transition: background 0.3s ease-in-out;
 }

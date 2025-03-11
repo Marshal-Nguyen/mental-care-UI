@@ -81,7 +81,9 @@ const LogIn = () => {
               if (!isLoggedIn) {
                 setIsModalOpen(true);
               } else {
-                navigate("dashboardUser"); // Điều hướng đến trang Dashboard
+                navigate("/DashboardPartient");
+                // Điều hướng đến trang Dashboard
+                // navigate("/DashboardDoctor");
               }
               setOpen(false);
             }}
