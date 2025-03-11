@@ -51,7 +51,7 @@ import ListDoctorStaff from "./pages/staff/doctor/ListOfDoctor";
 import StaffProfile from "./pages/staff/profile/StaffProfile";
 import BlogStaff from "../src/pages/staff/blog/Blog";
 //user
-import DashboardForUser from "./components/Dashboard/DashboardForUser";
+
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
 import Counselor from "./pages/User/Web/Counselor";
 import Service from "./pages/User/Web/Service";
@@ -77,7 +77,6 @@ function App() {
           <Route path="regist" element={<Regist />} />
           <Route path="/HomeUser" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
-            <Route path="dashboardUser" element={<DashboardForUser />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
             <Route path="counselor" element={<Counselor />} />
             <Route path="booking/:doctorId" element={<Booking />} />
