@@ -89,7 +89,7 @@ const posts = [
     user: "minhtuan",
     avatar: "https://i.pravatar.cc/150?img=8",
     content: "Hãy thử gửi một tin nhắn động viên đến ai đó hôm nay. Một câu nói tích cực có thể làm nên điều kỳ diệu cho tâm trạng của họ (và cả bạn nữa)! 💌😊",
-    image: "https://images.pexels.com/photos/3275406/pexels-photo-3275406.jpeg",
+    image: "https://images.pexels.com/photos/302904/pexels-photo-302904.jpeg",
     likes: 42,
     comments: 20,
   }
