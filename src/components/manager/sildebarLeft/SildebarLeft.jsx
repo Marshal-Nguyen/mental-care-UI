@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useEffect } from "react";
 import { AiFillApple } from "react-icons/ai";
+import { toast } from "react-toastify";
 import { AiFillCaretDown } from "react-icons/ai";
 import logo from "../../../assets/images/logo.png";
 import "./SildebarLeft.css"; // CSS của bạn
@@ -78,8 +79,8 @@ const SildebarLeft = ({ onMenuClick }) => {
         // Tìm menu khớp với đường dẫn
         const activeMenuItem = menuItemsData.find(
             (item) =>
-                item.path.toLowerCase() === currentPath.toLowerCase() ||
-                item.subMenu.some((subItem) => subItem.path.toLowerCase() === currentPath.toLowerCase())
+                item.path?.toLowerCase() === currentPath?.toLowerCase() ||
+                item.subMenu.some((subItem) => subItem.path?.toLowerCase() === currentPath?.toLowerCase())
         );
 
         if (activeMenuItem) {
@@ -115,7 +116,6 @@ const SildebarLeft = ({ onMenuClick }) => {
     const setActionRef = (id) => {
         setTimeout(() => {
             const currentItem = document.getElementById(`menu-item-${id}`);
-            console.log(">>> check currentItem", currentItem, currentItem.offsetHeight, id);
             if (currentItem) {
                 document.documentElement.style.setProperty(
                     "--height-end",
@@ -147,6 +147,7 @@ const SildebarLeft = ({ onMenuClick }) => {
     };
 
     const handleLogOut = () => {
+        toast.success('Logout successful. See you next time!');
         localStorage.clear();
 
     }
@@ -254,7 +255,7 @@ const SildebarLeft = ({ onMenuClick }) => {
                 })}
 
 
-                <NavLink to="/login" onClick={handleLogOut}>
+                <NavLink to="/HomeUser" onClick={handleLogOut}>
                     <div className="flex items-center w-full p-2 my-3 bg-[#faf3e0] hover:bg-gray-100 rounded">
                         <BiLogOut size={24} className="mr-2 text-red-500" />
                         <span className="ml-4 text-lg text-gray-800">Logout</span>

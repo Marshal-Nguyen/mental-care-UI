@@ -17,6 +17,9 @@ import Home from "./pages/User/Web/HomeUser";
 import Intro from "./pages/User/Web/Intro";
 import { ToastContainer, Zoom, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Booking from "./pages/User/Web/Booking";
+import Shop from "./pages/User/Web/Shop";
+import Workshop from "./pages/User/Web/Workshop";
 // import NavigaForWeb from "./components/NavigaForWeb";
 
 import { Outlet } from "react-router-dom";
@@ -43,16 +46,18 @@ import HomeStaff from "./pages/staff/home/HomeStaff";
 import ListCustomerStaff from "./pages/staff/listCustomer/ListCustomer";
 import MessengerUI from "./pages/staff/messager/Message";
 import DashboardStaff from "./pages/staff/dashboard/Dashboard";
-import Regit from "./pages/staff/Regit";
+import Regist from "./components/Web/Regist";
 import ListDoctorStaff from "./pages/staff/doctor/ListOfDoctor";
 import StaffProfile from "./pages/staff/profile/StaffProfile";
 import BlogStaff from "../src/pages/staff/blog/Blog";
 //user
+import DashboardForUser from "./components/Dashboard/DashboardForUser";
 import LearnAboutEmo from "./pages/User/Web/LearnAboutEmo";
 import Counselor from "./pages/User/Web/Counselor";
 import Service from "./pages/User/Web/Service";
 import Blog from "./pages/User/Web/Blog";
 import TestEmotion from "./pages/User/Web/TestEmotion";
+
 import DashboardPartient from "./pages/User/Dashboard/DashboardPartient";
 import StatictisPatient from "./pages/User/Dashboard/StatictisPatient";
 import RoadMapPatient from "./pages/User/Dashboard/RoadMapPatient";
@@ -69,12 +74,17 @@ function App() {
         <Routes>
           {/* Các route chính */}
           <Route path="/" element={<Intro />} />
+          <Route path="regist" element={<Regist />} />
           <Route path="/HomeUser" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
+            <Route path="dashboardUser" element={<DashboardForUser />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
             <Route path="counselor" element={<Counselor />} />
+            <Route path="booking/:doctorId" element={<Booking />} />
             <Route path="service" element={<Service />} />
-            <Route path="blog" element={<Blog />} />
+            <Route path="blog" element={<BlogStaff />} />
+            <Route path="shop" element={<Shop />} />
+            <Route path="workshop" element={<Workshop />} />
             <Route path="testEmotion" element={<TestEmotion />} />
           </Route>
 
@@ -96,6 +106,7 @@ function App() {
 
           {/* Route Manager */}
           <Route path="/Manager" element={<Manager />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="Button" element={<TestButton />} />
             <Route path="dashboard" element={<DashboardManager />} />
 
@@ -115,12 +126,13 @@ function App() {
             {/* <Route path="feedback" element={<ListPendingReplies />} /> */}
             <Route path="view-message" element={<ListPendingReplies />} />
           </Route>
+
           <Route path="/manager/profile" element={<ProfileManager />} />
           {/* Route Staff */}
           <Route path="/staff" element={<Staff />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="chat" element={<Chatbox />} />
-            <Route path="regit" element={<Regit />} />
+            <Route path="regit" element={<Regist />} />
             <Route path="customer" element={<ListCustomerStaff />} />
             <Route path="doctor" element={<ListDoctorStaff />} />
             <Route path="message" element={<MessengerUI />} />

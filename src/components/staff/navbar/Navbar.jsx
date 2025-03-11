@@ -1,11 +1,17 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import styles from "../../../styles/Web/Navigation.module.css";
-
+import { toast } from "react-toastify";
 const App = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        toast.success('Logout successful. See you next time!');
+        localStorage.clear(); // Xóa toàn bộ localStorage
+        navigate("/HomeUser"); // Chuyển về trang HomeUser
 
+    };
     const links = [
         { to: "home", label: "Home" },
         { to: "dashboard", label: "Dashboard" },
@@ -13,7 +19,7 @@ const App = () => {
         { to: "message", label: "Message" },
         { to: "doctor", label: "List Of Doctor" },
         { to: "blog", label: "Blog" },
-        { to: "regit", label: "Regit" },
+        { to: "regit", label: "Regit" }
     ];
 
     return (
@@ -68,7 +74,13 @@ const App = () => {
                             className="w-7 h-7 rounded-full border-4 border-blue-500"
                         />
                     </Link>
-
+                    {/* Nút Logout */}
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 transition"
+                    >
+                        Logout
+                    </button>
                 </div>
             </div>
         </nav>
