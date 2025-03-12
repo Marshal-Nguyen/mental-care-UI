@@ -67,6 +67,7 @@ import WeeklyPlanner from "./components/Dashboard/Patient/WeeklyPlanner";
 import DashboarDoctor from "./pages/doctor/Dashboard/DashboarDoctor";
 import StatictisDoctor from "./pages/doctor/Dashboard/StatictisDoctor";
 import ProfileDoctor from "./pages/doctor/Dashboard/ProfileDoctor";
+import RoadMapCreate from "./pages/doctor/Dashboard/RoadMapCreate";
 function App() {
   return (
     <>
@@ -98,7 +99,7 @@ function App() {
           <Route path="/DashboardDoctor" element={<DashboarDoctor />}>
             <Route index element={<Navigate to="StatictisDoctor" />} />
             <Route path="StatictisDoctor" element={<StatictisDoctor />} />
-            <Route path="Roadmap" element={<WeeklyPlanner />} />
+            <Route path="RoadmapCreate" element={<RoadMapCreate />} />
             <Route path="ProfileDoctor" element={<ProfileDoctor />} />
             <Route path="History" element={<HistoryPatient />} />
           </Route>

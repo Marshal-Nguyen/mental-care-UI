@@ -5,6 +5,8 @@ const WeeklyPlanner = () => {
   const [startDate, setStartDate] = useState(null);
   const [tasks, setTasks] = useState({});
   const [taskStatus, setTaskStatus] = useState({});
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showTaskDetail, setShowTaskDetail] = useState(false);
 
   // Initialize with current date and calculate the start of the week
   useEffect(() => {
@@ -15,150 +17,193 @@ const WeeklyPlanner = () => {
     const monday = new Date(today.setDate(diff));
     setStartDate(monday);
 
-    // Initialize with some example tasks
-    initializeSampleTasks(monday);
+    // Initialize with stress reduction tasks
+    initializeStressReductionTasks(monday);
   }, []);
 
-  // Initialize sample tasks for demo purposes
-  const initializeSampleTasks = (monday) => {
+  // Initialize stress reduction tasks
+  const initializeStressReductionTasks = (monday) => {
     if (!monday) return;
 
-    const sampleTasks = {};
+    const stressReductionTasks = {};
     const initialTaskStatus = {};
 
-    // Create tasks for specific dates
-    // Monday's tasks
-    const mondayKey = formatDateKey(monday);
-    sampleTasks[mondayKey] = [
-      {
-        id: 1,
-        time: "09:00",
-        title: "Họp nhóm",
-        duration: "09:00am - 10:30am",
-        color: "purple",
-      },
-      {
-        id: 2,
-        time: "14:00",
-        title: "Thiết kế UI",
-        duration: "14:00pm - 16:00pm",
-        color: "purple",
-      },
-    ];
+    // Helper function to create a week's worth of tasks
+    const createWeekTasks = (startDay, weekOffset = 0) => {
+      for (let i = 0; i < 7; i++) {
+        const currentDay = new Date(startDay);
+        currentDay.setDate(startDay.getDate() + i + weekOffset * 7);
+        const dayKey = formatDateKey(currentDay);
 
-    // Tuesday's tasks
-    const tuesday = new Date(monday);
-    tuesday.setDate(monday.getDate() + 1);
-    const tuesdayKey = formatDateKey(tuesday);
-    sampleTasks[tuesdayKey] = [
-      {
-        id: 3,
-        time: "10:00",
-        title: "Gặp khách hàng",
-        duration: "10:00am - 11:30am",
-        color: "purple",
-      },
-    ];
+        // Each day gets around 8-10 stress reduction activities
+        stressReductionTasks[dayKey] = [];
 
-    // Wednesday's tasks
-    const wednesday = new Date(monday);
-    wednesday.setDate(monday.getDate() + 2);
-    const wednesdayKey = formatDateKey(wednesday);
-    sampleTasks[wednesdayKey] = [
-      {
-        id: 4,
-        time: "08:00",
-        title: "Animation Review",
-        duration: "08:00am - 09:00am",
-        color: "purple",
-      },
-      {
-        id: 5,
-        time: "13:00",
-        title: "Phát triển Backend",
-        duration: "13:00pm - 17:00pm",
-        color: "purple",
-      },
-      {
-        id: 12,
-        time: "20:00",
-        title: "Học tập online",
-        duration: "20:00pm - 22:00pm",
-        color: "purple",
-      },
-    ];
+        // Add morning meditation
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-1`,
+          time: "07:00",
+          title: "Thiền buổi sáng",
+          duration: "07:00 - 07:20",
+          color: "blue",
+          description:
+            "Ngồi thiền 20 phút để bắt đầu ngày mới với tâm trí tĩnh lặng. Tập trung vào hơi thở và buông bỏ các suy nghĩ lo lắng.",
+          benefits: [
+            "Giảm cortisol",
+            "Tăng cường tập trung",
+            "Cải thiện tâm trạng",
+          ],
+        });
 
-    // Thursday's tasks
-    const thursday = new Date(monday);
-    thursday.setDate(monday.getDate() + 3);
-    const thursdayKey = formatDateKey(thursday);
-    sampleTasks[thursdayKey] = [
-      {
-        id: 6,
-        time: "11:00",
-        title: "Họp dự án",
-        duration: "11:00am - 12:00pm",
-        color: "purple",
-      },
-    ];
+        // Add breathing exercise
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-2`,
+          time: "09:30",
+          title: "Thở sâu",
+          duration: "09:30 - 09:40",
+          color: "green",
+          description:
+            "Thực hiện kỹ thuật thở 4-7-8: hít vào trong 4 giây, giữ trong 7 giây, và thở ra trong 8 giây. Lặp lại 5 lần.",
+          benefits: [
+            "Giảm căng thẳng ngay lập tức",
+            "Hạ huyết áp",
+            "Cân bằng hệ thần kinh",
+          ],
+        });
 
-    // Friday's tasks
-    const friday = new Date(monday);
-    friday.setDate(monday.getDate() + 4);
-    const fridayKey = formatDateKey(friday);
-    sampleTasks[fridayKey] = [
-      {
-        id: 7,
-        time: "10:00",
-        title: "UI Motion",
-        duration: "10:00am - 12:00pm",
-        color: "purple",
-      },
-      {
-        id: 8,
-        time: "15:00",
-        title: "Tổng kết tuần",
-        duration: "15:00pm - 16:30pm",
-        color: "purple",
-      },
-      {
-        id: 11,
-        time: "19:00",
-        title: "Team building",
-        duration: "19:00pm - 21:00pm",
-        color: "purple",
-      },
-    ];
+        // Add stretching
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-3`,
+          time: "11:00",
+          title: "Giãn cơ tại bàn làm việc",
+          duration: "11:00 - 11:10",
+          color: "purple",
+          description:
+            "Thực hiện các động tác giãn cơ nhẹ nhàng tại bàn làm việc: xoay cổ, giãn vai, giãn cánh tay và cổ tay.",
+          benefits: ["Giảm căng cơ", "Tăng tuần hoàn", "Giảm mệt mỏi"],
+        });
 
-    // Add tasks for week 2 as well
-    const nextMonday = new Date(monday);
-    nextMonday.setDate(monday.getDate() + 7);
-    const nextMondayKey = formatDateKey(nextMonday);
-    sampleTasks[nextMondayKey] = [
-      {
-        id: 9,
-        time: "09:00",
-        title: "Lập kế hoạch tuần",
-        duration: "09:00am - 10:00am",
-        color: "purple",
-      },
-      {
-        id: 10,
-        time: "22:00",
-        title: "Chuẩn bị tài liệu",
-        duration: "22:00pm - 23:30pm",
-        color: "purple",
-      },
-    ];
+        // Add mindful lunch
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-4`,
+          time: "12:30",
+          title: "Ăn trưa có ý thức",
+          duration: "12:30 - 13:15",
+          color: "orange",
+          description:
+            "Tập trung hoàn toàn vào bữa ăn, cảm nhận từng miếng, hương vị và kết cấu. Không sử dụng điện thoại hoặc máy tính.",
+          benefits: [
+            "Cải thiện tiêu hóa",
+            "Tăng sự hài lòng",
+            "Giảm ăn quá nhiều",
+          ],
+        });
+
+        // Add afternoon break
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-5`,
+          time: "14:30",
+          title: "Nghỉ ngơi ngắn",
+          duration: "14:30 - 14:45",
+          color: "teal",
+          description:
+            "Rời khỏi màn hình, đi dạo ngắn hoặc nhìn ra ngoài cửa sổ tập trung vào thiên nhiên trong 15 phút.",
+          benefits: ["Giảm mỏi mắt", "Nạp lại năng lượng", "Tăng sáng tạo"],
+        });
+
+        // Add afternoon tea
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-6`,
+          time: "16:00",
+          title: "Uống trà thảo mộc",
+          duration: "16:00 - 16:15",
+          color: "green",
+          description:
+            "Thưởng thức một tách trà thảo mộc (trà hoa cúc, oải hương hoặc bạc hà) trong yên lặng.",
+          benefits: [
+            "Tăng cường thư giãn",
+            "Cung cấp chất chống oxy hóa",
+            "Giảm căng thẳng",
+          ],
+        });
+
+        // Add journaling
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-7`,
+          time: "17:30",
+          title: "Viết nhật ký biết ơn",
+          duration: "17:30 - 17:45",
+          color: "pink",
+          description:
+            "Viết ra 3 điều bạn biết ơn trong ngày hôm nay và cảm xúc tích cực bạn đã trải qua.",
+          benefits: [
+            "Tăng cảm giác hạnh phúc",
+            "Giảm lo âu",
+            "Cải thiện tâm trạng",
+          ],
+        });
+
+        // Add evening exercise
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-8`,
+          time: "19:00",
+          title: "Tập thể dục nhẹ nhàng",
+          duration: "19:00 - 19:30",
+          color: "indigo",
+          description:
+            "Thực hiện 30 phút yoga, đi bộ hoặc bơi lội với cường độ nhẹ đến vừa phải.",
+          benefits: [
+            "Giải phóng endorphin",
+            "Cải thiện giấc ngủ",
+            "Giảm căng thẳng",
+          ],
+        });
+
+        // Add evening wind-down
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-9`,
+          time: "21:00",
+          title: "Thời gian thư giãn",
+          duration: "21:00 - 21:30",
+          color: "purple",
+          description:
+            "Đọc sách, nghe nhạc nhẹ nhàng hoặc tắm nước ấm để chuẩn bị cho giấc ngủ.",
+          benefits: [
+            "Chuyển đổi sang chế độ thư giãn",
+            "Giảm căng thẳng",
+            "Chuẩn bị cho giấc ngủ",
+          ],
+        });
+
+        // Add bedtime meditation
+        stressReductionTasks[dayKey].push({
+          id: `${dayKey}-10`,
+          time: "22:30",
+          title: "Thiền trước khi ngủ",
+          duration: "22:30 - 22:45",
+          color: "blue",
+          description:
+            "Thực hiện quét cơ thể từ đầu đến chân, thả lỏng từng phần cơ thể và chuẩn bị cho giấc ngủ sâu.",
+          benefits: [
+            "Cải thiện chất lượng giấc ngủ",
+            "Giảm lo âu",
+            "Thư giãn cơ bắp",
+          ],
+        });
+      }
+    };
+
+    // Create tasks for Week 1 and Week 2
+    createWeekTasks(monday, 0);
+    createWeekTasks(monday, 1);
 
     // Initialize task status (all unchecked)
-    Object.values(sampleTasks)
+    Object.values(stressReductionTasks)
       .flat()
       .forEach((task) => {
         initialTaskStatus[task.id] = false;
       });
 
-    setTasks(sampleTasks);
+    setTasks(stressReductionTasks);
     setTaskStatus(initialTaskStatus);
   };
 
@@ -207,7 +252,15 @@ const WeeklyPlanner = () => {
   // Format day name
   const formatDayName = (date) => {
     if (!date) return "";
-    const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    const days = [
+      "Chủ nhật",
+      "Thứ 2",
+      "Thứ 3",
+      "Thứ 4",
+      "Thứ 5",
+      "Thứ 6",
+      "Thứ 7",
+    ];
     return days[date.getDay()];
   };
 
@@ -221,12 +274,6 @@ const WeeklyPlanner = () => {
       date.getFullYear() === today.getFullYear()
     );
   };
-
-  // Generate time slots from 07:00 to 00:00
-  const timeSlots = Array.from({ length: 18 }, (_, i) => {
-    const hour = i + 7;
-    return `${hour.toString().padStart(2, "0")}:00`;
-  });
 
   // Get activities for a specific date
   const getActivitiesForDay = (date) => {
@@ -250,21 +297,14 @@ const WeeklyPlanner = () => {
       }
 
       // Generate a unique ID
-      const newId =
-        Math.max(
-          ...Object.values(updatedTasks)
-            .flat()
-            .map((task) => task.id),
-          0
-        ) + 1;
-      const taskWithId = { ...newTask, id: newId };
+      const taskWithId = { ...newTask, id: `${dateKey}-${Date.now()}` };
 
       updatedTasks[dateKey] = [...updatedTasks[dateKey], taskWithId];
 
       // Initialize task status
       setTaskStatus((prev) => ({
         ...prev,
-        [newId]: false,
+        [taskWithId.id]: false,
       }));
 
       return updatedTasks;
@@ -275,28 +315,40 @@ const WeeklyPlanner = () => {
   const getMonthName = (date) => {
     if (!date) return "";
     const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
+      "Tháng 1",
+      "Tháng 2",
+      "Tháng 3",
+      "Tháng 4",
+      "Tháng 5",
+      "Tháng 6",
+      "Tháng 7",
+      "Tháng 8",
+      "Tháng 9",
+      "Tháng 10",
+      "Tháng 11",
+      "Tháng 12",
     ];
     return months[date.getMonth()];
   };
 
+  // Show task details
+  const showTaskDetails = (task) => {
+    setSelectedTask(task);
+    setShowTaskDetail(true);
+  };
+
+  // Close task details modal
+  const closeTaskDetail = () => {
+    setShowTaskDetail(false);
+    setSelectedTask(null);
+  };
+
   const daysInWeek = getDaysInActiveWeek();
 
-  if (!startDate) return <div>Loading...</div>;
+  if (!startDate) return <div>Đang tải...</div>;
 
   return (
-    <div className="max-w-full bg-gray-50 p-4">
+    <div className="max-w-full bg-gray-50 p-4 ">
       {/* Week selection tabs */}
       <div className="flex space-x-4 mb-6 overflow-x-auto">
         {["WEEK 1", "WEEK 2"].map((week) => (
@@ -304,7 +356,7 @@ const WeeklyPlanner = () => {
             key={week}
             className={`py-3 px-8 rounded-lg ${
               activeWeek === week
-                ? "bg-purple-300 text-black font-medium"
+                ? "bg-purple-600 text-white font-medium"
                 : "bg-gray-200 text-black"
             }`}
             onClick={() => setActiveWeek(week)}>
@@ -317,106 +369,192 @@ const WeeklyPlanner = () => {
       <div className="overflow-x-auto pb-4">
         <div className="flex space-x-4" style={{ minWidth: "max-content" }}>
           {daysInWeek.map((date, index) => (
-            <div key={index} className="w-77 bg-white rounded-lg shadow-sm p-2">
-              {/* Month and Add Task header */}
-              <div className="flex justify-between items-center p-3 bg-[#e4d6fd] rounded-t-xl">
-                <h3 className="font-serif">{getMonthName(date)}</h3>
-                <button
-                  className="text-purple-600 text-sm flex items-center bg-white p-1 rounded-sm font-medium"
-                  onClick={() => {
-                    // In a real app, you would open a modal or form here
-                    const mockTask = {
-                      time: "12:00",
-                      title: "Nhiệm vụ mới",
-                      duration: "12:00pm - 13:00pm",
-                      color: "purple",
-                    };
-                    addTask(date, mockTask);
-                  }}>
-                  <span className="mr-1">+</span> Add Task
-                </button>
-              </div>
-
-              {/* Days of the week */}
-              <div className="flex justify-between px-3 py-3 bg-[#e4d6fd] rounded-b-xl">
-                {daysInWeek.map((d, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-8 flex flex-col font-bold items-center justify-center rounded-md text-xs
-                      ${
-                        index === i
-                          ? isToday(d)
-                            ? "bg-[#1411d1] py-5 px-2 text-white"
-                            : "bg-white py-5 px-2 text-gray-800 font-medium"
-                          : "text-gray-500 py-5 px-2 font-thin"
-                      }`}>
-                    <span className="mb-0.5">{d ? d.getDate() : ""}</span>
-                    <span>{formatDayName(d)}</span>
+            <div key={index} className="w-90 bg-white rounded-lg shadow-md">
+              {/* Day header */}
+              <div
+                className={`p-4 rounded-t-lg ${
+                  isToday(date)
+                    ? "bg-indigo-600 text-white"
+                    : "bg-indigo-100 text-indigo-800"
+                }`}>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-bold text-lg">{formatDayName(date)}</h3>
+                    <p className="text-sm">
+                      {date ? `${date.getDate()} ${getMonthName(date)}` : ""}
+                    </p>
                   </div>
-                ))}
+                  <button
+                    className={`text-sm flex items-center px-3 py-1 rounded-lg ${
+                      isToday(date)
+                        ? "bg-white text-indigo-600"
+                        : "bg-indigo-600 text-white"
+                    } font-medium`}
+                    onClick={() => {
+                      const newTask = {
+                        time: "12:00",
+                        title: "Hoạt động giảm stress mới",
+                        duration: "12:00 - 13:00",
+                        color: "green",
+                        description:
+                          "Thêm hoạt động giảm stress mới vào lịch của bạn",
+                        benefits: [
+                          "Giảm căng thẳng",
+                          "Cải thiện sức khỏe tinh thần",
+                        ],
+                      };
+                      addTask(date, newTask);
+                    }}>
+                    <span className="mr-1">+</span> Thêm
+                  </button>
+                </div>
               </div>
 
-              {/* Time slots and activities with vertical scroll */}
-              <div className="h-112 overflow-y-auto">
-                {timeSlots.map((time) => {
-                  const dayActivities = getActivitiesForDay(date);
-                  const activity = dayActivities.find((a) => a.time === time);
-
-                  return (
-                    <div key={time} className="relative border-b">
-                      <div className="text-xs text-gray-500 pl-3 py-2">
-                        {time}
-                      </div>
-
-                      {/* Show activity if exists for this time slot */}
-                      {activity && (
-                        <div className="pl-3 pr-1 pb-2">
-                          <div className="flex justify-between items-start">
-                            <div className="flex">
-                              <div
-                                className={`w-1 bg-purple-600 mr-2 rounded-full`}></div>
-                              <div>
-                                <p className="font-medium">{activity.title}</p>
-                                <p className="text-xs text-gray-500">
-                                  {activity.duration}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col justify-center items-center space-x-1">
-                              <div
-                                className={`w-5 h-5 rounded border border-gray-300 cursor-pointer flex items-center justify-center ${
-                                  taskStatus[activity.id]
-                                    ? "bg-purple-600"
-                                    : "bg-white"
-                                }`}
-                                onClick={() => toggleTaskStatus(activity.id)}>
-                                {taskStatus[activity.id] && (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-white"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                )}
-                              </div>
-                              <button className="text-lg font-bold">...</button>
-                            </div>
+              {/* Tasks list with vertical scroll */}
+              <div className="h-120 overflow-y-auto p-2">
+                {getActivitiesForDay(date)
+                  .sort((a, b) => {
+                    // Sort by time (HH:MM format)
+                    const timeA = a.time.split(":").map(Number);
+                    const timeB = b.time.split(":").map(Number);
+                    return (
+                      timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1])
+                    );
+                  })
+                  .map((activity) => (
+                    <div
+                      key={activity.id}
+                      className={`mb-3 p-3 rounded-lg border-l-4 ${
+                        taskStatus[activity.id]
+                          ? "bg-gray-100 opacity-70"
+                          : "bg-white"
+                      }`}
+                      style={{
+                        borderLeftColor:
+                          activity.color === "purple"
+                            ? "#9333ea"
+                            : activity.color === "blue"
+                            ? "#3b82f6"
+                            : activity.color === "green"
+                            ? "#22c55e"
+                            : activity.color === "orange"
+                            ? "#f97316"
+                            : activity.color === "teal"
+                            ? "#14b8a6"
+                            : activity.color === "pink"
+                            ? "#ec4899"
+                            : activity.color === "indigo"
+                            ? "#6366f1"
+                            : "#9333ea",
+                      }}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center">
+                            <span className="text-sm font-medium text-gray-500">
+                              {activity.time}
+                            </span>
+                            <span className="mx-2">•</span>
+                            <p
+                              className={`font-medium ${
+                                taskStatus[activity.id]
+                                  ? "line-through text-gray-500"
+                                  : "text-gray-800"
+                              }`}>
+                              {activity.title}
+                            </p>
                           </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {activity.duration}
+                          </p>
                         </div>
-                      )}
+                        <div className="flex space-x-2 items-center">
+                          <div
+                            className={`w-5 h-5 rounded-md border cursor-pointer flex items-center justify-center ${
+                              taskStatus[activity.id]
+                                ? "bg-indigo-600 border-indigo-600"
+                                : "bg-white border-gray-300"
+                            }`}
+                            onClick={() => toggleTaskStatus(activity.id)}>
+                            {taskStatus[activity.id] && (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3 text-white"
+                                viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                          <button
+                            className="text-lg font-bold text-gray-500 hover:text-indigo-600 focus:outline-none"
+                            onClick={() => showTaskDetails(activity)}>
+                            ...
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Task detail modal */}
+      {showTaskDetail && selectedTask && (
+        <div className="fixed inset-0 bg-[#00000048] bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-bold">{selectedTask.title}</h2>
+              <button
+                onClick={closeTaskDetail}
+                className="text-gray-500 hover:text-gray-700">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 mb-2">
+                {selectedTask.duration}
+              </p>
+              <p className="text-gray-700 mb-4">{selectedTask.description}</p>
+
+              <h3 className="font-bold text-gray-800 mb-2">Lợi ích:</h3>
+              <ul className="list-disc pl-5">
+                {selectedTask.benefits.map((benefit, index) => (
+                  <li key={index} className="text-gray-700">
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={closeTaskDetail}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

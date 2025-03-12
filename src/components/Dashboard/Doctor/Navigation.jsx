@@ -27,9 +27,13 @@ const Navigation = () => {
             <NavItem
               icon={<LayoutDashboard size={20} />}
               text="Dashboard"
-              to="StatictisPatient"
+              to="StatictisDoctor"
             />
-            <NavItem icon={<Map size={20} />} text="Roadmap" to="Roadmap" />
+            <NavItem
+              icon={<Map size={20} />}
+              text="Roadmap"
+              to="RoadmapCreate"
+            />
             <NavItem
               icon={<FileText size={20} />}
               text="History"
@@ -37,8 +41,8 @@ const Navigation = () => {
             />
             <NavItem
               icon={<User size={20} />}
-              text="ProfilePatient"
-              to="ProfilePatient"
+              text="Profile Doctor"
+              to="ProfileDoctor"
             />
           </nav>
         </div>

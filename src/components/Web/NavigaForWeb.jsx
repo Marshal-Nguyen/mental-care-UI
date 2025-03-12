@@ -1,66 +1,96 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
 import styles from "../../styles/Web/Navigation.module.css";
+
 const NavigaForWeb = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const location = useLocation(); // Lấy đường dẫn hiện tại
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <nav className="flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
+    <nav className="ml-15 flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
       {/* Left Navigation */}
       <div className="flex space-x-10 text-gray-600 font-medium items-center">
-        <div />
-        <Link to="learnAboutEmo" className="hover:text-purple-500">
+        <Link
+          to="learnAboutEmo"
+          className={`hover:text-purple-500 ${
+            location.pathname === "/HomeUser/learnAboutEmo"
+              ? "text-purple-500"
+              : ""
+          }`}>
           Learn about EmoEase
         </Link>
-        <Link to="counselor" className="hover:text-purple-500">
-          Counselor
+        <Link
+          to="counselor"
+          className={`hover:text-purple-500 ${
+            location.pathname === "/HomeUser/counselor" ? "text-purple-500" : ""
+          }`}>
+          Therapist
         </Link>
-
       </div>
 
-      {/* Khoảng trống giúp căn giữa logo */}
+      {/* Logo */}
       <div className="flex-grow flex justify-center mx-10">
         <div
-          className={`${styles.knewave} text-[#9553f2] font-light text-5xl tracking-widest`}>
+          className={`${styles.knewave} text-[#4a2580] font-light text-5xl tracking-widest`}>
           EMOEASE
         </div>
       </div>
 
       {/* Right Navigation */}
       <div className="flex space-x-15 text-gray-600 font-medium items-center">
-        {/* <Link to="service" className="hover:text-purple-500">
-          Services
-        </Link> */} <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="hover:text-purple-500"
-          >
-            Services
+            className={`block hover:bg-gray-100 ${
+              location.pathname === "/HomeUser/workshop"
+                ? "text-purple-500"
+                : ""
+            }`}
+            aria-expanded={isOpen}>
+            Extras
           </button>
 
           {isOpen && (
-            <div className="absolute left-0 mt-2 w-40 bg-white shadow-md rounded-md border">
+            <div className="absolute left-0 mt-2 w-40 bg-white shadow-md rounded-md border z-999">
               <Link
+                onClick={() => setIsOpen(false)}
                 to="workshop"
-                className="block px-4 py-2 hover:bg-gray-100"
-              >
+                className={`block px-4 py-2 hover:bg-gray-100 ${
+                  location.pathname === "/workshop" ? "text-purple-500" : ""
+                }`}>
                 Workshop
               </Link>
-              <Link to="shop" className="block px-4 py-2 hover:bg-gray-100">
-                Shop
+              <Link
+                onClick={() => setIsOpen(false)}
+                to="shop"
+                className={`block px-4 py-2 hover:bg-gray-100 hover:rounded-md ${
+                  location.pathname === "/shop" ? "text-purple-500" : ""
+                }`}>
+                Store
               </Link>
             </div>
           )}
         </div>
-        <Link to="blog" className="hover:text-purple-500">
+        <Link
+          to="blog"
+          className={`hover:text-purple-500 ${
+            location.pathname === "/blog" ? "text-purple-500" : ""
+          }`}>
           Blog
         </Link>
-        {/* <Link to="workshop" className="hover:text-purple-500">
-          Workshop
-        </Link>
-        <Link to="shop" className="hover:text-purple-500">
-          Shop
-        </Link> */}
         <Link
           to="testEmotion"
           className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
