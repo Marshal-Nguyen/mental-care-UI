@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
+import { database } from "../../util/firebase/firebase"; // Đảm bảo đường dẫn đúng
+import { ref, onValue, push } from "firebase/database";
 
 const PremiumChatPopup = () => {
+  // State từ Firebase Chat
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+
+  // State từ Premium Chat
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "👋 Xin chào! Tôi có thể giúp gì cho bạn hôm nay. Vui lòng mô tả yêu cầu của bạn chi tiết.",
-      sender: "shop",
-      timestamp: new Date(),
-    },
-  ]);
-  const [newMessage, setNewMessage] = useState("");
   const [isMobileView, setIsMobileView] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -25,6 +23,38 @@ const PremiumChatPopup = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Kết nối và lắng nghe tin nhắn từ Firebase
+  useEffect(() => {
+    const messagesRef = ref(database, "messages");
+    onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Chuyển đổi dữ liệu Firebase sang định dạng cần thiết
+        const formattedMessages = Object.entries(data).map(([key, value]) => ({
+          id: key,
+          text: value.text,
+          sender: value.sender || "user", // Mặc định là 'user' nếu không có
+          timestamp: new Date(value.timestamp),
+        }));
+        setMessages(formattedMessages);
+      }
+    });
+
+    // Thêm tin nhắn chào mừng nếu không có tin nhắn nào
+    const checkAndAddWelcomeMessage = async () => {
+      const snapshot = await ref(database, "messages").get();
+      if (!snapshot.exists()) {
+        push(ref(database, "messages"), {
+          text: "👋 Xin chào! Tôi có thể giúp gì cho bạn hôm nay. Vui lòng mô tả yêu cầu của bạn chi tiết.",
+          sender: "shop",
+          timestamp: Date.now(),
+        });
+      }
+    };
+
+    checkAndAddWelcomeMessage();
+  }, []);
+
   // Cuộn xuống tin nhắn mới nhất
   useEffect(() => {
     if (isOpen) {
@@ -36,27 +66,24 @@ const PremiumChatPopup = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() !== "") {
-      const userMessage = {
-        id: messages.length + 1,
-        text: newMessage,
+  // Gửi tin nhắn đến Firebase
+  const sendMessage = () => {
+    if (input.trim() !== "") {
+      // Thêm tin nhắn vào Firebase
+      push(ref(database, "messages"), {
+        text: input,
         sender: "user",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, userMessage]);
-      setNewMessage("");
+        timestamp: Date.now(),
+      });
+      setInput("");
 
       // Giả lập tin nhắn từ nhân viên cửa hàng sau 1 giây
       setTimeout(() => {
-        const shopResponse = {
-          id: messages.length + 2,
+        push(ref(database, "messages"), {
           text: "Cảm ơn bạn đã liên hệ. Nhân viên của chúng tôi sẽ phản hồi sớm nhất!",
           sender: "shop",
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, shopResponse]);
+          timestamp: Date.now(),
+        });
       }, 1000);
     }
   };
@@ -124,32 +151,6 @@ const PremiumChatPopup = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-500 hover:text-gray-700 focus:outline-none">
@@ -227,9 +228,9 @@ const PremiumChatPopup = () => {
             <div className="relative flex-1">
               <input
                 type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Nhập tin nhắn..."
                 className="w-full bg-gray-100 rounded-full px-4 py-2 pr-10 focus:outline-none text-sm"
               />
@@ -250,7 +251,7 @@ const PremiumChatPopup = () => {
               </div>
             </div>
             <button
-              onClick={handleSendMessage}
+              onClick={sendMessage}
               className="ml-2 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-800 focus:outline-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -260,59 +261,6 @@ const PremiumChatPopup = () => {
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
               </svg>
             </button>
-          </div>
-
-          {/* Footer with Include Context */}
-          <div className="px-4 py-2 border-t border-gray-100 flex justify-between items-center bg-gray-50">
-            <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-2">
-                Include Context
-              </span>
-              <div className="relative inline-block w-8 h-4 rounded-full bg-gray-200">
-                <div className="absolute left-0 top-0 w-4 h-4 rounded-full bg-white shadow transition-transform transform"></div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
         </div>
       )}

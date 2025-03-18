@@ -15,6 +15,7 @@ import {
   Heart,
   Users,
   Star,
+  BadgeInfo,
 } from "lucide-react";
 
 export default function Booking() {
@@ -23,6 +24,7 @@ export default function Booking() {
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDateListOpen, setIsDateListOpen] = useState(true);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
 
   const today = new Date();
@@ -34,57 +36,9 @@ export default function Booking() {
   const [selectedDate, setSelectedDate] = useState(today);
   const [availableSlots, setAvailableSlots] = useState([]);
 
-  // Dữ liệu mẫu cho bác sĩ
-  const sampleDoctor = {
-    fullName: "TS. Nguyễn Minh Tâm",
-    image:
-      "https://cdn-healthcare.hellohealthgroup.com/2023/09/1695616991_65110fdf078417.49245494.jpg",
-    rating: 4.9,
-    specialties: [
-      { name: "Tâm lý học lâm sàng" },
-      { name: "Trị liệu gia đình" },
-    ],
-    contactInfo: {
-      phoneNumber: "090 123 4567",
-      email: "minhtam@psychology.vn",
-      address: "Tòa nhà Sunrise, 23 Lê Lợi, Quận 1, TP. Hồ Chí Minh",
-    },
-    gender: "Nam",
-    qualifications:
-      "Tiến sĩ Tâm lý học (ĐH Stanford), Chứng chỉ Trị liệu Nhận thức Hành vi (CBT), Chứng chỉ Trị liệu Gia đình Hệ thống",
-    yearsOfExperience: 12,
-    bio: "TS. Nguyễn Minh Tâm có hơn 12 năm kinh nghiệm trong lĩnh vực tâm lý học lâm sàng và tư vấn gia đình. Ông từng làm việc tại Trung tâm Sức khỏe Tâm thần Harvard và hiện là giảng viên tại Đại học Y Dược TP.HCM. Ông chuyên điều trị các vấn đề lo âu, trầm cảm, sang chấn tâm lý và xung đột gia đình. Với phương pháp tiếp cận dựa trên bằng chứng và cá nhân hóa, ông đã giúp hàng nghìn cá nhân và gia đình vượt qua khủng hoảng tâm lý.",
-    patientCount: 1250,
-    reviewCount: 342,
-    reviewsHighlights: [
-      {
-        name: "Nguyễn Văn A",
-        rating: 5,
-        comment: "Bác sĩ rất tận tâm và chuyên nghiệp",
-      },
-      {
-        name: "Trần Thị B",
-        rating: 5,
-        comment: "Tôi đã cảm thấy tốt hơn rất nhiều sau liệu trình",
-      },
-    ],
-  };
-
-  // Dữ liệu mẫu cho time slots
-  const sampleTimeSlots = [
-    { startTime: "08:00", endTime: "09:00", status: "Available" },
-    { startTime: "09:00", endTime: "10:00", status: "Available" },
-    { startTime: "10:00", endTime: "11:00", status: "Booked" },
-    { startTime: "13:00", endTime: "14:00", status: "Available" },
-    { startTime: "14:00", endTime: "15:00", status: "Available" },
-    { startTime: "15:00", endTime: "16:00", status: "Booked" },
-    { startTime: "16:00", endTime: "17:00", status: "Available" },
-    { startTime: "17:00", endTime: "18:00", status: "Available" },
-  ];
-
   const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
-  // Hàm lấy số ngày trong tháng
+  // Hàm lấy số ngày trong tháng (cải tiến)
   const getDaysInMonth = (year, month) => {
     const firstDay = new Date(year, month, 1).getDay();
     const totalDays = new Date(year, month + 1, 0).getDate();
@@ -139,16 +93,10 @@ export default function Booking() {
     const fetchSchedule = async () => {
       try {
         const formattedDate = selectedDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-        // Trong môi trường thực tế, dùng API call
-        // const response = await axios.get(
-        //   `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
-        // );
-        // setAvailableSlots(response.data.timeSlots || []);
-
-        // Đối với demo, sử dụng dữ liệu mẫu
-        setTimeout(() => {
-          setAvailableSlots(sampleTimeSlots);
-        }, 300);
+        const response = await axios.get(
+          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
+        );
+        setAvailableSlots(response.data.timeSlots || []);
       } catch (error) {
         console.error("Lỗi lấy lịch trình:", error);
         setAvailableSlots([]);
@@ -162,17 +110,11 @@ export default function Booking() {
   useEffect(() => {
     const fetchDoctorInfo = async () => {
       try {
-        // Trong môi trường thực tế, dùng API call
-        // const response = await axios.get(
-        //   `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${doctorId}`
-        // );
-        // setDoctor(response.data.doctorProfileDto);
-
-        // Đối với demo, sử dụng dữ liệu mẫu
-        setTimeout(() => {
-          setDoctor(sampleDoctor);
-          setLoading(false);
-        }, 800);
+        const response = await axios.get(
+          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${doctorId}`
+        );
+        setDoctor(response.data.doctorProfileDto);
+        setLoading(false);
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu bác sĩ:", error);
         setError("Không thể tải thông tin bác sĩ. Vui lòng thử lại sau.");
@@ -221,14 +163,14 @@ export default function Booking() {
     );
 
   return (
-    <div className="p-6 bg-gradient-to-b from-purple-50 to-white min-h-screen flex flex-col items-center">
+    <div className="p-6 bg-gradient-to-b from-purple-50 to-white min-h-screen w-full flex flex-col items-center">
       <div className="max-w-6xl w-full bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
         {/* Header với nút Back */}
         <button
           onClick={() => navigate("/HomeUser/counselor")}
           className="flex items-center text-purple-700 hover:text-purple-900 mb-6 transition-colors duration-200">
           <ArrowLeft size={20} className="mr-2" />
-          <span className="font-medium">Quay lại danh sách bác sĩ</span>
+          <span className="font-medium">Back to list of doctors</span>
         </button>
 
         {/* Thông tin bác sĩ */}
@@ -237,11 +179,14 @@ export default function Booking() {
             <div className="flex items-center gap-6">
               <div className="relative">
                 <img
-                  src={doctor.image}
+                  src={
+                    doctor.image ||
+                    "https://cdn-healthcare.hellohealthgroup.com/2023/09/1695616991_65110fdf078417.49245494.jpg"
+                  }
                   alt={doctor.fullName}
                   className="w-24 h-24 rounded-full object-cover border-2 border-purple-200 shadow-md transition-transform duration-300 hover:scale-105"
                 />
-                <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-800 px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-md">
+                <div className="absolute bottom-0 right-0 bg-[#fa8a95] text-gray-800 px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-md">
                   <span className="mr-1">⭐</span>
                   {doctor.rating}
                 </div>
@@ -273,18 +218,16 @@ export default function Booking() {
                 <div className="flex items-center justify-center bg-purple-100 w-12 h-12 rounded-full mx-auto mb-2">
                   <Users size={20} className="text-purple-600" />
                 </div>
-                <p className="font-bold text-gray-800">
-                  {doctor.patientCount}+
-                </p>
-                <p className="text-xs text-gray-500">Bệnh nhân</p>
+                <p className="font-bold text-gray-800">132+</p>
+                <p className="text-xs text-gray-500">Patients</p>
               </div>
 
               <div className="text-center">
                 <div className="flex items-center justify-center bg-purple-100 w-12 h-12 rounded-full mx-auto mb-2">
                   <Star size={20} className="text-purple-600" />
                 </div>
-                <p className="font-bold text-gray-800">{doctor.reviewCount}</p>
-                <p className="text-xs text-gray-500">Đánh giá</p>
+                <p className="font-bold text-gray-800">324</p>
+                <p className="text-xs text-gray-500">Evaluate</p>
               </div>
 
               <div className="text-center">
@@ -294,7 +237,7 @@ export default function Booking() {
                 <p className="font-bold text-gray-800">
                   {doctor.yearsOfExperience}
                 </p>
-                <p className="text-xs text-gray-500">Năm KN</p>
+                <p className="text-xs text-gray-500">YOE</p>
               </div>
             </div>
           </div>
@@ -306,106 +249,118 @@ export default function Booking() {
           <div className="md:w-3/5 bg-gradient-to-br from-purple-50 to-white p-6 rounded-2xl shadow-md border border-purple-100">
             <h3 className="text-xl font-semibold text-purple-800 mb-6 pb-2 border-b border-purple-100 flex items-center">
               <Info size={20} className="mr-2" />
-              Thông tin chi tiết
+              Details
             </h3>
 
             <div className="space-y-4">
-              <div className="flex items-start">
+              <div className="flex items-start ml-10">
                 <MapPin
                   className="text-purple-600 mt-1 mr-3 flex-shrink-0"
                   size={18}
                 />
                 <div>
-                  <p className="font-medium text-gray-700">Địa chỉ làm việc</p>
-                  <p className="text-gray-600">{doctor.contactInfo?.address}</p>
+                  <p className="font-medium text-gray-700">Work Address</p>
+                  <p className="text-gray-600">
+                    {doctor.contactInfo?.address || "Chưa cập nhật địa chỉ"}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-start">
+              <div className="flex items-start ml-10">
                 <Award
                   className="text-purple-600 mt-1 mr-3 flex-shrink-0"
                   size={18}
                 />
                 <div>
                   <p className="font-medium text-gray-700">
-                    Bằng cấp & Chứng chỉ
+                    Degrees & Certificates
                   </p>
-                  <p className="text-gray-600">{doctor.qualifications}</p>
+                  <p className="text-gray-600">
+                    {doctor.qualifications || "Chưa cập nhật thông tin"}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-start">
+              <div className="flex items-start ml-10">
                 <Briefcase
                   className="text-purple-600 mt-1 mr-3 flex-shrink-0"
                   size={18}
                 />
                 <div>
                   <p className="font-medium text-gray-700">
-                    Kinh nghiệm làm việc
+                    Years of Experience
                   </p>
                   <p className="text-gray-600">
-                    {doctor.yearsOfExperience} năm kinh nghiệm
+                    {doctor.yearsOfExperience
+                      ? `${doctor.yearsOfExperience} năm kinh nghiệm`
+                      : "Chưa cập nhật thông tin"}
                   </p>
                 </div>
               </div>
 
               <div className="mt-6 pt-4 border-t border-purple-100">
-                <p className="font-medium text-gray-700 mb-2">Giới thiệu</p>
-                <p className="text-gray-600 leading-relaxed">{doctor.bio}</p>
-              </div>
-
-              {/* Đánh giá nổi bật */}
-              <div className="mt-6 pt-4 border-t border-purple-100">
-                <p className="font-medium text-gray-700 mb-4">
-                  Đánh giá nổi bật
+                <p className="text-xl font-semibold text-purple-800 mb-6 pb-2 border-b border-purple-100 flex items-center">
+                  <BadgeInfo size={20} className="mr-2" /> Introduce
                 </p>
+                <div className="ml-10">
+                  <p className="text-gray-600 leading-relaxed italic">
+                    <span className="ml-8 font-medium">{doctor.fullName}</span>{" "}
+                    has over{" "}
+                    <span className="font-medium">
+                      {doctor.yearsOfExperience}
+                    </span>{" "}
+                    years of experience in{" "}
+                    {doctor.specialties?.map((spec) => spec.name).join(", ")}.
+                  </p>
 
-                <div className="space-y-4">
-                  {doctor.reviewsHighlights?.map((review, index) => (
-                    <div
-                      key={index}
-                      className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="font-medium">{review.name}</p>
-                        <div className="flex items-center">
-                          {Array(review.rating)
-                            .fill()
-                            .map((_, i) => (
-                              <Star
-                                key={i}
-                                size={14}
-                                className="text-yellow-400 fill-current"
-                              />
-                            ))}
-                        </div>
-                      </div>
-                      <p className="text-gray-600 text-sm">{review.comment}</p>
-                    </div>
-                  ))}
+                  <p className="text-gray-600 leading-relaxed mt-2 italic">
+                    <span className="ml-8"></span> He is currently working at{" "}
+                    <span className="font-medium">
+                      {doctor.contactInfo?.address || "Address not updated"}
+                    </span>{" "}
+                    and serves as a lecturer at the University of Medicine and
+                    Pharmacy in Ho Chi Minh City.
+                  </p>
+
+                  <p className="text-gray-600 leading-relaxed mt-2 italic">
+                    <span className="ml-8"></span> Specializing in the treatment
+                    of anxiety, depression, psychological trauma, and family
+                    conflicts, {doctor.fullName} is dedicated to providing
+                    evidence-based and personalized care.
+                  </p>
+
+                  <p className="text-gray-600 leading-relaxed mt-2 italic">
+                    <span className="ml-8"></span> Over the years, he has helped
+                    thousands of individuals and families overcome psychological
+                    challenges.
+                  </p>
+
+                  <p className="text-gray-600 leading-relaxed mt-2 italic">
+                    <span className="ml-8"></span>
+                    {doctor.bio || "Biography not updated."}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Phần đặt lịch - FIXED HEIGHT để tránh vỡ layout */}
+          {/* Phần đặt lịch */}
           <div className="md:w-2/5 flex flex-col bg-white rounded-2xl shadow-lg border border-purple-200 overflow-hidden h-full max-h-screen sticky top-6">
             {/* Header lịch */}
             <div className="bg-gradient-to-r from-purple-600 to-purple-500 text-white p-4">
               <h3 className="text-xl font-bold flex items-center">
                 <CalendarIcon size={20} className="mr-2" />
-                Đặt lịch tư vấn
+                Schedule a consultation
               </h3>
               <p className="text-purple-100 text-sm mt-1">
-                Chọn ngày và giờ phù hợp với bạn
+                Choose a date and time that suits you
               </p>
             </div>
 
-            {/* Calendar Container với fixed height và scroll */}
-            <div
-              className="p-4 bg-white overflow-y-auto flex-grow"
-              style={{ maxHeight: "calc(100vh - 250px)" }}>
+            {/* Calendar */}
+            <div className="p-4 bg-white overflow-y-auto">
               {/* Chọn tháng */}
-              <div className="flex justify-between items-center mb-4 sticky top-0 bg-white z-10 pb-2">
+              <div className="flex justify-between items-center mb-4">
                 <button
                   className="p-2 rounded-full bg-purple-100 hover:bg-purple-200 transition-colors duration-200"
                   onClick={() => changeMonth(-1)}>
@@ -487,9 +442,9 @@ export default function Booking() {
 
               {/* Chọn thời gian */}
               <div className="mt-4">
-                <h4 className="font-medium text-purple-800 flex items-center mb-3 sticky top-16 bg-white z-10 pb-2">
+                <h4 className="font-medium text-purple-800 flex items-center mb-3">
                   <Clock size={18} className="mr-2" />
-                  Chọn thời gian ({selectedDate.toLocaleDateString()})
+                  Choose a time
                 </h4>
 
                 {availableSlots.length > 0 ? (
@@ -509,28 +464,30 @@ export default function Booking() {
                           slot.status === "Available" &&
                           handleTimeSlotClick(slot)
                         }>
-                        {`${slot.startTime} - ${slot.endTime}`}
+                        {`${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(
+                          0,
+                          5
+                        )}`}
                       </button>
                     ))}
                   </div>
                 ) : (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                     <p className="text-yellow-700">
-                      Không có lịch trống cho ngày này
+                      There are no available schedules for this date.
                     </p>
                     <p className="text-sm text-yellow-600 mt-1">
-                      Vui lòng chọn ngày khác
+                      Please select another date
                     </p>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Footer cho phần đặt lịch - sticky */}
-            <div className="bg-white border-t border-gray-200 p-4 sticky bottom-0 shadow-inner">
               {/* Giá tiền */}
-              <div className="mb-4 bg-purple-50 rounded-lg p-4 flex justify-between items-center">
-                <span className="text-gray-700 font-medium">Phí tư vấn:</span>
+              <div className="mt-6 bg-purple-50 rounded-lg p-4 flex justify-between items-center">
+                <span className="text-gray-700 font-medium">
+                  Consulting fee:
+                </span>
                 <span className="text-xl font-bold text-purple-800">
                   200.000 đ
                 </span>
@@ -538,19 +495,52 @@ export default function Booking() {
 
               {/* Nút đặt lịch */}
               <button
-                className={`w-full py-4 rounded-xl font-bold text-white shadow-md transition-all duration-300 
+                className={`w-full py-4 rounded-xl mt-6 font-bold text-white shadow-md transition-all duration-300 
                   ${selectedTimeSlot
                     ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
                     : "bg-gray-400"
                   }`}
                 onClick={handleBookingContinue}
                 disabled={!selectedTimeSlot}>
-                {selectedTimeSlot
-                  ? "Tiếp tục đặt lịch"
-                  : "Vui lòng chọn thời gian"}
+                {selectedTimeSlot ? "Continue booking" : "Please select a time"}
               </button>
             </div>
           </div>
+        </div>
+      </div>
+      <div className="max-w-6xl mt-5 w-full bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+        <p className="font-medium text-gray-700 mb-4">Featured Reviews</p>
+
+        <div className="space-y-4">
+          {/* {doctor.reviewsHighlights?.map((review, index) => ( */}
+          <div
+            // key={index}
+            className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-2">
+              <p className="font-medium">Nguyen Van Giang</p>
+              {/* <p className="font-medium">{review.name}</p> */}
+
+              <div className="flex items-center">
+                {/* {Array(review.rating)
+                            .fill()
+                            .map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className="text-yellow-400 fill-current"
+                              />
+                            ))} */}
+                <Star size={14} className="text-yellow-400 fill-current" />
+                <Star size={14} className="text-yellow-400 fill-current" />
+                <Star size={14} className="text-yellow-400 fill-current" />
+                <Star size={14} className="text-yellow-400 fill-current" />
+                <Star size={14} className="text-yellow-400 fill-current" />
+              </div>
+            </div>
+            <p className="text-gray-600 text-sm">Hay</p>
+            {/* <p className="text-gray-600 text-sm">{review.comment}</p> */}
+          </div>
+          {/* ))} */}
         </div>
       </div>
     </div>

@@ -79,12 +79,12 @@
 .nameQuestion {
   width: 100%;
   color: white;
-  font-size: 100px;
   font-family: cursive;
   text-align: center;
 }
 .shareWith {
-  width: 100%;
+  margin-top: 20px;
+  width: 130%;
   color: white;
   font-size: 70px;
   font-family: cursive;

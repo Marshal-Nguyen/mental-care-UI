@@ -10,7 +10,7 @@ const DownloadSection = () => {
         Find comfort, healing, and hope through every conversation.
       </p>
       <div className="flex items-center gap-7 mt-3">
-        <button class="relative border rounded-xl bg-[#6A4C93] max-w-48 h-13 px-3 font-mono font-thin text-white transition-colors duration-10000 ease-linear before:absolute before:right-20 before:top-6 before:-z-[1] before:h-3/4 before:w-2/3 before:origin-center before:-translate-y-1/2 before:translate-x-1/2 before:animate-ping before:rounded-xl before:bg-[#8566b1] hover:bg-[#8566b1] hover:before:bg-[#8566b1]">
+        <button class="relative border rounded-xl bg-[#492580] max-w-48 h-13 px-3 font-mono font-thin text-white transition-colors duration-10000 ease-linear before:absolute before:right-20 before:top-6 before:-z-[1] before:h-3/4 before:w-2/3 before:origin-center before:-translate-y-1/2 before:translate-x-1/2 before:animate-ping before:rounded-xl before:bg-[#8566b1] hover:bg-[#8566b1] hover:before:bg-[#8566b1]">
           Talk to our team
         </button>
         <button class="cursor-pointer">

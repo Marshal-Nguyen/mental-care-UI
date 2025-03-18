@@ -80,7 +80,7 @@ const DoctorList = () => {
     if (!specialties || specialties.length === 0) {
       return (
         <div className="h-8 flex items-center justify-center">
-          <span className="text-xs text-gray-500">Không có chuyên khoa</span>
+          <span className="text-xs text-gray-500">No specialty</span>
         </div>
       );
     }
@@ -183,7 +183,7 @@ const DoctorList = () => {
             onClick={() => navigate(`/HomeUser/booking/${doctor.id}`)}
             className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition duration-300 flex items-center justify-center">
             <Calendar className="w-4 h-4 mr-2" />
-            Đặt lịch ngay
+            Book now
           </button>
         </div>
       </div>
@@ -250,7 +250,7 @@ const DoctorList = () => {
           <button
             onClick={() => navigate(`/HomeUser/booking/${doctor.id}`)}
             className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300 whitespace-nowrap">
-            Đặt lịch
+            Book now
           </button>
         </div>
       </div>
@@ -328,10 +328,10 @@ const DoctorList = () => {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Đội ngũ bác sĩ chuyên nghiệp
+            Professional team of doctors
           </h1>
           <p className="text-gray-600">
-            Lựa chọn bác sĩ phù hợp với nhu cầu của bạn
+            Choose the doctor that suits your needs
           </p>
         </div>
 
@@ -346,7 +346,7 @@ const DoctorList = () => {
                   }`}>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 mr-1" />
-                  Đánh giá cao nhất
+                  Top Rated
                 </div>
               </button>
 
@@ -358,7 +358,7 @@ const DoctorList = () => {
                   }`}>
                 <div className="flex items-center">
                   <Award className="w-4 h-4 mr-1" />
-                  Chuyên khoa
+                  Specialty
                 </div>
               </button>
             </div>

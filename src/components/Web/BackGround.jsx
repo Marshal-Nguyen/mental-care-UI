@@ -49,15 +49,8 @@ const BackGround = () => {
           src="/footerNew.png"
           alt=""
           animate={{ y: -scrollY * 0.1 }}
-          className="absolute top-[20%] left-0 w-full h-[120vh] scale-110 object-cover"
+          className="absolute top-[21%] left-0 w-full h-[120vh] scale-110 object-cover"
         />
-        {/* 
-        <motion.img
-          src="/footerImage.png"
-          alt=""
-          animate={{ y: -scrollY * 0.4 }}
-          className="absolute top-[100%] left-0 w-full h-[120vh]  object-cover"
-        /> */}
       </div>
 
       <IntrFPT />

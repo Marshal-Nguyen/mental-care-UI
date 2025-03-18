@@ -1,126 +1,187 @@
-import { useEffect, useState, useRef } from "react";
-import styles from "../../../styles/Web/TestEmotion.module.css";
+import { useEffect, useState, useCallback } from "react";
 import arrowDownAnimation from "../../../util/icon/arrowDown.json";
-import arler from "../../../util/icon/alertOctagon.json";
-import checkMap from "../../../util/icon/checkmark.json";
+import alertIcon from "../../../util/icon/alertOctagon.json";
 import Lottie from "lottie-react";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import Loader from "../../../components/Web/Loader";
+import { useSelector, useDispatch } from "react-redux";
+// Color mapping based on the API response values
 const colorMap = {
-  Never: "bg-green-500 border-green-700",
-  Sometimes: "bg-yellow-500 border-yellow-700",
-  Often: "bg-orange-500 border-orange-700",
-  Always: "bg-red-500 border-red-700",
+  "Did not apply to me at all": "bg-green-500 border-green-700",
+  "Applied to me to some degree": "bg-yellow-500 border-yellow-700",
+  "Applied to me to a considerable degree": "bg-orange-500 border-orange-700",
+  "Applied to me very much": "bg-red-500 border-red-700",
+};
+
+// Text color mapping for better contrast
+const textColorMap = {
+  "Did not apply to me at all": "text-white",
+  "Applied to me to some degree": "text-gray-800",
+  "Applied to me to a considerable degree": "text-white",
+  "Applied to me very much": "text-white",
+};
+
+// Value mapping for scoring
+const valueMap = {
+  "Did not apply to me at all": 0,
+  "Applied to me to some degree": 1,
+  "Applied to me to a considerable degree": 2,
+  "Applied to me very much": 3,
 };
 
 const TestEmotion = () => {
-  const [questions, setQuestions] = useState([]);
+  const [questionList, setQuestionList] = useState([]);
+  const [currentQuestionData, setCurrentQuestionData] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [optionIdsMap, setOptionIdsMap] = useState({});
+  const [questionIdToIndexMap, setQuestionIdToIndexMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [questionLoading, setQuestionLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeQuestion, setActiveQuestion] = useState(0);
-  const questionContainerRef = useRef(null);
   const [submitted, setSubmitted] = useState(false);
+  const [recommend, setRecommend] = useState(null);
   const [scores, setScores] = useState({
     depression: 0,
     anxiety: 0,
     stress: 0,
   });
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const patientId = useSelector((state) => state.auth.profileId);
+  const testId = "8fc88dbb-daee-4b17-9eca-de6cfe886097";
 
+  const API_BASE =
+    "https://psychologysupporttest-cmekh5gahsd2c9h7.eastasia-01.azurewebsites.net";
+
+  // Fetch initial question list
   useEffect(() => {
-    fetch("https://665986e6de346625136ccb12.mockapi.io/list_item/api/Item")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
+    async function fetchQuestionList() {
+      try {
+        setLoading(true);
+        const questionRes = await fetch(
+          `${API_BASE}/test-questions/${testId}?pageSize=21`
+        );
+
+        if (!questionRes.ok) {
+          throw new Error("Failed to fetch questions");
         }
-        return response.json();
-      })
-      .then((data) => {
-        setQuestions(data);
+
+        const questionData = await questionRes.json();
+        const questionIds = questionData.testQuestions.data.map((q) => ({
+          id: q.id,
+          content: q.content,
+        }));
+
+        const idToIndexMap = {};
+        questionIds.forEach((q, index) => {
+          idToIndexMap[q.id] = index;
+        });
+
+        setQuestionIdToIndexMap(idToIndexMap);
+        setQuestionList(questionIds);
+        setTotalQuestions(questionIds.length);
         setLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
+        console.error("Error fetching question list:", error);
         setError(error.message);
         setLoading(false);
-      });
+      }
+    }
+
+    fetchQuestionList();
   }, []);
 
-  const handleOptionChange = (questionIndex, option) => {
-    setAnswers((prevAnswers) => ({ ...prevAnswers, [questionIndex]: option }));
+  // Fetch current question with options
+  const fetchCurrentQuestion = useCallback(
+    async (index) => {
+      if (!questionList[index]) return;
 
-    // Set the next question as active
-    if (questionIndex + 1 < questions.length) {
-      setActiveQuestion(questionIndex + 1);
+      try {
+        setQuestionLoading(true);
+        const questionId = questionList[index].id;
+        const questionContent = questionList[index].content;
 
-      // Scroll to the next question with a slight delay for better UX
+        const optionsRes = await fetch(
+          `${API_BASE}/question-options/${questionId}`
+        );
+
+        if (!optionsRes.ok) {
+          throw new Error("Failed to fetch options for question");
+        }
+
+        const optionsData = await optionsRes.json();
+        const options = optionsData.questionOptions.data;
+
+        const questionWithOptions = {
+          id: questionId,
+          question: questionContent,
+          options: options.map((opt) => opt.content),
+        };
+
+        const optionIdMapping = {};
+        options.forEach((opt) => {
+          optionIdMapping[opt.content] = opt.id;
+        });
+
+        setOptionIdsMap((prev) => ({
+          ...prev,
+          [questionId]: optionIdMapping,
+        }));
+
+        setCurrentQuestionData(questionWithOptions);
+        setQuestionLoading(false);
+      } catch (error) {
+        console.error("Error fetching question:", error);
+        setError(error.message);
+        setQuestionLoading(false);
+      }
+    },
+    [questionList]
+  );
+
+  // Load the first question
+  useEffect(() => {
+    if (questionList.length > 0 && currentQuestionIndex === 0) {
+      fetchCurrentQuestion(0);
+    }
+  }, [questionList, fetchCurrentQuestion]);
+
+  // Handle option selection and move to next question
+  const handleOptionChange = useCallback(
+    (option) => {
+      setAnswers((prev) => ({
+        ...prev,
+        [currentQuestionIndex]: option,
+      }));
+
       setTimeout(() => {
-        const questionElements = document.querySelectorAll(`.question-item`);
-        if (questionElements[questionIndex + 1]) {
-          questionElements[questionIndex + 1].scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
+        if (currentQuestionIndex + 1 < totalQuestions) {
+          const nextIndex = currentQuestionIndex + 1;
+          setCurrentQuestionIndex(nextIndex);
+          fetchCurrentQuestion(nextIndex);
         }
       }, 300);
-    }
-  };
+    },
+    [currentQuestionIndex, totalQuestions, fetchCurrentQuestion]
+  );
 
-  // Calculate scores based on answers
-  const calculateScores = (answersObj) => {
-    // Value map for scoring
-    const valueMap = {
-      Never: 0,
-      Sometimes: 1,
-      Often: 2,
-      Always: 3,
-    };
-
-    // DASS-21 categorizes questions by type
-    const depressionQuestions = [2, 4, 10, 13, 15, 17, 20]; // Example indices (adjust based on your actual questions)
-    const anxietyQuestions = [1, 3, 6, 9, 12, 14, 18]; // Example indices
-    const stressQuestions = [0, 5, 7, 8, 11, 16, 19]; // Example indices
-
-    // Calculate scores
-    let depressionScore = 0;
-    let anxietyScore = 0;
-    let stressScore = 0;
-
-    Object.entries(answersObj).forEach(([index, answer]) => {
-      const questionIndex = parseInt(index);
-      const value = valueMap[answer];
-
-      if (depressionQuestions.includes(questionIndex)) {
-        depressionScore += value;
-      } else if (anxietyQuestions.includes(questionIndex)) {
-        anxietyScore += value;
-      } else if (stressQuestions.includes(questionIndex)) {
-        stressScore += value;
-      }
-    });
-
-    // Multiply by 2 to match DASS-21 scoring
-    return {
-      depression: depressionScore * 2,
-      anxiety: anxietyScore * 2,
-      stress: stressScore * 2,
-    };
-  };
-
-  const handleSubmit = () => {
-    // Calculate the scores
-    const calculatedScores = calculateScores(answers);
-    setScores(calculatedScores);
+  // Submit answers and fetch results from API
+  const handleSubmit = useCallback(() => {
     setSubmitted(true);
 
-    console.log("Submitted answers:", answers);
-    console.log("Calculated scores:", calculatedScores);
+    const selectedOptionIds = Object.entries(answers).map(
+      ([questionIndex, selectedOption]) => {
+        const questionId = questionList[parseInt(questionIndex)].id;
+        return optionIdsMap[questionId][selectedOption];
+      }
+    );
 
     const payload = {
-      answers,
-      scores: calculatedScores,
+      patientId: patientId,
+      testId: testId,
+      selectedOptionIds: selectedOptionIds,
     };
 
-    fetch("https://665986e6de346625136ccb12.mockapi.io/list_item/api/submit", {
+    fetch(`${API_BASE}/test-results`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,361 +190,429 @@ const TestEmotion = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Submission successful:", data);
+        console.log("Submission successful:", data.testResultId);
+        return fetch(`${API_BASE}/test-result/${data.testResultId}`);
+      })
+      .then((response) => response.json())
+      .then((resultData) => {
+        setScores({
+          depression: resultData.testResult.depressionScore.value,
+          anxiety: resultData.testResult.anxietyScore.value,
+          stress: resultData.testResult.stressScore.value,
+        });
+        setRecommend(resultData.testResult.recommendation);
+        console.log("Updated scores and recommendation:", {
+          depression: resultData.testResult.depressionScore.value,
+          anxiety: resultData.testResult.anxietyScore.value,
+          stress: resultData.testResult.stressScore.value,
+          recommendation: resultData.testResult.recommendation,
+        });
       })
       .catch((error) => {
-        console.error("Error submitting answers:", error);
+        console.error("Error submitting answers or fetching result:", error);
+        setError(error.message);
       });
-  };
+  }, [answers, optionIdsMap, questionList, patientId, testId]);
 
-  const handleTestAgain = () => {
-    // Reset all states to initial values
+  // Reset test
+  const handleTestAgain = useCallback(() => {
     setAnswers({});
-    setScores({
-      depression: 0,
-      anxiety: 0,
-      stress: 0,
-    });
+    setScores({ depression: 0, anxiety: 0, stress: 0 });
     setSubmitted(false);
-    setActiveQuestion(0);
-
-    // Scroll to the top of the questions
-    setTimeout(() => {
-      const questionElements = document.querySelectorAll(`.question-item`);
-      if (questionElements[0]) {
-        questionElements[0].scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }, 300);
-  };
+    setCurrentQuestionIndex(0);
+    setRecommend(null);
+    fetchCurrentQuestion(0);
+  }, [fetchCurrentQuestion]);
 
   if (loading) return <Loader />;
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
-  return (
-    <div className="grid grid-cols-7 grid-rows-5 w-full">
-      <div className="col-span-4 row-span-5 pl-5 py-5 h-[84%]">
-        <div
-          className={`h-[550px] overflow-y-scroll`}
-          ref={questionContainerRef}>
-          <div className="flex flex-col items-center justify-center">
-            {questions.map((question, index) => (
-              <div
-                key={index}
-                className={`question-item flex flex-col items-center p-6 rounded-lg text-xl transition-all duration-300 w-full ${
-                  index === activeQuestion
-                    ? "bg-gray-100 opacity-100"
-                    : "bg-gray-50 opacity-50"
-                }`}>
-                <p className="text-2xl font-semibold mb-4 p-5 text-center italic">
-                  {index + 1}. {question.question}
-                </p>
-                <div className="flex justify-between items-center w-full px-6">
-                  {question.options.map((option, optIndex) => (
-                    <label
-                      key={optIndex}
-                      className="relative cursor-pointer flex flex-col items-center">
-                      <input
-                        type="radio"
-                        name={`question-${index}`}
-                        className="hidden"
-                        onChange={() => handleOptionChange(index, option)}
-                        checked={answers[index] === option}
-                      />
-                      <div
-                        className={`w-14 h-14 border-4 rounded-full flex items-center justify-center transition-all ${
-                          answers[index] === option
-                            ? colorMap[option]
-                            : "border-gray-400 hover:border-gray-600"
-                        }`}></div>
-                      <span className="mt-2 text-sm text-gray-700 font-semibold">
-                        {option}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+  const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
-          <div className={styles.bottomSectionQuestion}>
-            <div className="w-full flex justify-center gap-10 mb-5">
-              <div className="flex justify-center mt-6">
-                {!submitted ? (
-                  <button
-                    onClick={handleSubmit}
-                    disabled={Object.keys(answers).length < questions.length}
-                    className="relative group border-none bg-transparent p-0 outline-none cursor-pointer font-mono font-light uppercase text-base">
-                    <span className="absolute top-0 left-0 w-full h-full bg-white bg-opacity-25 rounded-lg transform translate-y-0.5 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-[250ms] group-active:translate-y-px"></span>
-                    <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-gradient-to-l from-[hsl(214,8%,36%)] via-[hsl(217,33%,73%)] to-[hsl(215,9%,40%)]"></span>
-                    <div className="relative w-[150px] flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-gradient-to-r from-[#a277df] to-[#e6d4ff] gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110">
-                      <span className="select-none">Submit</span>
-                      <svg
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="w-5 h-5 ml-2 -mr-1 transition duration-250 group-hover:translate-x-1">
-                        <path
-                          clipRule="evenodd"
-                          d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                          fillRule="evenodd"></path>
-                      </svg>
-                    </div>
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleTestAgain}
-                    className="relative group border-none bg-transparent p-0 outline-none cursor-pointer font-mono font-light uppercase text-base">
-                    <span className="absolute top-0 left-0 w-full h-full bg-white bg-opacity-25 rounded-lg transform translate-y-0.5 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-[250ms] group-active:translate-y-px"></span>
-                    <span className="absolute top-0 left-0 w-full h-full rounded-lg bg-gradient-to-l from-[hsl(214,8%,36%)] via-[hsl(217,33%,73%)] to-[hsl(215,9%,40%)]"></span>
-                    <div className="relative w-[150px] flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-gradient-to-r from-[#a277df] to-[#e6d4ff] gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110">
-                      <span className="select-none">Again</span>
-                      <svg
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="w-5 h-5 ml-2 -mr-1 transition duration-250 group-hover:translate-x-1">
-                        <path
-                          clipRule="evenodd"
-                          d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                          fillRule="evenodd"></path>
-                      </svg>
-                    </div>
-                  </button>
-                )}
+  return (
+    <div className="grid grid-cols-7 grid-rows-5 w-full min-h-[calc(100vh-110px)]">
+      <div className="col-span-4 row-span-5 pl-5 p-5 h-full">
+        <div className="h-full flex flex-col">
+          {/* Current question */}
+          {questionLoading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-96 mb-6"></div>
+                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
+                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
+                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
+                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
               </div>
             </div>
+          ) : currentQuestionData ? (
+            <div className="flex flex-col items-center p-6 rounded-lg text-xl w-full">
+              <p className="text-2xl font-semibold mb-8 p-5 text-center italic">
+                {currentQuestionIndex + 1}. {currentQuestionData.question}
+              </p>
+              <div className="flex flex-col w-full space-y-4 px-6">
+                {currentQuestionData.options.map((option, optIndex) => (
+                  <button
+                    key={optIndex}
+                    onClick={() => handleOptionChange(option)}
+                    className={`p-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm ${
+                      answers[currentQuestionIndex] === option
+                        ? `${colorMap[option]} ${textColorMap[option]} scale-105 shadow-md`
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                    }`}>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-center">No question available</p>
+          )}
+
+          <div className="mt-auto flex justify-center mb-6">
+            {isLastQuestion && !submitted && (
+              <button
+                onClick={handleSubmit}
+                disabled={!answers[currentQuestionIndex]}
+                className={`relative flex items-center justify-center  py-4 px-8 text-black text-base font-bold nded-full overflow-hidden bg-[#f6f3f8] rounded-xl transition-all duration-400 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-blue-500 before:to-blue-300 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 ${
+                  !answers[currentQuestionIndex]
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
+                }`}>
+                Submit
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-5 h-5 ml-2 -mr-1 transition duration-250 group-hover:translate-x-1">
+                  <path
+                    clipRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    fillRule="evenodd"></path>
+                </svg>
+              </button>
+            )}
+
+            {submitted && (
+              <button
+                onClick={handleTestAgain}
+                className="relative flex items-center justify-center  py-4 px-8 text-black text-base font-bold nded-full overflow-hidden bg-[#f6f3f8] rounded-xl transition-all duration-400 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-blue-500 before:to-blue-300 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0">
+                Try Again
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-5 h-5 ml-2 -mr-1 transition duration-250 group-hover:translate-x-1">
+                  <path
+                    clipRule="evenodd"
+                    d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                    fillRule="evenodd"></path>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
-      <div className="col-span-3 p-5 row-span-5 col-start-5">
-        <div className={styles.containerRight}>
-          <div className="grid grid-cols-3 grid-rows-9 gap-4 min-h-[calc(100vh-220px)]">
-            <div className="row-span-3">
-              <div className={styles.cardContainerTest}>
-                <div className={styles.cardTest}>
-                  <div className={styles.frontContentTest}>
-                    <p className="w-full">
-                      {submitted ? scores.depression : "0"}
-                    </p>
-                  </div>
 
-                  <div className={styles.contentTest}>
-                    <p className={styles.headingTest}>Depression</p>
-                    <p className="text-[10px]">
-                      is more than just sadness; it's a lingering emptiness, a
-                      loss of motivation, and constant fatigue. The things you
-                      once loved feel meaningless.
-                    </p>
-                    <div className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <div
-                        style={{
-                          filter: "invert(0)",
-                        }}>
-                        <Lottie
-                          animationData={arrowDownAnimation}
-                          loop={true}
-                          style={{ width: 20, height: 20 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+      {/* Results column */}
+      <div className="col-span-3 row-span-5 h-full bg-[#ffffff] rounded-xl p-8 transition-all duration-300">
+        {submitted ? (
+          <div className="h-[550px] bg-[#f1e9fd] p-6 flex flex-col rounded-xl overflow-y-auto">
+            <h2 className="text-2xl font-serif text-gray-800 mb-6">
+              Your Assessment Results
+            </h2>
+            <div className="space-y-6 mb-8">
+              {/* Depression Score */}
+              <div className="bg-white py-3 px-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                  <span className="mr-2 ">Depression</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                    DASS-21
+                  </span>
+                </h3>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full ${getScoreColor(
+                      "depression",
+                      scores.depression
+                    )} transition-all duration-500 ease-out`}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (scores.depression / 42) * 100
+                      )}%`,
+                    }}></div>
+                </div>
+                <div className="flex justify-between mt-3 text-sm font-medium">
+                  <span className="text-gray-700 font-serif">
+                    Score: {scores.depression}
+                  </span>
+                  <span
+                    className={`px-3 py-1 rounded-lg ${getScoreColor(
+                      "depression",
+                      scores.depression
+                    ).replace("bg-", "bg-opacity-20 text-")}`}>
+                    {getScoreLevel("depression", scores.depression)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Anxiety Score */}
+              <div className="bg-white py-3 px-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                  <span className="mr-2">Anxiety</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                    DASS-21
+                  </span>
+                </h3>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full ${getScoreColor(
+                      "anxiety",
+                      scores.anxiety
+                    )} transition-all duration-500 ease-out`}
+                    style={{
+                      width: `${Math.min(100, (scores.anxiety / 42) * 100)}%`,
+                    }}></div>
+                </div>
+                <div className="flex justify-between mt-3 text-sm font-medium">
+                  <span className="text-gray-700 font-serif">
+                    Score: {scores.anxiety}
+                  </span>
+                  <span
+                    className={`px-3 py-1 rounded-lg ${getScoreColor(
+                      "anxiety",
+                      scores.anxiety
+                    ).replace("bg-", "bg-opacity-20 text-")}`}>
+                    {getScoreLevel("anxiety", scores.anxiety)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Stress Score */}
+              <div className="bg-white py-3 px-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+                  <span className="mr-2">Stress</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                    DASS-21
+                  </span>
+                </h3>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className={`h-2 rounded-full ${getScoreColor(
+                      "stress",
+                      scores.stress
+                    )} transition-all duration-500 ease-out`}
+                    style={{
+                      width: `${Math.min(100, (scores.stress / 42) * 100)}%`,
+                    }}></div>
+                </div>
+                <div className="flex justify-between mt-3 text-sm font-medium">
+                  <span className="text-gray-700 font-serif">
+                    Score: {scores.stress}
+                  </span>
+                  <span
+                    className={`px-3 py-1 rounded-lg ${getScoreColor(
+                      "stress",
+                      scores.stress
+                    ).replace("bg-", "bg-opacity-20 text-")}`}>
+                    {getScoreLevel("stress", scores.stress)}
+                  </span>
                 </div>
               </div>
             </div>
-            <div className="row-span-3">
-              <div className={styles.cardContainerTest1}>
-                <div className={styles.cardTest1}>
-                  <div className={styles.frontContentTest1}>
-                    <p className="w-full">{submitted ? scores.anxiety : "0"}</p>
-                  </div>
 
-                  <div className={styles.contentTest1}>
-                    <p className={styles.headingTest1}>Anxiety</p>
-                    <p className="text-[10px]">
-                      keeps your mind racing with endless worries and fears. A
-                      pounding heart, short breaths, and restless thoughts—like
-                      your brain is running a marathon with no finish line.
-                    </p>
-                    <div className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <div
-                        style={{
-                          filter: "invert(0)",
-                        }}>
-                        <Lottie
-                          animationData={arrowDownAnimation}
-                          loop={true}
-                          style={{ width: 20, height: 20 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 mt-auto border-l-4 border-amber-400">
+              <div className="flex items-center mb-3">
+                <Lottie
+                  animationData={alertIcon}
+                  loop={true}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    filter:
+                      "brightness(0) saturate(100%) invert(14%) sepia(93%) saturate(7481%) hue-rotate(1deg) brightness(92%) contrast(119%)",
+                  }}
+                />
+                <p className="text-lg font-semibold text-gray-700 ml-2">
+                  Important Note
+                </p>
               </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {recommend}
+              </p>
             </div>
-            <div className="row-span-3">
-              <div className={styles.cardContainerTest2}>
-                <div className={styles.cardTest2}>
-                  <div className={styles.frontContentTest2}>
-                    <p className="w-full">{submitted ? scores.stress : "0"}</p>
-                  </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center bg-[#f4ecff] rounded-xl p-6">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+              <Lottie
+                animationData={arrowDownAnimation}
+                loop={true}
+                style={{ width: 20, height: 20 }}
+              />
+            </div>
 
-                  <div className={styles.contentTest2}>
-                    <p className={styles.headingTest2}>Stress</p>
-                    <p className="text-[10px]">
-                      feels like carrying the weight of the world on your
-                      shoulders. A little can help you stay focused, but too
-                      much can leave you mentally and physically drained.
-                    </p>
-                    <div className="absolute bottom-[-30px] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <div
-                        style={{
-                          filter: "invert(0)",
-                        }}>
-                        <Lottie
-                          animationData={arrowDownAnimation}
-                          loop={true}
-                          style={{ width: 20, height: 20 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
+              Assessment Incomplete
+            </h3>
+
+            <div className="bg-white rounded-lg shadow-md p-5 mb-6 w-full max-w-md">
+              <div className="flex items-center mb-3">
+                <div className="bg-indigo-100 p-2 rounded-full mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-indigo-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
                 </div>
+                <p className="font-medium text-gray-700">
+                  {totalQuestions - currentQuestionIndex} of {totalQuestions}{" "}
+                  questions remaining
+                </p>
               </div>
+
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                <div
+                  className="bg-[#b36cec] h-2.5 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${(currentQuestionIndex / totalQuestions) * 100}%`,
+                  }}></div>
+              </div>
+
+              <p className="text-sm text-gray-600">
+                Please answer all questions to receive your personalized
+                assessment results.
+              </p>
             </div>
-            <div className="col-span-3 row-span-6 row-start-4">
-              <div className={styles.card3}>
-                <div className={styles.topSection}>
-                  <div className={styles.border}> Diagnosis Report</div>
-                  <div className="p-4 overflow-y-scroll h-[280px] relative">
-                    {submitted ? (
-                      <>
-                        <div
-                          className={`${styles.title1} flex items-center text-[20px]`}>
-                          <div
-                            style={{
-                              filter:
-                                "invert(19%) sepia(96%) saturate(7498%) hue-rotate(359deg) brightness(95%) contrast(112%)",
-                            }}>
-                            <Lottie
-                              animationData={arler}
-                              loop={true}
-                              style={{ width: 40, height: 40 }}
-                            />
-                          </div>
-                          <span
-                            className="text-[#3A3A3A]"
-                            style={{ filter: "none" }}>
-                            Diagnosis:
-                          </span>
-                        </div>
-                        <ul className="">
-                          <li>
-                            ✔ Severe Anxiety: The patient may experience
-                            persistent tension, frequent panic episodes, rapid
-                            heartbeat, and difficulty controlling worry.
-                          </li>
-                          <li>
-                            ✔ Mild Depression: Possible signs of mild sadness,
-                            low motivation, but not significantly impairing
-                            daily life.
-                          </li>
-                          <li>
-                            ✔ Extremely Severe Stress: The patient may feel
-                            overwhelmed, easily agitated, and struggle to relax,
-                            significantly affecting daily activities.
-                          </li>
-                        </ul>
-                        <div
-                          className={`${styles.title1} flex items-center text-[20px]`}>
-                          <div
-                            style={{
-                              filter:
-                                "invert(19%) sepia(96%) saturate(7498%) hue-rotate(359deg) brightness(95%) contrast(112%)",
-                            }}>
-                            <Lottie
-                              animationData={arler}
-                              loop={true}
-                              style={{ width: 40, height: 40 }}
-                            />
-                          </div>
-                          <span
-                            className="text-[#3A3A3A]"
-                            style={{ filter: "none" }}>
-                            Initial Recommendations:
-                          </span>
-                        </div>
-                        <ul className="">
-                          <li>
-                            ✔ Engage in relaxation techniques (deep breathing,
-                            meditation, light physical activities).
-                          </li>
-                          <li>
-                            ✔ Adjust lifestyle habits, focusing on sleep and
-                            nutrition.
-                          </li>
-                          <li>
-                            ✔ If symptoms persist or worsen, seeking
-                            professional psychological support is advised.
-                          </li>
-                        </ul>
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90 z-10 text-center p-4">
-                        <div className="w-16 h-16 mb-4">
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path
-                              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                              stroke="#9370DB"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M12 16V12"
-                              stroke="#9370DB"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M12 8H12.01"
-                              stroke="#9370DB"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <h3 className="text-xl font-bold mb-2 text-purple-700">
-                          Unlock now
-                        </h3>
-                        <p className="text-gray-600 mb-6">
-                          Get the full report to unlock these personalized
-                          insights.
-                        </p>
-                        <button
-                          onClick={handleSubmit}
-                          disabled={
-                            Object.keys(answers).length < questions.length
-                          }
-                          className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-medium shadow-md transition-colors duration-300">
-                          Get access now
-                        </button>
-                      </div>
-                    )}
-                  </div>
+
+            <div className="space-y-4 w-full max-w-md">
+              <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400">
+                <div className="flex items-center mb-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-blue-500 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="font-medium text-gray-700">What is DASS-21?</p>
                 </div>
+                <p className="text-sm text-gray-600">
+                  The Depression, Anxiety and Stress Scale (DASS-21) is a
+                  validated tool that measures symptoms of depression, anxiety,
+                  and stress.
+                </p>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-400">
+                <div className="flex items-center mb-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-green-500 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                  <p className="font-medium text-gray-700">
+                    Privacy Guaranteed
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Your responses are private and confidential. We don't store
+                  your individual answers.
+                </p>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 };
+
+// Helper function to determine color based on score
+function getScoreColor(type, score) {
+  const severityLevels = {
+    depression: [
+      { max: 9, color: "bg-green-500" },
+      { max: 13, color: "bg-yellow-500" },
+      { max: 20, color: "bg-orange-500" },
+      { max: 42, color: "bg-red-500" },
+    ],
+    anxiety: [
+      { max: 7, color: "bg-green-500" },
+      { max: 9, color: "bg-yellow-500" },
+      { max: 14, color: "bg-orange-500" },
+      { max: 42, color: "bg-red-500" },
+    ],
+    stress: [
+      { max: 14, color: "bg-green-500" },
+      { max: 18, color: "bg-yellow-500" },
+      { max: 25, color: "bg-orange-500" },
+      { max: 42, color: "bg-red-500" },
+    ],
+  };
+
+  const levels = severityLevels[type];
+  for (const level of levels) {
+    if (score <= level.max) {
+      return level.color;
+    }
+  }
+  return "bg-red-500";
+}
+
+// Helper function to determine severity level text
+function getScoreLevel(type, score) {
+  const severityLabels = {
+    depression: [
+      { max: 9, label: "Normal" },
+      { max: 13, label: "Mild" },
+      { max: 20, label: "Moderate" },
+      { max: 27, label: "Severe" },
+      { max: 42, label: "Extremely Severe" },
+    ],
+    anxiety: [
+      { max: 7, label: "Normal" },
+      { max: 9, label: "Mild" },
+      { max: 14, label: "Moderate" },
+      { max: 19, label: "Severe" },
+      { max: 42, label: "Extremely Severe" },
+    ],
+    stress: [
+      { max: 14, label: "Normal" },
+      { max: 18, label: "Mild" },
+      { max: 25, label: "Moderate" },
+      { max: 33, label: "Severe" },
+      { max: 42, label: "Extremely Severe" },
+    ],
+  };
+
+  const levels = severityLabels[type];
+  for (const level of levels) {
+    if (score <= level.max) {
+      return level.label;
+    }
+  }
+  return "Extremely Severe";
+}
 
 export default TestEmotion;

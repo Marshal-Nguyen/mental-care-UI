@@ -1,210 +1,235 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 const WeeklyPlanner = () => {
-  const [activeWeek, setActiveWeek] = useState("WEEK 1");
-  const [startDate, setStartDate] = useState(null);
-  const [tasks, setTasks] = useState({});
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [activities, setActivities] = useState([]);
   const [taskStatus, setTaskStatus] = useState({});
   const [selectedTask, setSelectedTask] = useState(null);
   const [showTaskDetail, setShowTaskDetail] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const profileId = useSelector((state) => state.auth.profileId);
 
-  // Initialize with current date and calculate the start of the week
+  // API endpoints
+  const BASE_URL =
+    "https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net";
+  const SCHEDULES_ENDPOINT = `${BASE_URL}/schedules`;
+  const ACTIVITIES_ENDPOINT = `${BASE_URL}/schedule-activities`;
+
+  // Format date to use as object key (YYYY-MM-DD)
+  const formatDateKey = (date) => {
+    if (!date) return "";
+    return `${date.getFullYear()}-${(date.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+  };
+
+  // Only fetch sessions once when component mounts
   useEffect(() => {
-    const today = new Date();
-    // Get Monday of current week (0 = Sunday, 1 = Monday, etc.)
-    const day = today.getDay();
-    const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
-    const monday = new Date(today.setDate(diff));
-    setStartDate(monday);
+    const fetchSessions = async () => {
+      try {
+        console.log("Fetching sessions data...");
+        const scheduleResponse = await axios.get(
+          `${SCHEDULES_ENDPOINT}?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`
+        );
+        console.log("Schedule Response:", scheduleResponse.data);
 
-    // Initialize with stress reduction tasks
-    initializeStressReductionTasks(monday);
-  }, []);
-
-  // Initialize stress reduction tasks
-  const initializeStressReductionTasks = (monday) => {
-    if (!monday) return;
-
-    const stressReductionTasks = {};
-    const initialTaskStatus = {};
-
-    // Helper function to create a week's worth of tasks
-    const createWeekTasks = (startDay, weekOffset = 0) => {
-      for (let i = 0; i < 7; i++) {
-        const currentDay = new Date(startDay);
-        currentDay.setDate(startDay.getDate() + i + weekOffset * 7);
-        const dayKey = formatDateKey(currentDay);
-
-        // Each day gets around 8-10 stress reduction activities
-        stressReductionTasks[dayKey] = [];
-
-        // Add morning meditation
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-1`,
-          time: "07:00",
-          title: "Thiền buổi sáng",
-          duration: "07:00 - 07:20",
-          color: "blue",
-          description:
-            "Ngồi thiền 20 phút để bắt đầu ngày mới với tâm trí tĩnh lặng. Tập trung vào hơi thở và buông bỏ các suy nghĩ lo lắng.",
-          benefits: [
-            "Giảm cortisol",
-            "Tăng cường tập trung",
-            "Cải thiện tâm trạng",
-          ],
-        });
-
-        // Add breathing exercise
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-2`,
-          time: "09:30",
-          title: "Thở sâu",
-          duration: "09:30 - 09:40",
-          color: "green",
-          description:
-            "Thực hiện kỹ thuật thở 4-7-8: hít vào trong 4 giây, giữ trong 7 giây, và thở ra trong 8 giây. Lặp lại 5 lần.",
-          benefits: [
-            "Giảm căng thẳng ngay lập tức",
-            "Hạ huyết áp",
-            "Cân bằng hệ thần kinh",
-          ],
-        });
-
-        // Add stretching
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-3`,
-          time: "11:00",
-          title: "Giãn cơ tại bàn làm việc",
-          duration: "11:00 - 11:10",
-          color: "purple",
-          description:
-            "Thực hiện các động tác giãn cơ nhẹ nhàng tại bàn làm việc: xoay cổ, giãn vai, giãn cánh tay và cổ tay.",
-          benefits: ["Giảm căng cơ", "Tăng tuần hoàn", "Giảm mệt mỏi"],
-        });
-
-        // Add mindful lunch
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-4`,
-          time: "12:30",
-          title: "Ăn trưa có ý thức",
-          duration: "12:30 - 13:15",
-          color: "orange",
-          description:
-            "Tập trung hoàn toàn vào bữa ăn, cảm nhận từng miếng, hương vị và kết cấu. Không sử dụng điện thoại hoặc máy tính.",
-          benefits: [
-            "Cải thiện tiêu hóa",
-            "Tăng sự hài lòng",
-            "Giảm ăn quá nhiều",
-          ],
-        });
-
-        // Add afternoon break
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-5`,
-          time: "14:30",
-          title: "Nghỉ ngơi ngắn",
-          duration: "14:30 - 14:45",
-          color: "teal",
-          description:
-            "Rời khỏi màn hình, đi dạo ngắn hoặc nhìn ra ngoài cửa sổ tập trung vào thiên nhiên trong 15 phút.",
-          benefits: ["Giảm mỏi mắt", "Nạp lại năng lượng", "Tăng sáng tạo"],
-        });
-
-        // Add afternoon tea
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-6`,
-          time: "16:00",
-          title: "Uống trà thảo mộc",
-          duration: "16:00 - 16:15",
-          color: "green",
-          description:
-            "Thưởng thức một tách trà thảo mộc (trà hoa cúc, oải hương hoặc bạc hà) trong yên lặng.",
-          benefits: [
-            "Tăng cường thư giãn",
-            "Cung cấp chất chống oxy hóa",
-            "Giảm căng thẳng",
-          ],
-        });
-
-        // Add journaling
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-7`,
-          time: "17:30",
-          title: "Viết nhật ký biết ơn",
-          duration: "17:30 - 17:45",
-          color: "pink",
-          description:
-            "Viết ra 3 điều bạn biết ơn trong ngày hôm nay và cảm xúc tích cực bạn đã trải qua.",
-          benefits: [
-            "Tăng cảm giác hạnh phúc",
-            "Giảm lo âu",
-            "Cải thiện tâm trạng",
-          ],
-        });
-
-        // Add evening exercise
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-8`,
-          time: "19:00",
-          title: "Tập thể dục nhẹ nhàng",
-          duration: "19:00 - 19:30",
-          color: "indigo",
-          description:
-            "Thực hiện 30 phút yoga, đi bộ hoặc bơi lội với cường độ nhẹ đến vừa phải.",
-          benefits: [
-            "Giải phóng endorphin",
-            "Cải thiện giấc ngủ",
-            "Giảm căng thẳng",
-          ],
-        });
-
-        // Add evening wind-down
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-9`,
-          time: "21:00",
-          title: "Thời gian thư giãn",
-          duration: "21:00 - 21:30",
-          color: "purple",
-          description:
-            "Đọc sách, nghe nhạc nhẹ nhàng hoặc tắm nước ấm để chuẩn bị cho giấc ngủ.",
-          benefits: [
-            "Chuyển đổi sang chế độ thư giãn",
-            "Giảm căng thẳng",
-            "Chuẩn bị cho giấc ngủ",
-          ],
-        });
-
-        // Add bedtime meditation
-        stressReductionTasks[dayKey].push({
-          id: `${dayKey}-10`,
-          time: "22:30",
-          title: "Thiền trước khi ngủ",
-          duration: "22:30 - 22:45",
-          color: "blue",
-          description:
-            "Thực hiện quét cơ thể từ đầu đến chân, thả lỏng từng phần cơ thể và chuẩn bị cho giấc ngủ sâu.",
-          benefits: [
-            "Cải thiện chất lượng giấc ngủ",
-            "Giảm lo âu",
-            "Thư giãn cơ bắp",
-          ],
-        });
+        const sessionsData =
+          scheduleResponse.data.schedules.data[0]?.sessions || [];
+        setSessions(sessionsData);
+      } catch (error) {
+        console.error("Error fetching sessions:", error);
       }
     };
 
-    // Create tasks for Week 1 and Week 2
-    createWeekTasks(monday, 0);
-    createWeekTasks(monday, 1);
+    fetchSessions();
+  }, [profileId]);
 
-    // Initialize task status (all unchecked)
-    Object.values(stressReductionTasks)
-      .flat()
-      .forEach((task) => {
-        initialTaskStatus[task.id] = false;
-      });
+  // Fetch activities only for the selected date
+  useEffect(() => {
+    const fetchActivitiesForDate = async () => {
+      try {
+        setLoading(true);
+        const dateKey = formatDateKey(selectedDate);
+        console.log(`Fetching activities for date: ${dateKey}`);
 
-    setTasks(stressReductionTasks);
-    setTaskStatus(initialTaskStatus);
+        // Find session for the selected date
+        const sessionForDate = sessions.find((session) => {
+          const sessionDate = new Date(session.startDate);
+          return formatDateKey(sessionDate) === dateKey;
+        });
+
+        let activitiesForDate = [];
+
+        if (sessionForDate) {
+          console.log(
+            `Found session ID: ${sessionForDate.id} for date: ${dateKey}`
+          );
+          const activityResponse = await axios.get(
+            `${ACTIVITIES_ENDPOINT}/${sessionForDate.id}`
+          );
+          console.log(
+            `Activities for session ${sessionForDate.id}:`,
+            activityResponse.data
+          );
+
+          activitiesForDate = activityResponse.data.scheduleActivities.map(
+            (activity) => {
+              return createActivityObject(
+                activity,
+                new Date(activity.timeRange),
+                sessionForDate.id
+              );
+            }
+          );
+        } else {
+          console.log(
+            `No session found for date: ${dateKey}, using default activities`
+          );
+          // Use default activities if no session exists for this date
+          activitiesForDate = getDefaultActivities(selectedDate);
+        }
+
+        setActivities(activitiesForDate);
+
+        // Initialize task status for these activities
+        const initialTaskStatus = {};
+        activitiesForDate.forEach((activity) => {
+          initialTaskStatus[activity.id] = false;
+        });
+
+        setTaskStatus(initialTaskStatus);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching activities for date:", error);
+        setLoading(false);
+      }
+    };
+
+    if (sessions.length > 0) {
+      fetchActivitiesForDate();
+    }
+  }, [selectedDate, sessions]);
+
+  // Create a standardized activity object from API data
+  const createActivityObject = (activity, time, sessionId) => {
+    let title = "Hoạt động";
+    let description = "Không có mô tả";
+    let color = "blue";
+    let benefits = [];
+
+    if (activity.foodActivity) {
+      title = `Bữa ăn: ${activity.foodActivity.name}`;
+      description = activity.foodActivity.description;
+      color = "green";
+      benefits = [
+        `Thời gian: ${activity.foodActivity.mealTime}`,
+        `Dinh dưỡng: ${activity.foodActivity.foodNutrients.join(", ")}`,
+        `Cường độ: ${activity.foodActivity.intensityLevel}`,
+      ];
+    } else if (activity.physicalActivity) {
+      title = `Hoạt động thể chất: ${activity.physicalActivity.name}`;
+      description = activity.physicalActivity.description;
+      color = "indigo";
+      benefits = [
+        `Cường độ: ${activity.physicalActivity.intensityLevel}`,
+        `Mức độ tác động: ${activity.physicalActivity.impactLevel}`,
+      ];
+    } else if (activity.entertainmentActivity) {
+      title = `Giải trí: ${activity.entertainmentActivity.name}`;
+      description = activity.entertainmentActivity.description;
+      color = "purple";
+      benefits = [
+        `Cường độ: ${activity.entertainmentActivity.intensityLevel}`,
+        `Mức độ tác động: ${activity.entertainmentActivity.impactLevel}`,
+      ];
+    } else if (activity.therapeuticActivity) {
+      title = `Trị liệu: ${activity.therapeuticActivity.name}`;
+      description = activity.therapeuticActivity.description;
+      color = "orange";
+      benefits = [
+        `Cường độ: ${activity.therapeuticActivity.intensityLevel}`,
+        `Mức độ tác động: ${activity.therapeuticActivity.impactLevel}`,
+        `Hướng dẫn: ${activity.therapeuticActivity.instructions}`,
+      ];
+    }
+
+    const timeString =
+      time.getHours().toString().padStart(2, "0") +
+      ":" +
+      time.getMinutes().toString().padStart(2, "0");
+
+    // Calculate end time based on duration
+    const endTime = new Date(time);
+    const durationMinutes = parseInt(activity.duration?.split(" ")[0] || "30");
+    endTime.setMinutes(endTime.getMinutes() + durationMinutes);
+
+    const endTimeString =
+      endTime.getHours().toString().padStart(2, "0") +
+      ":" +
+      endTime.getMinutes().toString().padStart(2, "0");
+
+    return {
+      id: `${sessionId}-${time.getTime()}`,
+      time: timeString,
+      title: title,
+      duration: `${timeString} - ${endTimeString}`,
+      color: color,
+      description: description,
+      benefits: benefits,
+      status: activity.status,
+    };
+  };
+
+  // Get default stress reduction activities
+  const getDefaultActivities = (date) => {
+    const dateKey = formatDateKey(date);
+
+    return [
+      {
+        id: `default-${dateKey}-1`,
+        time: "07:00",
+        title: "Thiền buổi sáng",
+        duration: "07:00 - 07:20",
+        color: "blue",
+        description:
+          "Ngồi thiền 20 phút để bắt đầu ngày mới với tâm trí tĩnh lặng. Tập trung vào hơi thở và buông bỏ các suy nghĩ lo lắng.",
+        benefits: [
+          "Giảm cortisol",
+          "Tăng cường tập trung",
+          "Cải thiện tâm trạng",
+        ],
+        status: "Pending",
+      },
+      {
+        id: `default-${dateKey}-2`,
+        time: "12:30",
+        title: "Tư vấn tâm lý",
+        duration: "12:30 - 13:30",
+        color: "orange",
+        description:
+          "Buổi tư vấn tâm lý với chuyên gia để đánh giá tiến triển và điều chỉnh lộ trình điều trị.",
+        benefits: ["Giảm lo âu", "Cải thiện tâm trạng", "Học kỹ năng đối phó"],
+        status: "Pending",
+      },
+      {
+        id: `default-${dateKey}-3`,
+        time: "19:00",
+        title: "Tập thể dục nhẹ nhàng",
+        duration: "19:00 - 19:30",
+        color: "indigo",
+        description:
+          "Thực hiện 30 phút yoga, đi bộ hoặc bơi lội với cường độ nhẹ đến vừa phải.",
+        benefits: [
+          "Giải phóng endorphin",
+          "Cải thiện giấc ngủ",
+          "Giảm căng thẳng",
+        ],
+        status: "Pending",
+      },
+    ];
   };
 
   // Toggle task completion status
@@ -215,58 +240,8 @@ const WeeklyPlanner = () => {
     }));
   };
 
-  // Format date to use as object key (YYYY-MM-DD)
-  const formatDateKey = (date) => {
-    if (!date) return "";
-    return `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-  };
-
-  // Generate week start dates
-  const getWeekStartDate = (weekOffset) => {
-    if (!startDate) return null;
-
-    const newDate = new Date(startDate);
-    newDate.setDate(startDate.getDate() + weekOffset * 7);
-    return newDate;
-  };
-
-  // Get week number from active week string
-  const getWeekOffset = () => {
-    return parseInt(activeWeek.split(" ")[1]) - 1;
-  };
-
-  // Get array of 7 dates for the active week
-  const getDaysInActiveWeek = () => {
-    if (!startDate) return Array(7).fill(null);
-
-    const weekStartDate = getWeekStartDate(getWeekOffset());
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(weekStartDate);
-      date.setDate(weekStartDate.getDate() + i);
-      return date;
-    });
-  };
-
-  // Format day name
-  const formatDayName = (date) => {
-    if (!date) return "";
-    const days = [
-      "Chủ nhật",
-      "Thứ 2",
-      "Thứ 3",
-      "Thứ 4",
-      "Thứ 5",
-      "Thứ 6",
-      "Thứ 7",
-    ];
-    return days[date.getDay()];
-  };
-
   // Check if a date is today
   const isToday = (date) => {
-    if (!date) return false;
     const today = new Date();
     return (
       date.getDate() === today.getDate() &&
@@ -275,45 +250,25 @@ const WeeklyPlanner = () => {
     );
   };
 
-  // Get activities for a specific date
-  const getActivitiesForDay = (date) => {
-    if (!date) return [];
-
-    const dateKey = formatDateKey(date);
-    return tasks[dateKey] || [];
-  };
-
-  // Add a new task
-  const addTask = (date, newTask) => {
-    if (!date) return;
-
-    const dateKey = formatDateKey(date);
-
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-
-      if (!updatedTasks[dateKey]) {
-        updatedTasks[dateKey] = [];
-      }
-
-      // Generate a unique ID
-      const taskWithId = { ...newTask, id: `${dateKey}-${Date.now()}` };
-
-      updatedTasks[dateKey] = [...updatedTasks[dateKey], taskWithId];
-
-      // Initialize task status
-      setTaskStatus((prev) => ({
-        ...prev,
-        [taskWithId.id]: false,
-      }));
-
-      return updatedTasks;
-    });
+  // Format day name - MODIFIED to start with Monday
+  const formatDayName = (date) => {
+    // Reordered array to make Monday the first day
+    const days = [
+      "Thứ 2",
+      "Thứ 3",
+      "Thứ 4",
+      "Thứ 5",
+      "Thứ 6",
+      "Thứ 7",
+      "Chủ nhật",
+    ];
+    // Get day index (0-6), where 0 is Monday, 6 is Sunday
+    const dayIndex = (date.getDay() + 6) % 7;
+    return days[dayIndex];
   };
 
   // Get month name
   const getMonthName = (date) => {
-    if (!date) return "";
     const months = [
       "Tháng 1",
       "Tháng 2",
@@ -331,6 +286,32 @@ const WeeklyPlanner = () => {
     return months[date.getMonth()];
   };
 
+  // Generate dates for TWO weeks (14 days) navigation - MODIFIED to start with Monday
+  // Update the generateTwoWeekDates function to start from the first session date
+  const generateTwoWeekDates = () => {
+    // Find the earliest session date from the API
+    let startDate;
+
+    if (sessions && sessions.length > 0) {
+      // Sort sessions by startDate to find the earliest one
+      const sortedSessions = [...sessions].sort((a, b) => {
+        return new Date(a.startDate) - new Date(b.startDate);
+      });
+
+      startDate = new Date(sortedSessions[0].startDate);
+    } else {
+      // If no sessions available, use the current date
+      startDate = new Date();
+    }
+
+    // Generate 14 days starting from the first session date
+    return Array.from({ length: 14 }, (_, i) => {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      return date;
+    });
+  };
+
   // Show task details
   const showTaskDetails = (task) => {
     setSelectedTask(task);
@@ -343,213 +324,236 @@ const WeeklyPlanner = () => {
     setSelectedTask(null);
   };
 
-  const daysInWeek = getDaysInActiveWeek();
+  // Calculate progress percentage
+  const calculateProgress = () => {
+    if (activities.length === 0) return 0;
 
-  if (!startDate) return <div>Đang tải...</div>;
+    const completedTasks = activities.filter(
+      (task) => taskStatus[task.id]
+    ).length;
+
+    return Math.round((completedTasks / activities.length) * 100);
+  };
+
+  // Using the new two week dates function
+  const twoWeekDates = generateTwoWeekDates();
 
   return (
-    <div className="max-w-full bg-gray-50 p-4 ">
-      {/* Week selection tabs */}
-      <div className="flex space-x-4 mb-6 overflow-x-auto">
-        {["WEEK 1", "WEEK 2"].map((week) => (
-          <button
-            key={week}
-            className={`py-3 px-8 rounded-lg ${
-              activeWeek === week
-                ? "bg-purple-600 text-white font-medium"
-                : "bg-gray-200 text-black"
-            }`}
-            onClick={() => setActiveWeek(week)}>
-            {week}
-          </button>
-        ))}
-      </div>
-
-      {/* Calendar view with horizontal scroll */}
-      <div className="overflow-x-auto pb-4">
-        <div className="flex space-x-4" style={{ minWidth: "max-content" }}>
-          {daysInWeek.map((date, index) => (
-            <div key={index} className="w-90 bg-white rounded-lg shadow-md">
-              {/* Day header */}
-              <div
-                className={`p-4 rounded-t-lg ${
-                  isToday(date)
-                    ? "bg-indigo-600 text-white"
-                    : "bg-indigo-100 text-indigo-800"
-                }`}>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-bold text-lg">{formatDayName(date)}</h3>
-                    <p className="text-sm">
-                      {date ? `${date.getDate()} ${getMonthName(date)}` : ""}
-                    </p>
-                  </div>
-                  <button
-                    className={`text-sm flex items-center px-3 py-1 rounded-lg ${
-                      isToday(date)
-                        ? "bg-white text-indigo-600"
-                        : "bg-indigo-600 text-white"
-                    } font-medium`}
-                    onClick={() => {
-                      const newTask = {
-                        time: "12:00",
-                        title: "Hoạt động giảm stress mới",
-                        duration: "12:00 - 13:00",
-                        color: "green",
-                        description:
-                          "Thêm hoạt động giảm stress mới vào lịch của bạn",
-                        benefits: [
-                          "Giảm căng thẳng",
-                          "Cải thiện sức khỏe tinh thần",
-                        ],
-                      };
-                      addTask(date, newTask);
-                    }}>
-                    <span className="mr-1">+</span> Thêm
-                  </button>
-                </div>
-              </div>
-
-              {/* Tasks list with vertical scroll */}
-              <div className="h-120 overflow-y-auto p-2">
-                {getActivitiesForDay(date)
-                  .sort((a, b) => {
-                    // Sort by time (HH:MM format)
-                    const timeA = a.time.split(":").map(Number);
-                    const timeB = b.time.split(":").map(Number);
-                    return (
-                      timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1])
-                    );
-                  })
-                  .map((activity) => (
-                    <div
-                      key={activity.id}
-                      className={`mb-3 p-3 rounded-lg border-l-4 ${
-                        taskStatus[activity.id]
-                          ? "bg-gray-100 opacity-70"
-                          : "bg-white"
-                      }`}
-                      style={{
-                        borderLeftColor:
-                          activity.color === "purple"
-                            ? "#9333ea"
-                            : activity.color === "blue"
-                            ? "#3b82f6"
-                            : activity.color === "green"
-                            ? "#22c55e"
-                            : activity.color === "orange"
-                            ? "#f97316"
-                            : activity.color === "teal"
-                            ? "#14b8a6"
-                            : activity.color === "pink"
-                            ? "#ec4899"
-                            : activity.color === "indigo"
-                            ? "#6366f1"
-                            : "#9333ea",
-                      }}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium text-gray-500">
-                              {activity.time}
-                            </span>
-                            <span className="mx-2">•</span>
-                            <p
-                              className={`font-medium ${
-                                taskStatus[activity.id]
-                                  ? "line-through text-gray-500"
-                                  : "text-gray-800"
-                              }`}>
-                              {activity.title}
-                            </p>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {activity.duration}
-                          </p>
-                        </div>
-                        <div className="flex space-x-2 items-center">
-                          <div
-                            className={`w-5 h-5 rounded-md border cursor-pointer flex items-center justify-center ${
-                              taskStatus[activity.id]
-                                ? "bg-indigo-600 border-indigo-600"
-                                : "bg-white border-gray-300"
-                            }`}
-                            onClick={() => toggleTaskStatus(activity.id)}>
-                            {taskStatus[activity.id] && (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-3 w-3 text-white"
-                                viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )}
-                          </div>
-                          <button
-                            className="text-lg font-bold text-gray-500 hover:text-indigo-600 focus:outline-none"
-                            onClick={() => showTaskDetails(activity)}>
-                            ...
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
+    <div className="max-w-full bg-gray-50 p-4">
+      {/* Date navigation */}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold mb-4">Lịch hoạt động</h2>
+        <div className="overflow-x-auto">
+          <div className="flex space-x-2 pb-2">
+            {twoWeekDates.map((date) => (
+              <button
+                key={formatDateKey(date)}
+                className={`flex flex-col items-center p-3 min-w-16 rounded-lg ${
+                  formatDateKey(date) === formatDateKey(selectedDate)
+                    ? "bg-purple-600 text-white"
+                    : "bg-white border"
+                } ${
+                  isToday(date) &&
+                  formatDateKey(date) !== formatDateKey(selectedDate)
+                    ? "border-purple-500"
+                    : "border-gray-200"
+                }`}
+                onClick={() => setSelectedDate(date)}>
+                <span className="text-xs font-medium">
+                  {formatDayName(date)}
+                </span>
+                <span className="text-lg font-bold">{date.getDate()}</span>
+                <span className="text-xs">{getMonthName(date)}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Task detail modal */}
+      {/* Current date display */}
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-bold">
+              {formatDayName(selectedDate)}, {selectedDate.getDate()}{" "}
+              {getMonthName(selectedDate)}
+            </h3>
+            {isToday(selectedDate) && (
+              <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                Hôm nay
+              </span>
+            )}
+          </div>
+          <button
+            className="text-purple-600 border border-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50"
+            onClick={() => setSelectedDate(new Date())}>
+            Hôm nay
+          </button>
+        </div>
+      </div>
+
+      {/* Progress indicator */}
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-bold">Tiến độ hôm nay</h3>
+          <span className="text-sm text-gray-500">
+            {activities.filter((task) => taskStatus[task.id]).length}/
+            {activities.length} hoạt động
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            className="bg-purple-600 h-2.5 rounded-full"
+            style={{ width: `${calculateProgress()}%` }}></div>
+        </div>
+      </div>
+
+      {/* Activities list */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-lg">Hoạt động trong ngày</h3>
+
+        {loading ? (
+          <div className="text-center py-10">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Đang tải...</p>
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <p className="text-gray-500">
+              Không có hoạt động nào được lên lịch cho ngày này
+            </p>
+            <button className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+              Thêm hoạt động mới
+            </button>
+          </div>
+        ) : (
+          activities
+            .sort((a, b) => {
+              const timeA = a.time.split(":").map(Number);
+              const timeB = b.time.split(":").map(Number);
+              return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
+            })
+            .map((activity) => (
+              <div
+                key={activity.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="flex items-center p-4">
+                  <div className="mr-4">
+                    <input
+                      type="checkbox"
+                      checked={taskStatus[activity.id] || false}
+                      onChange={() => toggleTaskStatus(activity.id)}
+                      className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold">{activity.title}</h4>
+                        <p className="text-sm text-gray-500">
+                          {activity.duration}
+                        </p>
+                      </div>
+                      <div>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            activity.status === "Completed"
+                              ? "bg-green-100 text-green-800"
+                              : activity.status === "Missed"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}>
+                          {activity.status === "Completed"
+                            ? "Hoàn thành"
+                            : activity.status === "Missed"
+                            ? "Bỏ lỡ"
+                            : "Đang chờ"}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-1 line-clamp-2">
+                      {activity.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-gray-200 px-4 py-3 bg-gray-50">
+                  <button
+                    className="text-purple-600 text-sm font-medium"
+                    onClick={() => showTaskDetails(activity)}>
+                    Xem chi tiết
+                  </button>
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+
+      {/* Task Detail Modal */}
       {showTaskDetail && selectedTask && (
-        <div className="fixed inset-0 bg-[#00000048] bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold">{selectedTask.title}</h2>
-              <button
-                onClick={closeTaskDetail}
-                className="text-gray-500 hover:text-gray-700">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold">{selectedTask.title}</h3>
+                <button
+                  onClick={closeTaskDetail}
+                  className="text-gray-400 hover:text-gray-600">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">Thời gian:</p>
+                <p className="font-medium">{selectedTask.duration}</p>
+              </div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">Mô tả:</p>
+                <p className="text-gray-700">{selectedTask.description}</p>
+              </div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">Lợi ích:</p>
+                <ul className="list-disc list-inside">
+                  {selectedTask.benefits.map((benefit, index) => (
+                    <li key={index} className="text-gray-700">
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">Trạng thái:</p>
+                <div className="flex items-center mt-1">
+                  <input
+                    type="checkbox"
+                    checked={taskStatus[selectedTask.id] || false}
+                    onChange={() => toggleTaskStatus(selectedTask.id)}
+                    className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 mr-2"
                   />
-                </svg>
-              </button>
+                  <span>Đánh dấu là hoàn thành</span>
+                </div>
+              </div>
             </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-500 mb-2">
-                {selectedTask.duration}
-              </p>
-              <p className="text-gray-700 mb-4">{selectedTask.description}</p>
-
-              <h3 className="font-bold text-gray-800 mb-2">Lợi ích:</h3>
-              <ul className="list-disc pl-5">
-                {selectedTask.benefits.map((benefit, index) => (
-                  <li key={index} className="text-gray-700">
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex justify-end">
+            <div className="p-4 border-t border-gray-200 flex justify-end">
               <button
                 onClick={closeTaskDetail}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg mr-2 hover:bg-gray-300">
                 Đóng
+              </button>
+              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                Lưu thay đổi
               </button>
             </div>
           </div>

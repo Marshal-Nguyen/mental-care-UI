@@ -86,25 +86,6 @@ const Footer = () => {
 
           {/* Phần dưới - Social icons và Copyright */}
           <div className="pt-4 flex flex-col items-center">
-            {/* Social media icons */}
-            <div className="flex justify-center space-x-6 mb-4">
-              <a
-                href="#"
-                className="text-white hover:text-gray-300 transition-colors">
-                <FaFacebook className="h-6 w-6" />
-              </a>
-              <a
-                href="#"
-                className="text-white hover:text-gray-300 transition-colors">
-                <FaTwitter className="h-6 w-6" />
-              </a>
-              <a
-                href="#"
-                className="text-white hover:text-gray-300 transition-colors">
-                <FaGithub className="h-6 w-6" />
-              </a>
-            </div>
-
             {/* Copyright */}
             <p className="text-white text-center">
               © {new Date().getFullYear()} SOLTECH. All rights reserved.

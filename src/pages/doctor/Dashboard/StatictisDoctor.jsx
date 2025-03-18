@@ -1,57 +1,89 @@
-import React from "react";
-import MedicalProfile from "../../../components/Dashboard/Patient/MedicalProfile";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import DoctorScheduleViewer from "../../../components/Dashboard/Doctor/DoctorScheduleViewer";
 const StatictisDoctor = () => {
+  const [currentDate, setCurrentDate] = useState("");
+  const profileId = useSelector((state) => state.auth.profileId);
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const date = new Date();
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    setCurrentDate(date.toLocaleDateString("en-US", options));
+  }, []);
+
+  useEffect(() => {
+    if (!profileId) return; // Chỉ fetch nếu profileId có giá trị
+
+    const fetchDoctorData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${profileId}`
+        );
+        console.log("API Response:", response.data);
+        setName(response.data.doctorProfileDto.fullName);
+      } catch (err) {
+        setError("Error fetching doctor data. Please try again.");
+        console.error("Error fetching doctor data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctorData();
+  }, [profileId]); // Thêm profileId vào dependency array
+
   return (
-    <div>
-      <h1 className="text-5xl font-serif text-[#6c2694] py-3">
-        Have a nice day
-      </h1>
-      <div className=" min-h-[calc(100vh-100px)] grid grid-cols-2 grid-rows-1 gap-4">
-        <div>
-          <div className=" h-full grid grid-cols-1 grid-rows-2 gap-4">
-            <div className="bg-gradient-to-r from-[#925FE2] to-[#DFCFF7] rounded-2xl">
-              <div className="h-full grid grid-cols-3 grid-rows-1 px-4">
-                <div className=" col-span-2">
-                  <div className="h-full grid grid-cols-1 grid-rows-5 gap-4">
-                    <div className="row-span-3">
-                      <h1 className="text-5xl font-medium p-3 text-[#250242]">
-                        DR.KIM
-                      </h1>
-                    </div>
-                    <div className=" row-span-2 row-start-4 flex w-full">
-                      <div className="bg-[#fff0] w-full p-2">
-                        <div className="bg-[#ffffffc4] h-full rounded-2xl">
-                          <h1 className="text-xl px-3 pt-3 pb-1 font-serif">
-                            New Patients
-                          </h1>
-                          <h1 className="text-4xl px-3 font-mono">46</h1>
-                        </div>
-                      </div>
-                      <div className="bg-[#fff0] w-full p-2">
-                        <div className="bg-[#ffffffc4] h-full rounded-2xl">
-                          <h1 className="text-xl px-3 pt-3 pb-1 font-serif">
-                            Old Patients
-                          </h1>
-                          <h1 className="text-4xl px-3 font-mono">62</h1>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className=" col-start-3 ">
-                  <img
-                    src="/Doctor2.png"
-                    alt="doctor"
-                    className="h-full object-cover"
-                  />
-                </div>
-              </div>
+    <div className="h-full grid grid-cols-6 grid-rows-5 gap-4">
+      <div className="col-span-4 relative flex row-span-2 h-full bg-gradient-to-br from-[#8047db] to-[#c2a6ee] rounded-2xl">
+        <div className="w-[380px] py-6 pl-6">
+          <p className="text-sm text-white">{currentDate}</p>
+          <h2 className="text-2xl font-bold mt-2 text-white font-sans">
+            Welcome back, <br />{" "}
+            <span className="ml-23">{loading ? "..." : name || "Doctor"}</span>
+          </h2>
+          <p className="text-sm opacity-75 text-white italic">
+            Always stay updated in your student portal
+          </p>
+          <div className=" bottom-6 absolute flex w-[350px] h-[85px] gap-4 mt-12">
+            <div className="bg-[#ffffffb6] relative w-1/2 text-black p-3 rounded-lg shadow-md">
+              <p className="text-sm font-semibold">New Patients</p>
+              <p className="text-4xl font-serif">40</p>
+              <span className="text-green-600 absolute bottom-2 right-2 bg-[#d3fdd0] px-3 py-1 rounded-md text-[13px] font-mono">
+                51% &#x2197;
+              </span>
             </div>
-            <div className="border">4</div>
+            <div className="bg-[#ffffffb6] relative w-1/2 text-black p-3 rounded-lg shadow-md">
+              <p className="text-sm font-semibold">Old Patients</p>
+              <p className="text-4xl font-serif">64</p>
+              <span className="text-red-600 absolute bottom-2 right-2 bg-red-200 px-3 py-1 rounded-md text-[13px] font-mono">
+                20% &#x2198;
+              </span>
+            </div>
           </div>
         </div>
-        <div className="border">2</div>
+        <div className="w-fit">
+          <img src="/Doctor2.png" className="h-full pt-2 object-center" />
+        </div>
+        <div className="w-[254px] flex flex-col gap-3 my-auto mx-auto font-serif text-[13px] text-white text-center">
+          <p>
+            "Listen not only with your ears but also with your heart—because
+            sometimes, what a patient needs most is not advice, but
+            understanding"
+          </p>
+          <p>
+            "And remember, healing begins the moment someone feels truly heard"
+          </p>
+        </div>
       </div>
+      <div className=" col-span-2 row-span-5 col-start-5">
+        <DoctorScheduleViewer doctorId={profileId} />
+      </div>
+      <div className="border col-span-4 row-span-3 row-start-3">6</div>
     </div>
   );
 };
