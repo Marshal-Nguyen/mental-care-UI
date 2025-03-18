@@ -465,20 +465,17 @@ export default function Booking() {
                     <div
                       key={idx}
                       className={`flex justify-center items-center h-10 rounded-full
-                        ${
-                          isPastDate
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "cursor-pointer hover:bg-purple-100 transition-colors duration-200"
+                        ${isPastDate
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "cursor-pointer hover:bg-purple-100 transition-colors duration-200"
                         }
-                        ${
-                          isSelectedDate
-                            ? "bg-purple-600 text-white font-medium"
-                            : ""
+                        ${isSelectedDate
+                          ? "bg-purple-600 text-white font-medium"
+                          : ""
                         }
-                        ${
-                          isTodayDate && !isSelectedDate
-                            ? "border border-purple-500 font-medium"
-                            : ""
+                        ${isTodayDate && !isSelectedDate
+                          ? "border border-purple-500 font-medium"
+                          : ""
                         }
                       `}
                       onClick={() => !isPastDate && handleDateClick(day)}>
@@ -501,12 +498,11 @@ export default function Booking() {
                       <button
                         key={i}
                         className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200
-                          ${
-                            slot.status === "Available"
-                              ? selectedTimeSlot === slot
-                                ? "bg-purple-600 text-white border-purple-600 shadow-md"
-                                : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100"
-                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ${slot.status === "Available"
+                            ? selectedTimeSlot === slot
+                              ? "bg-purple-600 text-white border-purple-600 shadow-md"
+                              : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
                           }`}
                         disabled={slot.status !== "Available"}
                         onClick={() =>
@@ -543,10 +539,9 @@ export default function Booking() {
               {/* Nút đặt lịch */}
               <button
                 className={`w-full py-4 rounded-xl font-bold text-white shadow-md transition-all duration-300 
-                  ${
-                    selectedTimeSlot
-                      ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
-                      : "bg-gray-400"
+                  ${selectedTimeSlot
+                    ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
+                    : "bg-gray-400"
                   }`}
                 onClick={handleBookingContinue}
                 disabled={!selectedTimeSlot}>

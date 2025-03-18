@@ -33,6 +33,7 @@ import ListCustomerManager from "./pages/manager/customer/ListCustomer";
 import AddStaff from "./pages/manager/staff/AddStaff";
 import ListStaff from "./pages/manager/staff/ListStaff";
 import CustomerDetail from "./components/manager/customer/CustomerDetail";
+import DoctorDetail from "./components/manager/doctor/DoctorDetail";
 import AcceptDoctor from "./pages/manager/doctor/AcceptDoctor";
 import ListDoctor from "./pages/manager/doctor/ListDoctor";
 import AddPackages from "./pages/manager/services/AddService";
@@ -120,6 +121,8 @@ function App() {
             {/* <Route path="doctor" element={<AcceptDoctor />} /> */}
             <Route path="addDoctor" element={<AcceptDoctor />} />
             <Route path="viewDoctor" element={<ListDoctor />} />
+            <Route path="viewDoctor/:id" element={<DoctorDetail />} />
+
             {/* <Route path="promotion" element={<AddPackages />} /> */}
             <Route path="addPackages" element={<AddPackages />} />
             <Route path="managePackages" element={<ListPackages />} />

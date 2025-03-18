@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Loader from "../../../components/Web/Loader";
 import {
   Star,
   MapPin,
@@ -13,11 +14,11 @@ import {
 } from "lucide-react";
 
 // Giả định Loader component
-const Loader = () => (
-  <div className="flex justify-center items-center h-64">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-  </div>
-);
+// const Loader = () => (
+//   <div className="flex justify-center items-center h-64">
+//     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+//   </div>
+// );
 
 const DoctorList = () => {
   const navigate = useNavigate();
@@ -339,11 +340,10 @@ const DoctorList = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => handleFilterChange("rating")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  selectedFilter === "rating"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}>
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedFilter === "rating"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 mr-1" />
                   Đánh giá cao nhất
@@ -352,11 +352,10 @@ const DoctorList = () => {
 
               <button
                 onClick={() => handleFilterChange("specialties")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  selectedFilter === "specialties"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}>
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedFilter === "specialties"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}>
                 <div className="flex items-center">
                   <Award className="w-4 h-4 mr-1" />
                   Chuyên khoa
@@ -367,9 +366,8 @@ const DoctorList = () => {
             <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded ${
-                  viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500"
-                }`}>
+                className={`p-2 rounded ${viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500"
+                  }`}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -405,9 +403,8 @@ const DoctorList = () => {
 
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded ${
-                  viewMode === "list" ? "bg-white shadow-sm" : "text-gray-500"
-                }`}>
+                className={`p-2 rounded ${viewMode === "list" ? "bg-white shadow-sm" : "text-gray-500"
+                  }`}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"

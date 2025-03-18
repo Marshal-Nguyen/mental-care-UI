@@ -18,8 +18,6 @@ const App = () => {
         { to: "customer", label: "List Of Customer" },
         { to: "message", label: "Message" },
         { to: "doctor", label: "List Of Doctor" },
-        { to: "blog", label: "Blog" },
-        { to: "regit", label: "Regit" }
     ];
 
     return (
@@ -30,7 +28,7 @@ const App = () => {
                     initial={{ x: "300%", opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: "easeOut" }}
-                    className={`${styles.knewave} text-[#9553f2] font-light text-5xl tracking-widest`}
+                    className={`${styles.knewave} text-[#9553f2] font-light text-4xl tracking-widest`}
                 >
                     EMOEASE
                 </motion.div>

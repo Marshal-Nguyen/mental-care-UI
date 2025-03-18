@@ -7,13 +7,13 @@ export default function Manager() {
     const navigate = useNavigate();
     const [history, setHistory] = useState(["Dashboard"]);
     const [activeTab, setActiveTab] = useState("Dashboard");
-    useEffect(() => {
-        const Authorization = localStorage.getItem('token');
-        const role = localStorage.getItem('userRole');
-        if (!Authorization || role !== 'Manager') {
-            navigate('/HomeUser');
-        }
-    }, [navigate]);
+    // useEffect(() => {
+    //     const Authorization = localStorage.getItem('token');
+    //     const role = localStorage.getItem('userRole');
+    //     if (!Authorization || role !== 'Manager') {
+    //         navigate('/HomeUser');
+    //     }
+    // }, [navigate]);
     const handleMenuClick = (menuText) => {
         setActiveTab(menuText);
         setHistory((prevHistory) => {
@@ -31,7 +31,7 @@ export default function Manager() {
                 <div className="flex-auto overflow-y-auto relative">
                     <div>
                         {/* Thanh Manager */}
-                        <div className="fixed top-0 py-2 left-0 w-full border border-gray-200 bg-white z-20 ml-56">
+                        <div className="fixed top-0 py-2 left-0 w-full border border-gray-200 bg-white z-100 ml-56">
                             <div className="flex justify-end items-center space-x-2 mr-58">
                                 <span className="text-blue-800 text-lg font-medium">
                                     Manager Name
@@ -47,7 +47,7 @@ export default function Manager() {
                         </div>
 
                         {/* Thanh Tab */}
-                        <div className="fixed top-11 border border-gray-200 left-0 w-full bg-white z-10 pl-56">
+                        <div className="fixed top-11 border border-gray-200 left-0 w-full bg-white z-90 pl-56">
                             <Tab
                                 history={history}
                                 setHistory={setHistory}
@@ -57,9 +57,10 @@ export default function Manager() {
                         </div>
 
                         {/* Nội dung bên dưới */}
-                        <div className="pt-[120px]">
-                            <Outlet />
+                        <div className="flex flex-col pt-[10px] mt-10">
+                            <Outlet className="flex-1" />
                         </div>
+
                     </div>
                 </div>
             </div>

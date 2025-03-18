@@ -50,19 +50,16 @@ const Tab = ({ history, setHistory, activeTab, setActiveTab }) => {
 
     return (
         <div className="flex space-x-2 h-8">
-            {history.map((menuText, index) => (
+            {history.slice(0, 8).map((menuText, index) => (
                 <div
                     key={index}
-                    className={`flex items-center px-4 my-1  bg-blue-100 text-blue-700 rounded-lg shadow hover:bg-blue-200 ${menuText === activeTab ? "bg-blue-200 font-bold" : ""
+                    className={`flex items-center px-4 my-1 bg-blue-100 text-blue-700 rounded-lg shadow hover:bg-blue-200 ${menuText === activeTab ? "bg-blue-200 font-bold" : ""
                         }`}
                 >
-                    <span
-                        className="cursor-pointer"
-                        onClick={() => handleTabClick(menuText)}
-                    >
+                    <span className="cursor-pointer" onClick={() => handleTabClick(menuText)}>
                         {menuText}
                     </span>
-                    {menuText !== "Dashboard" && ( // Không hiển thị nút x nếu là Dashboard
+                    {menuText !== "Dashboard" && (
                         <button
                             className="ml-2 text-red-500 hover:text-red-700"
                             onClick={() => handleTabClose(menuText)}
@@ -72,6 +69,10 @@ const Tab = ({ history, setHistory, activeTab, setActiveTab }) => {
                     )}
                 </div>
             ))}
+            {history.length > 9 && (
+                <div className="flex items-center px-4 my-1 text-gray-500">...</div>
+            )}
+
         </div>
     );
 };
