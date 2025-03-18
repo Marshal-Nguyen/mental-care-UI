@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getDatabase } from "firebase/database"; // 🔹 Thêm dòng này
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -8,13 +9,13 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL, // 🔹 Thêm dòng này
 };
 
 // Khởi tạo Firebase
 const app = initializeApp(firebaseConfig);
-
-// Khởi tạo Authentication và Google Provider
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+const database = getDatabase(app); // 🔹 Thêm dòng này
 
-export { auth, provider, signInWithPopup };
+export { auth, provider, signInWithPopup, database };

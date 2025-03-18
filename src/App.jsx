@@ -68,6 +68,9 @@ import DashboarDoctor from "./pages/doctor/Dashboard/DashboarDoctor";
 import StatictisDoctor from "./pages/doctor/Dashboard/StatictisDoctor";
 import ProfileDoctor from "./pages/doctor/Dashboard/ProfileDoctor";
 import RoadMapCreate from "./pages/doctor/Dashboard/RoadMapCreate";
+import TestQuestionList from "./pages/Test/TestQuestionList";
+import PrivateRoute from "./components/Web/PrivateRoute";
+import HistoryDoctor from "./pages/doctor/Dashboard/HistoryDoctor";
 function App() {
   return (
     <>
@@ -86,24 +89,26 @@ function App() {
             <Route path="shop" element={<Shop />} />
             <Route path="workshop" element={<Workshop />} />
             <Route path="testEmotion" element={<TestEmotion />} />
+            <Route path="TestQuestionList" element={<TestQuestionList />} />
           </Route>
-
-          <Route path="/DashboardPartient" element={<DashboardPartient />}>
-            <Route index element={<Navigate to="StatictisPatient" />} />
-            <Route path="StatictisPatient" element={<StatictisPatient />} />
-            <Route path="Roadmap" element={<WeeklyPlanner />} />
-            <Route path="ProfilePatient" element={<ProfilePatient />} />
-            <Route path="History" element={<HistoryPatient />} />
+          <Route element={<PrivateRoute allowedRoles={["User"]} />}>
+            <Route path="/DashboardPartient" element={<DashboardPartient />}>
+              <Route index element={<Navigate to="StatictisPatient" />} />
+              <Route path="StatictisPatient" element={<StatictisPatient />} />
+              <Route path="Roadmap" element={<WeeklyPlanner />} />
+              <Route path="ProfilePatient" element={<ProfilePatient />} />
+              <Route path="HistoryPatient" element={<HistoryPatient />} />
+            </Route>
           </Route>
-
-          <Route path="/DashboardDoctor" element={<DashboarDoctor />}>
-            <Route index element={<Navigate to="StatictisDoctor" />} />
-            <Route path="StatictisDoctor" element={<StatictisDoctor />} />
-            <Route path="RoadmapCreate" element={<RoadMapCreate />} />
-            <Route path="ProfileDoctor" element={<ProfileDoctor />} />
-            <Route path="History" element={<HistoryPatient />} />
+          <Route element={<PrivateRoute allowedRoles={["Doctor"]} />}>
+            <Route path="/DashboardDoctor" element={<DashboarDoctor />}>
+              <Route index element={<Navigate to="StatictisDoctor" />} />
+              <Route path="StatictisDoctor" element={<StatictisDoctor />} />
+              <Route path="RoadmapCreate" element={<RoadMapCreate />} />
+              <Route path="ProfileDoctor" element={<ProfileDoctor />} />
+              <Route path="History" element={<HistoryDoctor />} />
+            </Route>
           </Route>
-
           {/* Route Manager */}
           <Route path="/Manager" element={<Manager />}>
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -129,18 +134,20 @@ function App() {
 
           <Route path="/manager/profile" element={<ProfileManager />} />
           {/* Route Staff */}
-          <Route path="/staff" element={<Staff />}>
-            <Route index element={<Navigate to="home" replace />} />
-            <Route path="chat" element={<Chatbox />} />
-            <Route path="regit" element={<Regist />} />
-            <Route path="customer" element={<ListCustomerStaff />} />
-            <Route path="doctor" element={<ListDoctorStaff />} />
-            <Route path="message" element={<MessengerUI />} />
-            <Route path="profile" element={<StaffProfile />} />
-            <Route path="blog" element={<BlogStaff />} />
-            {/* <Route path="home" element={<LearnAboutEmo />} /> */}
-            <Route path="home" element={<HomeStaff />} />
-            <Route path="dashboard" element={<DashboardStaff />} />
+          <Route element={<PrivateRoute allowedRoles={["Staff"]} />}>
+            <Route path="/staff" element={<Staff />}>
+              <Route index element={<Navigate to="home" replace />} />
+              <Route path="chat" element={<Chatbox />} />
+              <Route path="regit" element={<Regist />} />
+              <Route path="customer" element={<ListCustomerStaff />} />
+              <Route path="doctor" element={<ListDoctorStaff />} />
+              <Route path="message" element={<MessengerUI />} />
+              <Route path="profile" element={<StaffProfile />} />
+              <Route path="blog" element={<BlogStaff />} />
+              {/* <Route path="home" element={<LearnAboutEmo />} /> */}
+              <Route path="home" element={<HomeStaff />} />
+              <Route path="dashboard" element={<DashboardStaff />} />
+            </Route>
           </Route>
           {/* Các route khác */}
         </Routes>

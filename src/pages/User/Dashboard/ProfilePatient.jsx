@@ -1,545 +1,544 @@
-import React, { useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 
-const EditProfileForm = () => {
-  const [formData, setFormData] = useState({
-    fullName: "Mehrab Bozorgi",
-    email: "Mehrabbozorgi.business@gmail.com",
-    address: "33062 Zboncak isle",
-    contactNumber: "58077.79",
-    gender: "Male",
-    password: "sbdfbnd65sfdvb s",
-  });
+const PhysicalActivitiesRecommendation = ({
+  profileId,
+  onActivitiesSelected,
+  initialSelectedActivities = [],
+}) => {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedActivities, setSelectedActivities] = useState(
+    initialSelectedActivities
+  );
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const [sections, setSections] = useState({
-    personalActivities: {
-      expanded: false,
-      enabled: true,
-    },
-    entertainmentActivity: {
-      expanded: false,
-      enabled: true,
-    },
-    underlyingDisease: {
-      expanded: false,
-      enabled: true,
-    },
-  });
+  // Fetch physical activities from the API
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `https://psychologysupportlifestyles01-dmc2fjc6dqdbfhac.southeastasia-01.azurewebsites.net/physical-activities?pageIndex=${page}&pageSize=10`
+        );
 
-  // Hoạt động cá nhân
-  const [personalActivities, setPersonalActivities] = useState([
-    { id: 1, name: "Gardening", frequency: null, color: "bg-white" },
-    { id: 2, name: "Reading", frequency: null, color: "bg-purple-400" },
-    { id: 3, name: "Cooking", frequency: null, color: "bg-white" },
-    { id: 4, name: "Meditation", frequency: null, color: "bg-teal-500" },
-    { id: 5, name: "Writing", frequency: null, color: "bg-white" },
-    { id: 6, name: "Studying", frequency: null, color: "bg-amber-400" },
-    { id: 7, name: "Volunteering", frequency: null, color: "bg-white" },
-  ]);
+        // Mark activities that are already selected
+        const loadedActivities = response.data.physicalActivities.data;
 
-  // Hoạt động giải trí
-  const [entertainmentActivities, setEntertainmentActivities] = useState([
-    { id: 1, name: "Soccer", frequency: null, color: "bg-purple-400" },
-    { id: 2, name: "Tennis", frequency: null, color: "bg-purple-400" },
-    { id: 3, name: "Swimming", frequency: null, color: "bg-white" },
-    { id: 4, name: "Walk", frequency: null, color: "bg-white" },
-    { id: 5, name: "Rowing", frequency: null, color: "bg-teal-500" },
-    { id: 6, name: "Basketball", frequency: null, color: "bg-amber-400" },
-    { id: 7, name: "Yoga", frequency: null, color: "bg-white" },
-    { id: 8, name: "Golf", frequency: null, color: "bg-purple-400" },
-    { id: 9, name: "Boxing", frequency: null, color: "bg-white" },
-  ]);
+        setActivities(loadedActivities);
+        setTotalPages(response.data.physicalActivities.totalPages);
+        setLoading(false);
+      } catch (err) {
+        setError("Error fetching activity recommendations. Please try again.");
+        setLoading(false);
+        console.error("Error fetching physical activities:", err);
+      }
+    };
 
-  // Bệnh lý nền
-  const [underlyingDiseases, setUnderlyingDiseases] = useState([
-    { id: 1, name: "Hypertension", severity: null, color: "bg-white" },
-    { id: 2, name: "Diabetes", severity: null, color: "bg-purple-400" },
-    { id: 3, name: "Asthma", severity: null, color: "bg-teal-500" },
-    { id: 4, name: "Arthritis", severity: null, color: "bg-white" },
-    { id: 5, name: "Heart Disease", severity: null, color: "bg-amber-400" },
-    { id: 6, name: "Allergies", severity: null, color: "bg-white" },
-    { id: 7, name: "Migraine", severity: null, color: "bg-purple-400" },
-  ]);
+    fetchActivities();
+  }, [page]);
 
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedSection, setSelectedSection] = useState(null);
-  const [showFrequencyPopup, setShowFrequencyPopup] = useState(false);
-  const [showSeverityPopup, setShowSeverityPopup] = useState(false);
+  // Pass selected activities to parent whenever they change
+  useEffect(() => {
+    onActivitiesSelected(selectedActivities);
+  }, [selectedActivities, onActivitiesSelected]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const toggleSection = (section) => {
-    setSections((prevState) => ({
-      ...prevState,
-      [section]: {
-        ...prevState[section],
-        expanded: !prevState[section].expanded,
-      },
-    }));
-  };
-
-  const handleItemClick = (item, section) => {
-    setSelectedItem(item);
-    setSelectedSection(section);
-
-    if (section === "underlyingDisease") {
-      setShowSeverityPopup(true);
-    } else {
-      setShowFrequencyPopup(true);
+  // Initialize with any activities that were already selected
+  useEffect(() => {
+    if (initialSelectedActivities.length > 0) {
+      setSelectedActivities(initialSelectedActivities);
     }
+  }, [initialSelectedActivities]);
+
+  // Handle activity selection
+  const handleActivitySelection = (activity) => {
+    setSelectedActivities((prev) => {
+      // Check if already selected
+      const alreadySelected = prev.some((item) => item.id === activity.id);
+
+      if (alreadySelected) {
+        // Remove from selection
+        return prev.filter((item) => item.id !== activity.id);
+      } else {
+        // Add to selection
+        return [...prev, activity];
+      }
+    });
   };
 
-  const handleFrequencySelect = (frequency) => {
-    if (selectedSection === "personalActivities") {
-      setPersonalActivities((prevActivities) =>
-        prevActivities.map((act) =>
-          act.id === selectedItem.id
-            ? {
-                ...act,
-                frequency,
-                color:
-                  frequency === "daily"
-                    ? "bg-purple-400"
-                    : frequency === "weekly"
-                    ? "bg-teal-500"
-                    : frequency === "monthly"
-                    ? "bg-amber-400"
-                    : "bg-white",
-              }
-            : act
-        )
+  // Generate page buttons for pagination
+  const renderPageButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+
+    // Calculate range of pages to show
+    let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust if we're at the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Always show first page
+    if (startPage > 1) {
+      buttons.push(
+        <button
+          key="1"
+          onClick={() => setPage(1)}
+          className="px-3 py-1 border rounded bg-white hover:bg-gray-100">
+          1
+        </button>
       );
-    } else if (selectedSection === "entertainmentActivity") {
-      setEntertainmentActivities((prevActivities) =>
-        prevActivities.map((act) =>
-          act.id === selectedItem.id
-            ? {
-                ...act,
-                frequency,
-                color:
-                  frequency === "daily"
-                    ? "bg-purple-400"
-                    : frequency === "weekly"
-                    ? "bg-teal-500"
-                    : frequency === "monthly"
-                    ? "bg-amber-400"
-                    : "bg-white",
-              }
-            : act
-        )
+
+      // Add ellipsis if needed
+      if (startPage > 2) {
+        buttons.push(
+          <span key="start-ellipsis" className="px-2">
+            ...
+          </span>
+        );
+      }
+    }
+
+    // Add page buttons
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`px-3 py-1 border rounded ${
+            i === page ? "bg-blue-500 text-white" : "bg-white hover:bg-gray-100"
+          }`}>
+          {i}
+        </button>
       );
     }
-    setShowFrequencyPopup(false);
+
+    // Show last page if needed
+    if (endPage < totalPages) {
+      // Add ellipsis if needed
+      if (endPage < totalPages - 1) {
+        buttons.push(
+          <span key="end-ellipsis" className="px-2">
+            ...
+          </span>
+        );
+      }
+
+      buttons.push(
+        <button
+          key={totalPages}
+          onClick={() => setPage(totalPages)}
+          className="px-3 py-1 border rounded bg-white hover:bg-gray-100">
+          {totalPages}
+        </button>
+      );
+    }
+
+    return buttons;
   };
 
-  const handleSeveritySelect = (severity) => {
-    setUnderlyingDiseases((prevDiseases) =>
-      prevDiseases.map((disease) =>
-        disease.id === selectedItem.id
-          ? {
-              ...disease,
-              severity,
-              color:
-                severity === "mild"
-                  ? "bg-purple-400"
-                  : severity === "moderate"
-                  ? "bg-teal-500"
-                  : severity === "severe"
-                  ? "bg-amber-400"
-                  : "bg-white",
-            }
-          : disease
-      )
+  if (loading)
+    return (
+      <div className="text-center p-4">Loading activity recommendations...</div>
     );
-    setShowSeverityPopup(false);
-  };
+  if (error) return <div className="text-center p-4 text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Edit profile</h1>
+    <div className="bg-white shadow-md rounded-lg p-6 mt-6">
+      <h2 className="text-xl font-semibold mb-4">
+        Recommended Physical Activities
+      </h2>
+      <p className="text-gray-600 mb-4">
+        Select activities that interest you. Our system will use your
+        preferences to recommend personalized activities that may help improve
+        your wellbeing.
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <div className="mb-4">
-            <label className="block font-medium mb-2">Full Name</label>
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded"
-            />
+      {/* Selected activities summary at the top for better visibility */}
+      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+        <h3 className="font-medium mb-2">
+          Selected Activities ({selectedActivities.length})
+        </h3>
+        {selectedActivities.length > 0 ? (
+          <div className="flex flex-wrap gap-2 mb-1">
+            {selectedActivities.map((activity) => (
+              <span
+                key={activity.id}
+                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center">
+                {activity.name}
+                <button
+                  onClick={() => handleActivitySelection(activity)}
+                  className="ml-1 text-blue-600 hover:text-blue-800 font-bold">
+                  ×
+                </button>
+              </span>
+            ))}
           </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-2">Email</label>
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded pr-10"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-green-500"
-                  fill="currentColor"
-                  viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-2">Address</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-2">Contact Number</label>
-            <input
-              type="text"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-2">Gender</label>
-            <div className="relative">
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded appearance-none">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg
-                  className="fill-current h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-medium mb-2">Password</label>
-            <div className="relative">
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded pr-10"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-green-500"
-                  fill="currentColor"
-                  viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div className="space-y-4 mt-4 bg-gray-50 p-4 rounded">
-            {/* Personal activities */}
-            <div className="bg-white rounded shadow-sm">
-              <div
-                className="flex items-center justify-between p-4 cursor-pointer"
-                onClick={() => toggleSection("personalActivities")}>
-                <div className="flex items-center">
-                  <div className="mr-3 text-indigo-500">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                  </div>
-                  <span className="font-medium">Personal activities</span>
-                </div>
-                <div className="text-purple-600">
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"></path>
-                  </svg>
-                </div>
-              </div>
-
-              {sections.personalActivities.expanded && (
-                <div className="p-4 border-t border-gray-100 relative">
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                    {personalActivities.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className={`${
-                          activity.color
-                        } rounded-full px-4 py-1 text-sm cursor-pointer ${
-                          activity.color !== "bg-white"
-                            ? "text-white"
-                            : "text-black border border-gray-200"
-                        }`}
-                        onClick={() =>
-                          handleItemClick(activity, "personalActivities")
-                        }>
-                        {activity.name}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute right-4 h-full top-0 flex items-center">
-                    <div className="w-1 h-24 bg-purple-500 rounded"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Entertainment Activity */}
-            <div className="bg-white rounded shadow-sm">
-              <div
-                className="flex items-center justify-between p-4 cursor-pointer"
-                onClick={() => toggleSection("entertainmentActivity")}>
-                <div className="flex items-center">
-                  <div className="mr-3 text-indigo-500">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <span className="font-medium">Entertainment Activity</span>
-                </div>
-                <div className="text-purple-600">
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"></path>
-                  </svg>
-                </div>
-              </div>
-
-              {sections.entertainmentActivity.expanded && (
-                <div className="p-4 border-t border-gray-100 relative">
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                    {entertainmentActivities.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className={`${
-                          activity.color
-                        } rounded-full px-4 py-1 text-sm cursor-pointer ${
-                          activity.color !== "bg-white"
-                            ? "text-white"
-                            : "text-black border border-gray-200"
-                        }`}
-                        onClick={() =>
-                          handleItemClick(activity, "entertainmentActivity")
-                        }>
-                        {activity.name}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute right-4 h-full top-0 flex items-center">
-                    <div className="w-1 h-24 bg-purple-500 rounded"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Underlying disease */}
-            <div className="bg-white rounded shadow-sm">
-              <div
-                className="flex items-center justify-between p-4 cursor-pointer"
-                onClick={() => toggleSection("underlyingDisease")}>
-                <div className="flex items-center">
-                  <div className="mr-3 text-indigo-500">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <span className="font-medium">Underlying disease</span>
-                </div>
-                <div className="text-purple-600">
-                  <svg
-                    className="w-6 h-6"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"></path>
-                  </svg>
-                </div>
-              </div>
-
-              {sections.underlyingDisease.expanded && (
-                <div className="p-4 border-t border-gray-100 relative">
-                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                    {underlyingDiseases.map((disease) => (
-                      <div
-                        key={disease.id}
-                        className={`${
-                          disease.color
-                        } rounded-full px-4 py-1 text-sm cursor-pointer ${
-                          disease.color !== "bg-white"
-                            ? "text-white"
-                            : "text-black border border-gray-200"
-                        }`}
-                        onClick={() =>
-                          handleItemClick(disease, "underlyingDisease")
-                        }>
-                        {disease.name}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute right-4 h-full top-0 flex items-center">
-                    <div className="w-1 h-24 bg-purple-500 rounded"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        ) : (
+          <p className="text-gray-500 text-sm italic">
+            No activities selected yet
+          </p>
+        )}
       </div>
 
-      <div className="flex mt-6 space-x-4">
-        <button className="px-6 py-2 border border-orange-500 text-orange-500 rounded hover:bg-orange-50">
-          Cancel
-        </button>
-        <button className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
-          Save
-        </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {activities.map((activity) => (
+          <div
+            key={activity.id}
+            className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+              selectedActivities.some((item) => item.id === activity.id)
+                ? "bg-blue-100 border-blue-500"
+                : "hover:bg-gray-50"
+            }`}
+            onClick={() => handleActivitySelection(activity)}>
+            <div className="flex justify-between items-start">
+              <h3 className="font-medium text-lg">{activity.name}</h3>
+              {selectedActivities.some((item) => item.id === activity.id) && (
+                <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                  ✓
+                </span>
+              )}
+            </div>
+            <p className="text-gray-600 text-sm mt-1">{activity.description}</p>
+            <div className="mt-2 flex items-center text-sm">
+              <span className="mr-3">
+                <span className="font-medium">Intensity:</span>{" "}
+                {activity.intensityLevel}
+              </span>
+              <span>
+                <span className="font-medium">Impact:</span>{" "}
+                {activity.impactLevel}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Frequency selection popup */}
-      {showFrequencyPopup && (
-        <div className="fixed inset-0 bg-[#00000025] bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-72">
-            <h3 className="text-lg font-medium mb-4">
-              Select frequency for {selectedItem.name}
-            </h3>
-            <div className="space-y-3">
-              <button
-                className="w-full py-2 bg-purple-400 text-white rounded hover:bg-purple-500"
-                onClick={() => handleFrequencySelect("daily")}>
-                Daily
-              </button>
-              <button
-                className="w-full py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
-                onClick={() => handleFrequencySelect("weekly")}>
-                Weekly
-              </button>
-              <button
-                className="w-full py-2 bg-amber-400 text-white rounded hover:bg-amber-500"
-                onClick={() => handleFrequencySelect("monthly")}>
-                Monthly
-              </button>
-              <button
-                className="w-full py-2 bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setShowFrequencyPopup(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
+      {/* Improved Pagination */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+        <div className="text-sm text-gray-600">
+          Page {page} of {totalPages}
         </div>
-      )}
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+            className={`px-2 py-1 border rounded-l ${
+              page === 1
+                ? "bg-gray-100 text-gray-400"
+                : "bg-white hover:bg-gray-100"
+            }`}
+            aria-label="Previous page">
+            ←
+          </button>
 
-      {/* Severity selection popup */}
-      {showSeverityPopup && (
-        <div className="fixed inset-0 bg-[#00000025] bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-72">
-            <h3 className="text-lg font-medium mb-4">
-              Select severity for {selectedItem.name}
-            </h3>
-            <div className="space-y-3">
-              <button
-                className="w-full py-2 bg-purple-400 text-white rounded hover:bg-purple-500"
-                onClick={() => handleSeveritySelect("mild")}>
-                Mild
-              </button>
-              <button
-                className="w-full py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
-                onClick={() => handleSeveritySelect("moderate")}>
-                Moderate
-              </button>
-              <button
-                className="w-full py-2 bg-amber-400 text-white rounded hover:bg-amber-500"
-                onClick={() => handleSeveritySelect("severe")}>
-                Severe
-              </button>
-              <button
-                className="w-full py-2 bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setShowSeverityPopup(false)}>
-                Cancel
-              </button>
+          <div className="flex space-x-1">{renderPageButtons()}</div>
+
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page === totalPages}
+            className={`px-2 py-1 border rounded-r ${
+              page === totalPages
+                ? "bg-gray-100 text-gray-400"
+                : "bg-white hover:bg-gray-100"
+            }`}
+            aria-label="Next page">
+            →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modified EditProfileForm to include the new component
+const EditProfileForm = () => {
+  const profileId = useSelector((state) => state.auth.profileId);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    gender: "",
+    allergies: "",
+    personalityTraits: "",
+    contactInfo: {
+      address: "",
+      phoneNumber: "",
+      email: "",
+    },
+    recommendedActivities: [],
+  });
+
+  // Fetch patient data
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/patients/${profileId}`
+        );
+        const { patientProfileDto } = response.data;
+
+        // Set form data with patient information
+        setFormData({
+          fullName: patientProfileDto.fullName,
+          gender: patientProfileDto.gender,
+          allergies: patientProfileDto.allergies,
+          personalityTraits: patientProfileDto.personalityTraits,
+          contactInfo: {
+            address: patientProfileDto.contactInfo.address,
+            phoneNumber: patientProfileDto.contactInfo.phoneNumber,
+            email: patientProfileDto.contactInfo.email,
+          },
+          recommendedActivities: patientProfileDto.recommendedActivities || [],
+        });
+        setLoading(false);
+      } catch (err) {
+        setError("Error fetching patient data. Please try again.");
+        setLoading(false);
+        console.error("Error fetching patient data:", err);
+      }
+    };
+
+    fetchPatientData();
+  }, [profileId]);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Handle contact info changes
+  const handleContactInfoChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      contactInfo: {
+        ...formData.contactInfo,
+        [name]: value,
+      },
+    });
+  };
+
+  // Handle selected activities
+  const handleActivitiesSelected = (activities) => {
+    setFormData({
+      ...formData,
+      recommendedActivities: activities,
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      // Create the payload to match the expected API structure
+      const updatedProfile = {
+        patientProfileDto: {
+          id: profileId,
+          // Include userId from original data to maintain the reference
+          userId: null, // This should be replaced with the actual userId from the fetched data
+          fullName: formData.fullName,
+          gender: formData.gender,
+          allergies: formData.allergies,
+          personalityTraits: formData.personalityTraits,
+          contactInfo: formData.contactInfo,
+          // Keep medical history as is - assuming it's not editable in this form
+          medicalHistory: null, // This should be replaced with the actual medical history from the fetched data
+          medicalRecords: [],
+          recommendedActivities: formData.recommendedActivities.map(
+            (activity) => ({
+              id: activity.id,
+              name: activity.name,
+              description: activity.description,
+              intensityLevel: activity.intensityLevel,
+              impactLevel: activity.impactLevel,
+            })
+          ),
+        },
+      };
+
+      await axios.put(
+        `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/patients/${profileId}`,
+        updatedProfile
+      );
+
+      setLoading(false);
+      alert("Patient profile updated successfully!");
+      navigate(`/patients/${profileId}`); // Navigate to patient details page
+    } catch (err) {
+      setError("Error updating patient data. Please try again.");
+      setLoading(false);
+      console.error("Error updating patient data:", err);
+    }
+  };
+
+  if (loading)
+    return <div className="text-center p-6">Loading patient data...</div>;
+  if (error) return <div className="text-center p-6 text-red-600">{error}</div>;
+
+  return (
+    <div className="max-w-7xl mx-auto p-8 h-[94vh] bg-[#f6e8ff] rounded-2xl">
+      <div className="h-full overflow-y-auto p-2">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required>
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Non-binary">Non-binary</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Psychology Profile</h2>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Personality Traits
+                </label>
+                <select
+                  name="personalityTraits"
+                  value={formData.personalityTraits}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <option value="">Select Personality Trait</option>
+                  <option value="Introversion">Introversion</option>
+                  <option value="Extroversion">Extroversion</option>
+                  <option value="Ambiversion">Ambiversion</option>
+                  <option value="Neuroticism">Neuroticism</option>
+                  <option value="Conscientiousness">Conscientiousness</option>
+                  <option value="Agreeableness">Agreeableness</option>
+                  <option value="Openness">Openness</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Allergies
+                </label>
+                <input
+                  type="text"
+                  name="allergies"
+                  value={formData.allergies}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="List any allergies or enter 'None'"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.contactInfo.email}
+                  onChange={handleContactInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  value={formData.contactInfo.phoneNumber}
+                  onChange={handleContactInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.contactInfo.address}
+                  onChange={handleContactInfoChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows="3"
+                  required></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* Physical Activities Recommendation Component */}
+          <PhysicalActivitiesRecommendation
+            profileId={profileId}
+            onActivitiesSelected={handleActivitiesSelected}
+            initialSelectedActivities={formData.recommendedActivities}
+          />
+
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={() => navigate(`/patients/${profileId}`)}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

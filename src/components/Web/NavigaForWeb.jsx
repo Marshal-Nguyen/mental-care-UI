@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../styles/Web/Navigation.module.css";
+import { useSelector, useDispatch } from "react-redux";
+import { openLoginModal } from "../../store/authSlice"; // Import action mở modal
 
 const NavigaForWeb = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const location = useLocation(); // Lấy đường dẫn hiện tại
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  // ✅ Lấy trạng thái đăng nhập từ Redux store
+  const userRole = useSelector((state) => state.auth.userRole);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!userRole);
+
+  useEffect(() => {
+    setIsLoggedIn(!!userRole);
+  }, [userRole]); // Theo dõi userRole
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -23,6 +34,15 @@ const NavigaForWeb = () => {
     <nav className="ml-15 flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
       {/* Left Navigation */}
       <div className="flex space-x-10 text-gray-600 font-medium items-center">
+        <Link
+          to="TestQuestionList"
+          className={`hover:text-purple-500 ${
+            location.pathname === "/HomeUser/TestQuestionList"
+              ? "text-purple-500"
+              : ""
+          }`}>
+          Test
+        </Link>
         <Link
           to="learnAboutEmo"
           className={`hover:text-purple-500 ${
@@ -54,7 +74,7 @@ const NavigaForWeb = () => {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`block hover:bg-gray-100 ${
+            className={`block cursor-pointer ${
               location.pathname === "/HomeUser/workshop"
                 ? "text-purple-500"
                 : ""
@@ -91,11 +111,21 @@ const NavigaForWeb = () => {
           }`}>
           Blog
         </Link>
-        <Link
-          to="testEmotion"
-          className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
-          Take the test
-        </Link>
+
+        {/* ✅ Check trạng thái đăng nhập */}
+        {isLoggedIn ? (
+          <Link
+            to="testEmotion"
+            className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
+            Take the test
+          </Link>
+        ) : (
+          <button
+            onClick={() => dispatch(openLoginModal())}
+            className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
+            Take the test
+          </button>
+        )}
       </div>
     </nav>
   );

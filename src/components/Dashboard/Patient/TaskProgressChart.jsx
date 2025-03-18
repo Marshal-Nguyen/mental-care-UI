@@ -1,46 +1,143 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { format, parseISO } from "date-fns";
 
 const TaskProgressChart = () => {
   const [selectedWeek, setSelectedWeek] = useState("Week 1");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [animatedBars, setAnimatedBars] = useState([]);
   const [hoverInfo, setHoverInfo] = useState(null);
+  const [weeksData, setWeeksData] = useState({
+    "Week 1": { bars: [], metrics: [] },
+    "Week 2": { bars: [], metrics: [] },
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample data for weeks
-  const weeksData = {
-    "Week 1": {
-      bars: [
-        { day: "Monday", percentage: 35, tasks: 12, completed: 4 },
-        { day: "Tuesday", percentage: 80, tasks: 15, completed: 12 },
-        { day: "Wednesday", percentage: 65, tasks: 10, completed: 6 },
-        { day: "Thursday", percentage: 38, tasks: 8, completed: 3 },
-        { day: "Friday", percentage: 55, tasks: 12, completed: 7 },
-        { day: "Saturday", percentage: 72, tasks: 9, completed: 6 },
-        { day: "Sunday", percentage: 38, tasks: 5, completed: 2 },
-      ],
-      metrics: [
-        { label: "Time spent", value: "18h", percentage: 120 },
-        { label: "Lesson Learnt", value: "15h", percentage: 120 },
-        { label: "Exams Passed", value: "2h", percentage: 100 },
-      ],
-    },
-    "Week 2": {
-      bars: [
-        { day: "Monday", percentage: 42, tasks: 14, completed: 6 },
-        { day: "Tuesday", percentage: 65, tasks: 12, completed: 8 },
-        { day: "Wednesday", percentage: 78, tasks: 15, completed: 12 },
-        { day: "Thursday", percentage: 50, tasks: 10, completed: 5 },
-        { day: "Friday", percentage: 62, tasks: 13, completed: 8 },
-        { day: "Saturday", percentage: 85, tasks: 8, completed: 7 },
-        { day: "Sunday", percentage: 45, tasks: 6, completed: 3 },
-      ],
-      metrics: [
-        { label: "Time spent", value: "20h", percentage: 130 },
-        { label: "Lesson Learnt", value: "17h", percentage: 125 },
-        { label: "Exams Passed", value: "3h", percentage: 110 },
-      ],
-    },
-  };
+  const profileId = useSelector((state) => state.auth.profileId);
+  console.log("profileId", profileId);
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // First API call to get schedule info
+        const schedulesResponse = await axios.get(
+          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/schedules?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`
+        );
+
+        if (schedulesResponse.data.schedules.data.length === 0) {
+          setError("No schedules found");
+          setLoading(false);
+          return;
+        }
+
+        // Second API call to get sessions data
+        const sessionsResponse = await axios.get(
+          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/schedule/get-total-sessions?ScheduleId=${
+            schedulesResponse.data.schedules.data[0].id
+          }&StartDate=${schedulesResponse.data.schedules.data[0].startDate.substring(
+            0,
+            10
+          )}&EndDate=${schedulesResponse.data.schedules.data[0].endDate.substring(
+            0,
+            10
+          )}`
+        );
+
+        // Process sessions data
+        const sessions = sessionsResponse.data.sessions;
+        console.log("sessions", sessions);
+        // Split sessions into two weeks
+        const week1Sessions = sessions.slice(0, 7);
+        const week2Sessions = sessions.slice(7, 14);
+
+        // Transform data for chart display
+        const processedData = {
+          "Week 1": {
+            bars: week1Sessions.map((session) => {
+              const date = parseISO(session.order);
+              return {
+                day: format(date, "EEE"),
+                fullDate: format(date, "yyyy-MM-dd"),
+                percentage: session.percentage || 0,
+                sessionId: session.sessionId,
+              };
+            }),
+            metrics: [
+              {
+                label: "Hoàn thành",
+                value: getCompletionCount(week1Sessions),
+                percentage: getCompletionPercentage(week1Sessions),
+              },
+              { label: "Tổng số phiên", value: week1Sessions.length },
+              {
+                label: "Tiến độ trung bình",
+                value: `${getAveragePercentage(week1Sessions)}%`,
+              },
+            ],
+          },
+          "Week 2": {
+            bars: week2Sessions.map((session) => {
+              const date = parseISO(session.order);
+              return {
+                day: format(date, "EEE"),
+                fullDate: format(date, "yyyy-MM-dd"),
+                percentage: session.percentage || 0,
+                sessionId: session.sessionId,
+              };
+            }),
+            metrics: [
+              {
+                label: "Hoàn thành",
+                value: getCompletionCount(week2Sessions),
+                percentage: getCompletionPercentage(week2Sessions),
+              },
+              { label: "Tổng số phiên", value: week2Sessions.length },
+              {
+                label: "Tiến độ trung bình",
+                value: `${getAveragePercentage(week2Sessions)}%`,
+              },
+            ],
+          },
+        };
+
+        setWeeksData(processedData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+        setLoading(false);
+      }
+    };
+
+    if (profileId) {
+      fetchData();
+    }
+  }, [profileId]);
+
+  // Helper functions for metrics calculations
+  function getCompletionCount(sessions) {
+    return sessions.filter((session) => session.percentage === 100).length;
+  }
+
+  function getCompletionPercentage(sessions) {
+    const completedCount = getCompletionCount(sessions);
+    return sessions.length > 0
+      ? Math.round((completedCount / sessions.length) * 100)
+      : 0;
+  }
+
+  function getAveragePercentage(sessions) {
+    if (sessions.length === 0) return 0;
+    const sum = sessions.reduce(
+      (acc, session) => acc + (session.percentage || 0),
+      0
+    );
+    return Math.round(sum / sessions.length);
+  }
 
   // Get current data based on selected week
   const currentData = weeksData[selectedWeek];
@@ -50,17 +147,21 @@ const TaskProgressChart = () => {
 
   // Animation effect for bars when data changes
   useEffect(() => {
-    // Reset bars to 0 height first
-    setAnimatedBars(currentData.bars.map((bar) => ({ ...bar, percentage: 0 })));
+    if (currentData.bars.length > 0) {
+      // Reset bars to 0 height first
+      setAnimatedBars(
+        currentData.bars.map((bar) => ({ ...bar, percentage: 0 }))
+      );
 
-    // Use setTimeout to trigger the animation after a small delay
-    const timer = setTimeout(() => {
-      // Animate to actual height
-      setAnimatedBars(currentData.bars);
-    }, 50);
+      // Use setTimeout to trigger the animation after a small delay
+      const timer = setTimeout(() => {
+        // Animate to actual height
+        setAnimatedBars(currentData.bars);
+      }, 50);
 
-    return () => clearTimeout(timer);
-  }, [selectedWeek]);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedWeek, currentData.bars]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -83,10 +184,28 @@ const TaskProgressChart = () => {
     setHoverInfo(null);
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64 bg-white rounded-2xl shadow-md p-6">
+        Đang tải dữ liệu...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64 bg-white rounded-2xl shadow-md p-6 text-red-500">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 w-full mx-auto">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-xl font-semibold text-gray-800">Tasks Progress</h1>
+        <h1 className="text-xl font-semibold text-gray-800">
+          Tiến độ phiên hỗ trợ
+        </h1>
         <div className="relative inline-block">
           <button
             className="flex items-center bg-gray-100 border-none rounded-lg px-4 py-2 text-sm text-gray-800"
@@ -155,7 +274,8 @@ const TaskProgressChart = () => {
                     className="absolute bottom-0 w-full bg-purple-700 rounded-2xl transition-all duration-1000 ease-out"
                     style={{ height: `${item.percentage}%` }}></div>
                 </div>
-                <div className="mt-2 text-sm text-gray-500">{item.day}</div>
+                <div className="mt-2 text-xs text-gray-500">{item.day}</div>
+                <div className="text-xs text-gray-400">{item.fullDate}</div>
               </div>
             ))}
 
@@ -168,28 +288,23 @@ const TaskProgressChart = () => {
                   left: `${hoverInfo.index * 40}px`,
                 }}>
                 <div className="font-bold">{hoverInfo.item.day}</div>
-                <div>Completion: {hoverInfo.item.percentage}%</div>
-                <div>Tasks: {hoverInfo.item.tasks}</div>
-                <div>Completed: {hoverInfo.item.completed}</div>
+                <div>{hoverInfo.item.fullDate}</div>
+                <div>Hoàn thành: {hoverInfo.item.percentage}%</div>
+                <div>Session ID: {hoverInfo.item.sessionId.slice(0, 8)}...</div>
               </div>
             )}
           </div>
         </div>
 
         {/* Metrics container */}
-        <div className="w-2/12 flex flex-col justify-center space-y-6 ml-15">
+        <div className="w-2/12 flex flex-col justify-center space-y-6">
           {currentData.metrics.map((metric, index) => (
             <div key={index} className="flex flex-col space-y-2">
               <div className="text-sm text-gray-500">{metric.label}</div>
               <div className="flex items-center justify-between">
-                <div className="text-2xl font-semibold text-gray-800">
+                <div className="text-xl font-semibold text-gray-800">
                   {metric.value}
                 </div>
-                {/* <div className="w-24 h-3 bg-gray-200 rounded-full overflow-hidden ml-4">
-                  <div
-                    className="h-full bg-teal-400 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${metric.percentage}%` }}></div>
-                </div> */}
               </div>
             </div>
           ))}

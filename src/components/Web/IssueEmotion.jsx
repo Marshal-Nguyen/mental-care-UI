@@ -21,32 +21,50 @@ const IssueEmotion = () => {
           />
 
           <div
-            data-aos="fade-right"
-            className="absolute w-[230px] text-[#3d1085]  h-[280px] rounded-2xl top-[-10%] left-[17%] border border-[#3d1085]">
-            <span className="text-xl font-semibold text-white bg-gradient-to-b from-pink-300 to-purple-500 px-2 py-1 rounded-md shadow-sm border border-[#3d1085]">
-              🔹 Mood Swings
-            </span>
-            <p className="mt-2 text-md p-2">Easily irritated, feeling sad without reason, or losing interest in activities.</p>
+            data-aos="fade-down"
+            className="absolute w-[230px] text-[#3d1085] h-[280px] rounded-2xl top-[-10%] left-[17%] border border-[#3d1085] p-4 flex flex-col justify-center items-center text-center">
+            <h3 className={`${styles.listenYour} font-bold text-lg`}>
+              When You Feel Overwhelmed
+            </h3>
+            <p className="text-sm mt-2 italic">
+              "Don’t let your mind become an overflowing cup. Pause, breathe,
+              and let go of what’s unnecessary."
+            </p>
           </div>
 
           <div
             data-aos="fade-right"
-            className="absolute w-[340px] h-[200px] text-[#3d1085] rounded-2xl bottom-[-15%] left-[5%] border border-[#3d1085]">
-            <span className="text-xl font-semibold text-white bg-gradient-to-b from-pink-300 to-purple-500 px-2 py-1 rounded-md shadow-sm border border-[#3d1085]">🔹 Stress and Burnout</span>
-            <p className="mt-2 text-md p-2">Feeling overwhelmed, drained, and struggling to focus on tasks.</p>
+            className="absolute w-[340px] h-[200px] text-[#3d1085] rounded-2xl bottom-[-15%] left-[5%] border border-[#3d1085] p-4 flex flex-col justify-center items-center text-center">
+            <h3 className={`${styles.listenYour} font-bold text-lg`}>
+              When You Lose Connection
+            </h3>
+            <p className="text-sm mt-2 italic">
+              "We spend so much time understanding others but forget to ask:
+              ‘What do I truly want?’"
+            </p>
           </div>
-          <div
-            data-aos="fade-left"
-            className="absolute w-[340px] h-[200px] text-[#3d1085]  rounded-2xl top-[-10%] right-[5%] border border-[#3d1085]">
-            <span className="text-xl font-semibold text-white bg-gradient-to-b from-pink-300 to-purple-500 px-2 py-1 rounded-md shadow-sm border border-[#3d1085]">🔹 Sleep and Eating Disorders</span>
-            <p className="mt-2 text-md p-2">Experiencing insomnia, oversleeping, irregular eating habits, or sudden weight changes.</p>
-          </div>
-          <div
-            data-aos="fade-left"
-            className="absolute w-[270px] h-[280px] text-[#3d1085]  rounded-2xl bottom-[-15%] right-[13%] border border-[#3d1085]">
-            <span className="text-xl font-semibold text-white bg-gradient-to-b from-pink-300 to-purple-500 px-2 py-1 rounded-md shadow-sm border border-[#3d1085]">🔹 Social Withdrawal</span>
-            <p className="mt-2 text-md p-2">Avoiding interactions, isolating yourself, and feeling lonely even around others.</p>
 
+          <div
+            data-aos="fade-left"
+            className="absolute w-[340px] h-[200px] text-[#3d1085] rounded-2xl top-[-10%] right-[5%] border border-[#3d1085] p-4 flex flex-col justify-center items-center text-center">
+            <h3 className={`${styles.listenYour} font-bold text-lg`}>
+              When Small Joys Fade
+            </h3>
+            <p className="text-sm mt-2 italic">
+              "Life hasn’t lost its colors—your eyes are just tired."
+            </p>
+          </div>
+
+          <div
+            data-aos="fade-up"
+            className="absolute w-[230px] h-[280px] text-[#3d1085] rounded-2xl bottom-[-15%] right-[13%] border border-[#3d1085] p-4 flex flex-col justify-center items-center text-center">
+            <h3 className={`${styles.listenYour} font-bold text-lg`}>
+              When Emotions Take Over
+            </h3>
+            <p className="text-sm mt-2 italic">
+              "Your emotions aren’t the enemy—they are messages from your
+              heart."
+            </p>
           </div>
         </div>
       </div>

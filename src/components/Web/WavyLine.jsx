@@ -5,13 +5,17 @@ const WavyLine = ({ step, totalSteps }) => {
   const waveShift = -step * stepSpacing;
 
   const wavePath =
-    "M -90 -110.88 T -90 105.12 T 410 105.12 T 1410 105.12 T 2410 105.12 T 3410 105.12 T 4410 105.12";
+    "M -90 -110.88 T -90 105.12 T 410 105.12 T 1410 105.12 T 2410 105.12 T 3410 105.12 T 4410 105.12 T 5410 105.12 T 6410 105.12 T 7410 105.12 T 8410 105.12";
 
   const icons = [
     "waving-hand-svgrepo-com.svg",
     "eye-svgrepo-com.svg",
     "heart-svgrepo-com.svg",
+    "sleep-svgrepo-com.svg",
     "share-svgrepo-com.svg",
+    "sports-svgrepo-com.svg",
+    "health-care-diet-svgrepo-com.svg",
+    "heart-svgrepo-com.svg",
   ];
 
   return (
@@ -49,7 +53,7 @@ const WavyLine = ({ step, totalSteps }) => {
               />
               {/* Icon tương ứng từng step */}
               <motion.image
-                href={icons[i % icons.length]}
+                href={`/IconForIntro/${icons[i % icons.length]}`}
                 x={xPos + 1375}
                 y={80}
                 width={50}

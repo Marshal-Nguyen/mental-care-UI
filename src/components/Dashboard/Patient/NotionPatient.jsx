@@ -2,7 +2,7 @@ import React from "react";
 
 const NotionPatient = () => {
   return (
-    <div className="bg-[#fff] px-4 flex flex-col h-[305px]">
+    <div className="bg-[#fff] px-4 flex flex-col h-[296px]">
       <div className="bg-white rounded-3xl shadow-lg overflow-hidden max-w-md w-full p-5 h-full">
         {/* Daily Notion Section */}
         <div className="mb-2">

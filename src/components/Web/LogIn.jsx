@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 import styles from "../../styles/Web/LogIn.module.css";
 import { auth, provider, signInWithPopup } from "../../util/firebase/firebase";
@@ -8,9 +7,19 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setCredentials,
+  clearCredentials,
+  closeLoginModal,
+  openLoginModal,
+} from "../../store/authSlice";
 const LogIn = () => {
+  const dispatch = useDispatch();
+  const isModalOpen = useSelector((state) => state.auth.isLoginModalOpen);
+  const [userRole, setUserRole] = useState(null);
   const [open, setOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(StateModalOpen);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
   const [userImage, setUserImage] = useState(null); // Lưu ảnh đại diện
   const navigate = useNavigate();
@@ -30,116 +39,106 @@ const LogIn = () => {
   };
 
   // Xử lý đăng nhập
+  // ✅ Kiểm tra LocalStorage khi component được mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUserRole = localStorage.getItem("userRole");
+    const storedUserImage = localStorage.getItem("userImage");
+
+    if (storedToken && storedUserRole) {
+      setIsLoggedIn(true);
+      setUserRole(storedUserRole);
+      setUserImage(storedUserImage || "https://i.pravatar.cc/150?img=3");
+    }
+  }, []);
+
+  // Xử lý đăng nhập
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-    const input = formData.email; // Ô input nhập vào
-    const isEmail = /.+@.+\..+/.test(input); // Kiểm tra có phải email không
-
-    const data = {
-      [isEmail ? "email" : "phoneNumber"]: input,
-      password: formData.password,
-    };
     try {
       const response = await axios.post(
         "https://psychologysupportauth-gqdkbafkbpf5a4gf.eastasia-01.azurewebsites.net/Auth/login",
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        formData,
+        { headers: { "Content-Type": "application/json" } }
       );
+
       const token = response.data.token;
       const decodedToken = jwtDecode(token);
       const userRole = decodedToken.role;
-      // Lưu token vào localStorage
-      localStorage.setItem("token", token);
+      const profileId = decodedToken.profileId;
+
+      // ✅ Lưu thông tin vào Redux và LocalStorage
+      dispatch(setCredentials({ token, userRole, profileId }));
+      localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", userRole);
-      setFormData({
-        email: "",
-        password: "",
-      });
-      console.log("User role:", userRole);
-      switch (userRole) {
-        case "Manager":
-          navigate("/manager", { replace: true });
-          toast.success("Login successful, welcome to Manager");
-          break;
-        case "Staff":
-          navigate("/staff", { replace: true });
-          break;
-        // chú g tự set đường dẫn ở đây nha
-        case "User":
-          toast.success("Đăng nhập thành công!", { position: "top-right" });
-          setIsLoggedIn(true); // Cập nhật trạng thái đăng nhập
-          setUserImage("https://i.pravatar.cc/150?img=3"); // Lưu ảnh đại diện
-          setIsModalOpen(false);
-          break;
-        case "Doctor":
-          toast.success("Đăng nhập thành công!", { position: "top-right" });
-          setIsLoggedIn(true); // Cập nhật trạng thái đăng nhập
-          setUserImage("https://i.pravatar.cc/150?img=3"); // Lưu ảnh đại diện
-          setIsModalOpen(false);
-          break;
-        default:
-          toast.error("Unknown user role");
-          break;
-      }
+      localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
+
+      setIsLoggedIn(true);
+      setUserRole(userRole);
+      setUserImage("https://i.pravatar.cc/150?img=3");
+
+      toast.success("Đăng nhập thành công!", { position: "top-right" });
+      dispatch(closeLoginModal());
     } catch (err) {
-      setError("Login failed. Please check your information again.");
-    } finally {
-      setLoading(false);
+      toast.error("Lỗi đăng nhập, vui lòng thử lại!", {
+        position: "top-right",
+      });
     }
   };
+
+  // Đăng nhập bằng Google
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Kiểm tra email có đuôi ".fpt.edu.vn"
       if (!user.email.endsWith("@fpt.edu.vn")) {
         toast.warn("Chỉ email FPT được phép đăng nhập!", {
           position: "top-right",
         });
-        auth.signOut(); // Đăng xuất ngay lập tức
+        auth.signOut();
         return;
       }
 
-      console.log("Đăng nhập thành công:", user);
-      console.log("Tên:", user.displayName);
-      console.log("Email:", user.email);
-      console.log("Ảnh đại diện:", user.photoURL);
-      console.log("UID:", user.uid);
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userRole", "User");
+      localStorage.setItem("userImage", user.photoURL);
+
+      setIsLoggedIn(true);
+      setUserRole("User");
+      setUserImage(user.photoURL);
+      dispatch(closeLoginModal());
+
       toast.success("Đăng nhập thành công!", { position: "top-right" });
-      setIsLoggedIn(true); // Cập nhật trạng thái đăng nhập
-      setUserImage(user.photoURL); // Lưu ảnh đại diện
-      setIsModalOpen(false);
     } catch (error) {
       toast.error("Lỗi đăng nhập! Vui lòng thử lại.", {
         position: "top-right",
       });
-      console.error("Lỗi đăng nhập:", error);
     }
   };
+
+  // Xử lý đăng xuất
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      toast.success("Đã đăng xuất thành công!", { position: "top-right" });
-      console.log("Đã đăng xuất thành công!");
-      // toast.success('Logout successful. See you next time!');
-      localStorage.clear();
-      setIsLoggedIn(false); // Đặt lại trạng thái đăng nhập
-      setUserImage(null); // Xóa ảnh đại diện khi đăng xuất
+      dispatch(clearCredentials());
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userImage");
+
+      setIsLoggedIn(false);
+      setUserRole(null);
+      setUserImage(null);
       setOpen(false);
+      navigate("learnAboutEmo");
+      toast.success("Đã đăng xuất thành công!", { position: "top-right" });
     } catch (error) {
       toast.error("Lỗi đăng xuất! Vui lòng thử lại.", {
         position: "top-right",
       });
-      console.error("Lỗi khi đăng xuất:", error);
     }
   };
+
   return (
     <div className="relative">
       {/* Avatar Button */}
@@ -164,16 +163,15 @@ const LogIn = () => {
           <button
             onClick={() => {
               if (!isLoggedIn) {
-                setIsModalOpen(true);
+                dispatch(openLoginModal());
               } else {
-                // Get the userRole from localStorage
-                const userRole = localStorage.getItem("userRole");
-
                 // Check the role and navigate accordingly
                 if (userRole === "User") {
                   navigate("/DashboardPartient");
                 } else if (userRole === "Doctor") {
                   navigate("/DashboardDoctor");
+                } else if (userRole === "Staff") {
+                  navigate("/staff");
                 } else {
                   // Handle unexpected roles if necessary
                   console.error("Unknown user role");
@@ -193,6 +191,7 @@ const LogIn = () => {
           </button>
         </div>
       )}
+
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-[#4e4d4dbb] bg-opacity-50 z-51">
           <div class="relative py-3 sm:max-w-xl sm:mx-auto">
@@ -200,7 +199,7 @@ const LogIn = () => {
               <div class="max-w-md mx-auto">
                 <div class="flex items-center space-x-5 justify-center">
                   <button
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => dispatch(closeLoginModal())}
                     className="absolute top-3 right-0 text-gray-600 hover:text-black text-xl">
                     ✖
                   </button>
@@ -210,7 +209,7 @@ const LogIn = () => {
                 <div class="mt-5">
                   <label
                     class="font-semibold text-sm text-gray-600 pb-1 block"
-                    for="login">
+                    htmlFor="login">
                     E-mail or Phone Number
                   </label>
                   <input
@@ -295,12 +294,12 @@ const LogIn = () => {
                           x1="0"
                           id="LxT-gk5MfRc1Gl_4XsNKba_xoyhGXWmHnqX_gr1">
                           <stop
-                            stop-opacity=".2"
-                            stop-color="#fff"
+                            stopOpacity=".2"
+                            stopColor="#fff"
                             offset="0"></stop>
                           <stop
-                            stop-opacity="0"
-                            stop-color="#fff"
+                            stopOpacity="0"
+                            stopColor="#fff"
                             offset="1"></stop>
                         </linearGradient>
                         <path
@@ -332,7 +331,7 @@ const LogIn = () => {
                     className="text-xs text-blue-500 underline hover:text-blue-700 cursor-pointer"
                     onClick={() => {
                       navigate("/regist", { replace: true }); // Chỉ giữ lại "/regist"
-                      setIsModalOpen(false);
+                      dispatch(closeLoginModal());
                     }}>
                     or sign up
                   </a>
