@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import DoctorScheduleViewer from "../../../components/Dashboard/Doctor/DoctorScheduleViewer";
+import MedicalRecordsList from "../../../components/Dashboard/Doctor/MedicalRecordsList ";
 const StatictisDoctor = () => {
   const [currentDate, setCurrentDate] = useState("");
   const profileId = useSelector((state) => state.auth.profileId);
@@ -83,7 +84,9 @@ const StatictisDoctor = () => {
       <div className=" col-span-2 row-span-5 col-start-5">
         <DoctorScheduleViewer doctorId={profileId} />
       </div>
-      <div className="border col-span-4 row-span-3 row-start-3">6</div>
+      <div className=" col-span-4 row-span-3 row-start-3 text-red">
+        <MedicalRecordsList profileId={profileId} />
+      </div>
     </div>
   );
 };

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const MedicalProfile = ({ patientId }) => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const symptomsContainerRef = useRef(null);
   // patientId = "b0ea7bd6-e130-49a7-a539-037206e5954b";
 
   useEffect(() => {
@@ -29,7 +30,20 @@ const MedicalProfile = ({ patientId }) => {
     };
 
     fetchPatientData();
-  }, []);
+  }, [patientId]);
+
+  // Scroll handling for symptoms
+  const scrollLeft = () => {
+    if (symptomsContainerRef.current) {
+      symptomsContainerRef.current.scrollBy({ left: -100, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (symptomsContainerRef.current) {
+      symptomsContainerRef.current.scrollBy({ left: 100, behavior: "smooth" });
+    }
+  };
 
   // Get initials for avatar
   const getInitials = (name) => {
@@ -83,6 +97,12 @@ const MedicalProfile = ({ patientId }) => {
     );
   }
 
+  const hasSymptoms =
+    patient.medicalHistory?.physicalSymptoms &&
+    patient.medicalHistory.physicalSymptoms.length > 0;
+  const hasMultipleSymptoms =
+    hasSymptoms && patient.medicalHistory.physicalSymptoms.length > 3;
+
   return (
     <div className="bg-white px-4 flex items-center justify-center">
       <div className="bg-white rounded-3xl shadow-md overflow-hidden max-w-md w-full">
@@ -118,24 +138,54 @@ const MedicalProfile = ({ patientId }) => {
           </button>
         </div>
 
-        {/* Physical Symptoms */}
-        <div className="px-6 pt-4 pb-2 flex justify-evenly">
-          {patient.medicalHistory?.physicalSymptoms?.map((symptom) => (
-            <div key={symptom.id} className="flex flex-col items-center">
-              <div className="w-10 h-10  rounded-full flex items-center justify-center">
-                <img
-                  src={`/MedicalHistory/${symptom.name.replace(" ", "")}.png`}
-                  className="w-8 h-8 shadow-2xl"
-                  alt={symptom.name}
-                />
+        {/* Physical Symptoms with Scroll */}
+        <div className="px-6 pt-4 pb-2 relative">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-gray-800 text-sm">
+              Physical Symptoms
+            </h3>
+            {hasMultipleSymptoms && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={scrollLeft}
+                  className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                  <span>&larr;</span>
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                  <span>&rarr;</span>
+                </button>
               </div>
-              <span className="text-sm font-medium text-gray-700 mt-1">
-                {symptom.name}
-              </span>
+            )}
+          </div>
+
+          {hasSymptoms ? (
+            <div
+              ref={symptomsContainerRef}
+              className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              {patient.medicalHistory.physicalSymptoms.map((symptom) => (
+                <div
+                  key={symptom.id}
+                  className="flex flex-col items-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                    <img
+                      src={`/MedicalHistory/${symptom.name.replace(
+                        " ",
+                        ""
+                      )}.png`}
+                      className="w-8 h-8 shadow-2xl"
+                      alt={symptom.name}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 mt-1 whitespace-nowrap">
+                    {symptom.name}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-          {(!patient.medicalHistory?.physicalSymptoms ||
-            patient.medicalHistory.physicalSymptoms.length === 0) && (
+          ) : (
             <div className="text-sm text-gray-500 py-2">
               No physical symptoms recorded
             </div>
@@ -152,15 +202,6 @@ const MedicalProfile = ({ patientId }) => {
               patient.personalityTraits || "Not specified"
             }`}
           />
-
-          {/* Medical History */}
-          {/* <SectionItem
-            title="Medical History"
-            content={
-              patient.medicalHistory?.description ||
-              "No medical history available"
-            }
-          /> */}
 
           {/* Latest Notes */}
           {patient.medicalRecords && patient.medicalRecords.length > 0 && (
@@ -222,6 +263,15 @@ const MedicalProfile = ({ patientId }) => {
     </div>
   );
 };
+
+// Add CSS to hide scrollbar (can be placed in your global styles)
+const style = document.createElement("style");
+style.textContent = `
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+`;
+document.head.appendChild(style);
 
 // Helper Component
 const SectionItem = ({ title, content, status }) => (

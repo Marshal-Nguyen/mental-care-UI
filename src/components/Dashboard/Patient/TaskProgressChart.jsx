@@ -16,7 +16,7 @@ const TaskProgressChart = () => {
   const [error, setError] = useState(null);
 
   const profileId = useSelector((state) => state.auth.profileId);
-  console.log("profileId", profileId);
+
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -186,8 +186,9 @@ const TaskProgressChart = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-2xl shadow-md p-6">
-        Đang tải dữ liệu...
+      <div className="text-center py-10">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading...</p>
       </div>
     );
   }

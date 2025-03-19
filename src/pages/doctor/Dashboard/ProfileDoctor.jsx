@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 const ProfileDoctor = () => {
   const id = useSelector((state) => state.auth.profileId);
   // console.log("Test Doctor:", id);
@@ -131,35 +132,28 @@ const ProfileDoctor = () => {
 
       // Create the payload to match the expected API structure
       const updatedProfile = {
-        doctorProfileDto: {
-          id: id,
-          userId: null, // This would be replaced with the actual userId from fetched data
+        doctorProfileUpdate: {
           fullName: formData.fullName,
           gender: formData.gender,
           contactInfo: formData.contactInfo,
-          specialties: formData.specialties.map((id) => {
-            const specialty = specialtiesList.find((s) => s.id === id);
-            return { id: id, name: specialty ? specialty.name : "" };
-          }),
+          specialtyIds: formData.specialties.map((id) => ({ id })),
           qualifications: formData.qualifications,
           yearsOfExperience: parseInt(formData.yearsOfExperience),
           bio: formData.bio,
-          rating: null, // Rating is likely not editable by the doctor
         },
       };
 
+      console.log("updatedProfileDoctor", updatedProfile);
       await axios.put(
         `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${id}`,
         updatedProfile
       );
 
       setLoading(false);
-      alert("Doctor profile updated successfully!");
-      navigate(`/doctors/${id}`); // Navigate to doctor details page
+      toast.success("Patient profile updated successfully!");
     } catch (err) {
-      setError("Error updating doctor data. Please try again.");
+      toast.error("Error updating doctor");
       setLoading(false);
-      console.error("Error updating doctor data:", err);
     }
   };
 
