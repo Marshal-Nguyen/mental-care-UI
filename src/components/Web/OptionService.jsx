@@ -149,7 +149,8 @@ export default function Pricing() {
           endDate: endDateISO, // Ngày kết thúc lớn hơn ngày bắt đầu
           paymentMethodName: "VNPay",
         },
-        returnUrl: "http://localhost:5173/payments/callback",
+        // returnUrl: "http://localhost:5173/payments/callback",
+        returnUrl: "https://emo-rouge.vercel.app/payments/callback",
       };
 
       console.log("payloadData", JSON.stringify(payloadData, null, 2));
