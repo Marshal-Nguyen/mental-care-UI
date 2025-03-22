@@ -17,7 +17,8 @@ import {
   Star,
   BadgeInfo,
 } from "lucide-react";
-
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 export default function Booking() {
   const navigate = useNavigate();
   const { doctorId } = useParams();
@@ -27,6 +28,7 @@ export default function Booking() {
   const [isDateListOpen, setIsDateListOpen] = useState(true);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
 
+  const [promoCode, setPromoCode] = useState("");
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(
     today.toLocaleString("en-US", { month: "long", year: "numeric" })
@@ -37,7 +39,7 @@ export default function Booking() {
   const [availableSlots, setAvailableSlots] = useState([]);
 
   const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
+  const profileId = useSelector((state) => state.auth.profileId);
   // Hàm lấy số ngày trong tháng (cải tiến)
   const getDaysInMonth = (year, month) => {
     const firstDay = new Date(year, month, 1).getDay();
@@ -92,9 +94,11 @@ export default function Booking() {
 
     const fetchSchedule = async () => {
       try {
-        const formattedDate = selectedDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+        const formattedDate = selectedDate
+          .toLocaleDateString("en-CA")
+          .split("T")[0]; // Format: YYYY-MM-DD
         const response = await axios.get(
-          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
+          `https://psychologysupport-scheduling.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
         );
         setAvailableSlots(response.data.timeSlots || []);
       } catch (error) {
@@ -111,7 +115,7 @@ export default function Booking() {
     const fetchDoctorInfo = async () => {
       try {
         const response = await axios.get(
-          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${doctorId}`
+          `https://psychologysupport-profile.azurewebsites.net/doctors/${doctorId}`
         );
         setDoctor(response.data.doctorProfileDto);
         setLoading(false);
@@ -126,25 +130,64 @@ export default function Booking() {
   }, [doctorId]);
 
   // Xử lý khi ấn nút tiếp tục đặt lịch
-  const handleBookingContinue = () => {
+  // Update the handleBookingContinue function (around line 132)
+  const handleBookingContinue = async () => {
+    // Check if user is logged in by verifying token existence in localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // Show toast notification for unauthenticated user
+      toast.error("Vui lòng đăng nhập để đặt lịch tư vấn");
+      return;
+    }
+
     if (!selectedTimeSlot) {
       alert("Vui lòng chọn thời gian cho buổi tư vấn");
       return;
     }
 
-    // Tạo object chứa thông tin đặt lịch
-    const bookingInfo = {
-      doctorId,
-      doctorName: doctor?.fullName,
-      date: selectedDate.toISOString().split("T")[0],
-      timeSlot: selectedTimeSlot,
-    };
+    try {
+      // Extract the start time from the selected time slot
+      const startTime = selectedTimeSlot.startTime || selectedTimeSlot;
 
-    // Lưu thông tin đặt lịch vào localStorage hoặc state management solution
-    localStorage.setItem("bookingInfo", JSON.stringify(bookingInfo));
+      // Create the booking data object according to the required format
+      const bookingData = {
+        bookingDto: {
+          doctorId: doctorId,
+          patientId: profileId, // Using the value from the image
+          date: selectedDate.toLocaleDateString("en-CA").split("T")[0], // Format: YYYY-MM-DD
+          startTime: startTime,
+          duration: selectedTimeSlot.duration || 30, // Default to 60 if not available
+          price: 200000,
+          promoCode: promoCode.trim() || null,
+          giftCodeId: null, // As specified, set to null
+          paymentMethod: "VNPay", // Using the payment method from the image
+        },
+        returnUrl: "http://localhost:5173/payments/callback",
+      };
 
-    // Chuyển hướng đến trang xác nhận đặt lịch
-    navigate("/HomeUser/booking-confirm");
+      // Make API call to create the booking
+      console.log("bookingData", JSON.stringify(bookingData, null, 2));
+      const response = await axios.post(
+        "https://psychologysupport-scheduling.azurewebsites.net/bookings",
+        bookingData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data && response.data.paymentUrl) {
+        window.location.href = response.data.paymentUrl;
+      }
+    } catch (error) {
+      console.error("Lỗi khi đặt lịch:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Đã xảy ra lỗi khi đặt lịch. Vui lòng thử lại sau."
+      );
+    }
   };
 
   if (loading) return <Loader />;
@@ -154,7 +197,7 @@ export default function Booking() {
         <div className="p-8 bg-white rounded-lg shadow-md">
           <p className="text-red-500 text-lg">{error}</p>
           <button
-            onClick={() => navigate("/HomeUser/counselor")}
+            onClick={() => navigate("/EMO/counselor")}
             className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
             Quay lại trang danh sách bác sĩ
           </button>
@@ -167,7 +210,7 @@ export default function Booking() {
       <div className="max-w-6xl w-full bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
         {/* Header với nút Back */}
         <button
-          onClick={() => navigate("/HomeUser/counselor")}
+          onClick={() => navigate("/EMO/counselor")}
           className="flex items-center text-purple-700 hover:text-purple-900 mb-6 transition-colors duration-200">
           <ArrowLeft size={20} className="mr-2" />
           <span className="font-medium">Back to list of doctors</span>
@@ -420,17 +463,20 @@ export default function Booking() {
                     <div
                       key={idx}
                       className={`flex justify-center items-center h-10 rounded-full
-                        ${isPastDate
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "cursor-pointer hover:bg-purple-100 transition-colors duration-200"
+                        ${
+                          isPastDate
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "cursor-pointer hover:bg-purple-100 transition-colors duration-200"
                         }
-                        ${isSelectedDate
-                          ? "bg-purple-600 text-white font-medium"
-                          : ""
+                        ${
+                          isSelectedDate
+                            ? "bg-purple-600 text-white font-medium"
+                            : ""
                         }
-                        ${isTodayDate && !isSelectedDate
-                          ? "border border-purple-500 font-medium"
-                          : ""
+                        ${
+                          isTodayDate && !isSelectedDate
+                            ? "border border-purple-500 font-medium"
+                            : ""
                         }
                       `}
                       onClick={() => !isPastDate && handleDateClick(day)}>
@@ -453,11 +499,12 @@ export default function Booking() {
                       <button
                         key={i}
                         className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200
-                          ${slot.status === "Available"
-                            ? selectedTimeSlot === slot
-                              ? "bg-purple-600 text-white border-purple-600 shadow-md"
-                              : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100"
-                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ${
+                            slot.status === "Available"
+                              ? selectedTimeSlot === slot
+                                ? "bg-purple-600 text-white border-purple-600 shadow-md"
+                                : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100"
+                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
                           }`}
                         disabled={slot.status !== "Available"}
                         onClick={() =>
@@ -494,11 +541,27 @@ export default function Booking() {
               </div>
 
               {/* Nút đặt lịch */}
+              <div className="mt-6">
+                <h4 className="font-medium text-purple-800 flex items-center mb-3">
+                  <BadgeInfo size={18} className="mr-2" />
+                  Promo Code
+                </h4>
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="w-full p-3 border border-purple-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter promo code (if available)"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                  />
+                </div>
+              </div>
               <button
                 className={`w-full py-4 rounded-xl mt-6 font-bold text-white shadow-md transition-all duration-300 
-                  ${selectedTimeSlot
-                    ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
-                    : "bg-gray-400"
+                  ${
+                    selectedTimeSlot
+                      ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
+                      : "bg-gray-400"
                   }`}
                 onClick={handleBookingContinue}
                 disabled={!selectedTimeSlot}>

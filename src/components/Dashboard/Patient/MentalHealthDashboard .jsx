@@ -10,7 +10,7 @@ const MentalHealthDashboard = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://psychologysupporttest-cmekh5gahsd2c9h7.eastasia-01.azurewebsites.net/test-results/${profileId}?PageIndex=0&PageSize=10&SortBy=TakenAt&SortOrder=desc`
+          `https://psychologysupport-test.azurewebsites.net/test-results/${profileId}?PageIndex=0&PageSize=10&SortBy=TakenAt&SortOrder=desc`
         );
 
         if (!response.ok) {

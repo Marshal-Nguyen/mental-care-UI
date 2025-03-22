@@ -57,7 +57,7 @@ const LogIn = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://psychologysupportauth-gqdkbafkbpf5a4gf.eastasia-01.azurewebsites.net/Auth/login",
+        "https://psychologysupport-auth.azurewebsites.net/Auth/login",
         formData,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -92,17 +92,23 @@ const LogIn = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
+      // Lấy Firebase ID Token
+      const idToken = await user.getIdToken();
+      console.log("Firebase ID Token:", idToken); // In token ra để kiểm tra
+
       if (!user.email.endsWith("@fpt.edu.vn")) {
         toast.warn("Chỉ email FPT được phép đăng nhập!", {
           position: "top-right",
         });
-        auth.signOut();
+        await auth.signOut(); // Đảm bảo signOut hoàn tất
         return;
       }
 
+      // Lưu token vào localStorage hoặc sử dụng theo nhu cầu
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", "User");
       localStorage.setItem("userImage", user.photoURL);
+      localStorage.setItem("idToken", idToken); // Lưu token nếu cần
 
       setIsLoggedIn(true);
       setUserRole("User");
@@ -111,6 +117,7 @@ const LogIn = () => {
 
       toast.success("Đăng nhập thành công!", { position: "top-right" });
     } catch (error) {
+      console.error("Error during Google login:", error); // Log lỗi để debug
       toast.error("Lỗi đăng nhập! Vui lòng thử lại.", {
         position: "top-right",
       });

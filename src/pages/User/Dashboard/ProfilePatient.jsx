@@ -37,7 +37,7 @@ const PhysicalActivitiesRecommendation = ({
     }
     try {
       const response = await axios.get(
-        `https://psychologysupportlifestyles01-dmc2fjc6dqdbfhac.southeastasia-01.azurewebsites.net/physical-activities?pageIndex=${
+        `https://psychologysupport-lifestyles.azurewebsites.net/physical-activities?pageIndex=${
           pageIndex + 1
         }&pageSize=10`,
         { signal }
@@ -535,7 +535,7 @@ const TherapeuticActivitiesRecommendation = ({
     }
     try {
       const response = await axios.get(
-        `https://psychologysupportlifestyles01-dmc2fjc6dqdbfhac.southeastasia-01.azurewebsites.net/therapeutic-activities?pageIndex=${
+        `https://psychologysupport-lifestyles.azurewebsites.net/therapeutic-activities?pageIndex=${
           pageIndex + 1
         }&pageSize=10`,
         { signal }
@@ -1056,7 +1056,7 @@ const EditProfileForm = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/patients/${profileId}`
+          `https://psychologysupport-profile.azurewebsites.net/patients/${profileId}`
         );
         const { patientProfileDto } = response.data;
 
@@ -1128,7 +1128,7 @@ const EditProfileForm = () => {
       };
 
       await axios.put(
-        `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/patients/${profileId}`,
+        `https://psychologysupport-profile.azurewebsites.net/patients/${profileId}`,
         updatedProfile
       );
 

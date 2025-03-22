@@ -32,7 +32,7 @@ const ProfileDoctor = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${id}`
+          `https://psychologysupport-profile.azurewebsites.net/doctors/${id}`
         );
         const { doctorProfileDto } = response.data;
 
@@ -65,7 +65,7 @@ const ProfileDoctor = () => {
       try {
         // Note: This is a placeholder. You would need to replace with your actual API endpoint
         const response = await axios.get(
-          "https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/specialties"
+          "https://psychologysupport-profile.azurewebsites.net/specialties"
         );
         setSpecialtiesList(response.data);
       } catch (err) {
@@ -145,7 +145,7 @@ const ProfileDoctor = () => {
 
       console.log("updatedProfileDoctor", updatedProfile);
       await axios.put(
-        `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${id}`,
+        `https://psychologysupport-profile.azurewebsites.net/doctors/${id}`,
         updatedProfile
       );
 

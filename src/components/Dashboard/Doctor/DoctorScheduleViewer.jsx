@@ -67,7 +67,7 @@ export default function DoctorScheduleViewer({ doctorId }) {
       try {
         const formattedDate = selectedDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
         const response = await axios.get(
-          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
+          `https://psychologysupport-scheduling.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
         );
         setScheduledSlots(response.data.timeSlots || []);
       } catch (error) {

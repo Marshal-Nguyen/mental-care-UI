@@ -15,8 +15,7 @@ const WeeklyPlanner = () => {
   const profileId = useSelector((state) => state.auth.profileId);
 
   // API endpoints
-  const BASE_URL =
-    "https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net";
+  const BASE_URL = "https://psychologysupport-scheduling.azurewebsites.net";
   const SCHEDULES_ENDPOINT = `${BASE_URL}/schedules`;
   const ACTIVITIES_ENDPOINT = `${BASE_URL}/schedule-activities`;
 
@@ -164,19 +163,19 @@ const WeeklyPlanner = () => {
     }
 
     const timeString =
-      time.getHours().toString().padStart(2, "0") +
+      time.getUTCHours().toString().padStart(2, "0") +
       ":" +
-      time.getMinutes().toString().padStart(2, "0");
+      time.getUTCMinutes().toString().padStart(2, "0");
 
     // Calculate end time based on duration
     const endTime = new Date(time);
     const durationMinutes = parseInt(activity.duration?.split(" ")[0] || "30");
-    endTime.setMinutes(endTime.getMinutes() + durationMinutes);
+    endTime.setMinutes(endTime.getUTCMinutes() + durationMinutes);
 
     const endTimeString =
-      endTime.getHours().toString().padStart(2, "0") +
+      endTime.getUTCHours().toString().padStart(2, "0") +
       ":" +
-      endTime.getMinutes().toString().padStart(2, "0");
+      endTime.getUTCMinutes().toString().padStart(2, "0");
 
     return {
       id: activity.id,
@@ -218,7 +217,7 @@ const WeeklyPlanner = () => {
       setTaskLoading((prev) => ({ ...prev, [taskId]: true }));
       try {
         const response = await fetch(
-          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/schedule-activities/${taskId}/${sessionsForDate}/status`,
+          `https://psychologysupport-scheduling.azurewebsites.net/schedule-activities/${taskId}/${sessionsForDate}/status`,
           {
             method: "PUT",
             headers: {

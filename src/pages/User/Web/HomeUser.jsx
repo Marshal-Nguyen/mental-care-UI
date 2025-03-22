@@ -37,7 +37,7 @@ const Home = () => {
 
       {/* Hiển thị Social nếu đúng đường dẫn */}
       <div className="bottom-[35%] fixed z-50">
-        {location.pathname === "/HomeUser/learnAboutEmo" && <Social />}
+        {location.pathname === "/EMO/learnAboutEmo" && <Social />}
       </div>
 
       {/* Kiểm tra đăng nhập trước khi hiển thị PremiumChatPopup */}
@@ -68,7 +68,7 @@ const Home = () => {
       </div>
 
       {/* Footer */}
-      {location.pathname === "/HomeUser/learnAboutEmo" && <Footer />}
+      {location.pathname === "/EMO/learnAboutEmo" && <Footer />}
     </div>
   );
 };

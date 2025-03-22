@@ -82,7 +82,7 @@ export default function Pricing() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://psychologysupportsubscription-azb9d4hfameeengd.southeastasia-01.azurewebsites.net/service-packages?PageIndex=1&PageSize=10"
+          "https://psychologysupport-subscription.azurewebsites.net/service-packages?PageIndex=1&PageSize=10"
         );
 
         const activePackages =
@@ -133,7 +133,11 @@ export default function Pricing() {
     }));
 
     try {
-      const currentDate = new Date().toISOString();
+      const currentDate = new Date();
+      const startDate = currentDate.toISOString(); // Ngày bắt đầu là hiện tại
+      const endDate = new Date(currentDate);
+      endDate.setDate(endDate.getDate() + 1); // Cộng thêm 1 ngày
+      const endDateISO = endDate.toISOString();
 
       const payloadData = {
         userSubscription: {
@@ -141,15 +145,16 @@ export default function Pricing() {
           servicePackageId: selectedPackage.serviceId, // Use the actual API ID here
           promoCode: promoCodes[packageIndexId] || null,
           giftId: null,
-          startDate: currentDate,
-          endDate: currentDate,
+          startDate: startDate,
+          endDate: endDateISO, // Ngày kết thúc lớn hơn ngày bắt đầu
           paymentMethodName: "VNPay",
         },
+        returnUrl: "http://localhost:5173/payments/callback",
       };
 
-      console.log("payloadData", payloadData);
+      console.log("payloadData", JSON.stringify(payloadData, null, 2));
       const response = await axios.post(
-        "https://psychologysupportsubscription-azb9d4hfameeengd.southeastasia-01.azurewebsites.net/user-subscriptions",
+        "https://psychologysupport-subscription.azurewebsites.net/user-subscriptions",
         payloadData
       );
 

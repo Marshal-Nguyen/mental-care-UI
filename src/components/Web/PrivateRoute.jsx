@@ -5,7 +5,7 @@ const PrivateRoute = ({ allowedRoles }) => {
   const { token, userRole } = useSelector((state) => state.auth);
 
   if (!token) {
-    return <Navigate to="/HomeUser/learnAboutEmo" replace />;
+    return <Navigate to="/EMO/learnAboutEmo" replace />;
   }
 
   if (!allowedRoles.includes(userRole)) {
