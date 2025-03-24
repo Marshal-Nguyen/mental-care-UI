@@ -28,6 +28,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
+    "file-saver": "^2.0.5",
     "firebase": "^11.3.1",
     "framer-motion": "^12.4.2",
     "gsap": "^3.12.7",
@@ -45,6 +46,7 @@
     "react-router-dom": "^7.1.5",
     "react-toastify": "^11.0.3",
     "recharts": "^2.15.1",
+    "styled-components": "^6.1.16",
     "three": "^0.174.0",
     "use-debounce": "^10.0.4",
     "uuid": "^11.0.5"

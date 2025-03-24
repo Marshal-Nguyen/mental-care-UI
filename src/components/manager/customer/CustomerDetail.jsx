@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaUser, FaPhone, FaEnvelope, FaCheckCircle, FaMapMarkerAlt, FaHeartbeat, FaHistory, FaVenusMars, FaAllergies, FaBrain, FaNotesMedical, FaCalendarAlt } from "react-icons/fa";
-import { FaMars, FaVenus } from "react-icons/fa";
+import { FaUser, FaPhone, FaEnvelope, FaCheckCircle, FaMapMarkerAlt, FaHeartbeat, FaHistory, FaAllergies, FaBrain, FaNotesMedical, FaCalendarAlt } from "react-icons/fa";
 
 const CustomerDetail = () => {
     const { id } = useParams();
@@ -10,16 +9,31 @@ const CustomerDetail = () => {
     const [customer, setCustomer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [profileImage, setProfileImage] = useState(null);
 
     useEffect(() => {
         const fetchCustomer = async () => {
             try {
-                const response = await fetch(`https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/patients/${id}`);
+                // Fetch patient profile
+                const response = await fetch(`https://psychologysupport-profile.azurewebsites.net/patients/${id}`);
                 if (!response.ok) {
-                    throw new Error("Failed to fetch data");
+                    throw new Error("Failed to fetch patient data");
                 }
                 const data = await response.json();
-                setCustomer(data.patientProfileDto);
+                const patientData = data.patientProfileDto;
+                setCustomer(patientData);
+
+                // Fetch profile image using userId
+                const imageResponse = await fetch(
+                    `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${patientData.userId}`
+                );
+                if (imageResponse.ok) {
+                    const imageData = await imageResponse.json();
+                    setProfileImage(imageData.url);
+                } else {
+                    // Fallback to default image if API call fails
+                    setProfileImage("https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100");
+                }
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -35,8 +49,7 @@ const CustomerDetail = () => {
 
     return (
         <motion.div
-            // className="container mx-auto p-8 bg-white shadow-2xl rounded-3xl text-gray-900 relative overflow-hidden"
-            className="container mx-auto px-8 mt-5 py-6 text-gray-900 bg-white  grid grid-cols-1 md:grid-cols-3 gap-2 "
+            className="container mx-auto px-8 mt-5 py-6 text-gray-900 bg-white grid grid-cols-1 md:grid-cols-3 gap-2"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -68,14 +81,14 @@ const CustomerDetail = () => {
                     <p className="font-bold text-xl tracking-wider text-gray-500">Customer</p>
                 </div>
                 <img
-                    src={"https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100"}
-                    // alt={customer.fullName}
-                    className="w-32 h-32 rounded-full object-cover mx-auto border border-gray-300 shadow-md z-15 "
+                    src={profileImage}
+                    alt={customer.fullName}
+                    className="w-32 h-32 rounded-full object-cover mx-auto border border-gray-300 shadow-md z-15"
                 />
 
                 <div className="btm-_container z-15 flex flex-row justify-between items-end gap-10">
                     <div className="flex flex-col items-start gap-1">
-                        <div className="inline-flex gap-2 items-center justify-center text-2xl ">
+                        <div className="inline-flex gap-2 items-center justify-center text-2xl">
                             <div className="p-1 bg-white flex items-center justify-center rounded-full">
                                 <FaUser className={customer.gender === "Male" ? "text-blue-400" : customer.gender === "Female" ? "text-pink-400" : "text-gray-500"} />
                             </div>
@@ -99,7 +112,6 @@ const CustomerDetail = () => {
                             </div>
                             <p className="font-semibold text-xs text-white">{customer.contactInfo.address}</p>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -109,17 +121,22 @@ const CustomerDetail = () => {
                         <FaHeartbeat /> Medical History
                     </h3>
                     <motion.div
-                        // key={record.id}
-                        className="p-4 rounded-lg  transition-transform hover:scale-105 hover:border-gray-200 hover:border  hover:bg-gray-50 "
+                        className="p-4 rounded-lg transition-transform hover:scale-105 hover:border-gray-200 hover:border hover:bg-gray-50"
                         whileHover={{ scale: 1.02 }}
                     >
-                        <p className="flex items-center gap-2"><FaCalendarAlt className="text-green-500" /><strong>Diagnosed At:</strong> {new Date(customer.medicalHistory.diagnosedAt).toLocaleString()}</p>
+                        <p className="flex items-center gap-2">
+                            <FaCalendarAlt className="text-green-500" />
+                            <strong>Diagnosed At:</strong> {new Date(customer.medicalHistory.diagnosedAt).toLocaleString()}
+                        </p>
                         <div className="space-y-4">
                             <div>
                                 <p className="font-semibold">Specific Mental Disorders:</p>
                                 <ul className="list-disc ml-6 text-gray-700">
                                     {customer.medicalHistory.specificMentalDisorders.map((disorder) => (
-                                        <li key={disorder.id} className="flex items-center gap-2"><FaBrain className="text-red-500" /><strong>{disorder.name}</strong>: {disorder.description}</li>
+                                        <li key={disorder.id} className="flex items-center gap-2">
+                                            <FaBrain className="text-red-500" />
+                                            <strong>{disorder.name}</strong>: {disorder.description}
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -127,19 +144,22 @@ const CustomerDetail = () => {
                                 <p className="font-semibold">Physical Symptoms:</p>
                                 <ul className="list-disc ml-6 text-gray-700">
                                     {customer.medicalHistory.physicalSymptoms.map((symptom) => (
-                                        <li key={symptom.id} className="flex items-center gap-2"><FaHeartbeat className="text-pink-500" /><strong>{symptom.name}</strong>: {symptom.description}</li>
+                                        <li key={symptom.id} className="flex items-center gap-2">
+                                            <FaHeartbeat className="text-pink-500" />
+                                            <strong>{symptom.name}</strong>: {symptom.description}
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
                             <div>
                                 <span className="font-semibold">Allergy: </span>
                                 <ul className="list-disc ml-6 text-gray-700">
-                                    <li className="flex items-center gap-2"> <FaAllergies className="text-green-500" /><strong> {customer.allergies}</strong></li>
-
-
+                                    <li className="flex items-center gap-2">
+                                        <FaAllergies className="text-green-500" />
+                                        <strong>{customer.allergies}</strong>
+                                    </li>
                                 </ul>
                             </div>
-
                         </div>
                     </motion.div>
                 </div>
@@ -153,7 +173,7 @@ const CustomerDetail = () => {
                         {customer.medicalRecords.map((record) => (
                             <motion.div
                                 key={record.id}
-                                className="p-4 rounded-lg  transition-transform hover:scale-105 hover:border-gray-200 hover:border  hover:bg-gray-50 "
+                                className="p-4 rounded-lg transition-transform hover:scale-105 hover:border-gray-200 hover:border hover:bg-gray-50"
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <p className="flex items-center gap-2 text-gray-900">
@@ -174,7 +194,6 @@ const CustomerDetail = () => {
                                     {new Date(record.createdAt).toLocaleString()}
                                 </p>
 
-                                {/* Hiển thị danh sách specificMentalDisorders */}
                                 {record.specificMentalDisorders?.length > 0 && (
                                     <div className="mt-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                                         <h4 className="text-lg font-semibold text-purple-700 flex items-center gap-2">
@@ -198,9 +217,7 @@ const CustomerDetail = () => {
                         ))}
                     </div>
                 </div>
-
             </div>
-
 
             <motion.button
                 onClick={() => navigate("/manager/viewCustomer")}
@@ -209,7 +226,7 @@ const CustomerDetail = () => {
             >
                 Back
             </motion.button>
-        </motion.div >
+        </motion.div>
     );
 };
 
