@@ -12,10 +12,11 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { token, userRole, profileId } = action.payload;
+      const { token, userRole, profileId, userId } = action.payload;
       state.token = token;
       state.userRole = userRole;
       state.profileId = profileId;
+      state.userId = userId;
       localStorage.setItem("token", token);
       localStorage.setItem("userRole", userRole);
       localStorage.setItem("profileId", profileId);
@@ -24,6 +25,7 @@ const authSlice = createSlice({
       state.token = null;
       state.userRole = null;
       state.profileId = null;
+      state.userId = null;
       // 🗑 Xóa khỏi LocalStorage khi logout
       localStorage.removeItem("token");
       localStorage.removeItem("userRole");

@@ -25,7 +25,7 @@ export default function CompletedMedicalRecordsList() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/medical-records`,
+        `https://psychologysupport-profile.azurewebsites.net/medical-records`,
         {
           params: {
             PageIndex: pageIndex,

@@ -49,8 +49,7 @@ const TestEmotion = () => {
   const patientId = useSelector((state) => state.auth.profileId);
   const testId = "8fc88dbb-daee-4b17-9eca-de6cfe886097";
 
-  const API_BASE =
-    "https://psychologysupporttest-cmekh5gahsd2c9h7.eastasia-01.azurewebsites.net";
+  const API_BASE = "https://psychologysupport-test.azurewebsites.net";
 
   // Fetch initial question list
   useEffect(() => {
@@ -235,7 +234,7 @@ const TestEmotion = () => {
         <div className="h-full flex flex-col">
           {/* Current question */}
           {questionLoading ? (
-            <div className="flex flex-col items-center justify-center h-full">
+            <div className="flex flex-col items-center justify-center jbh-full">
               <div className="animate-pulse">
                 <div className="h-8 bg-gray-200 rounded w-96 mb-6"></div>
                 <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>

@@ -11,7 +11,7 @@ const PatientMedicalRecord = ({ patientId }) => {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/patients/${patientId}`
+          `https://psychologysupport-profile.azurewebsites.net/patients/${patientId}`
         );
 
         if (!response.ok) {

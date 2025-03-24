@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+
 const ProfileDoctor = () => {
   const id = useSelector((state) => state.auth.profileId);
-  // console.log("Test Doctor:", id);
-  // const { id } = useParams();
-  // const id = "6d95bbbf-32ba-44ff-82b3-a5deea337848";
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,14 +23,89 @@ const ProfileDoctor = () => {
     yearsOfExperience: 0,
     bio: "",
   });
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const fileInputRef = useRef(null);
+  const userId = useSelector((state) => state.auth.userId);
+  // Add fetchAvatar function
+  const fetchAvatar = async () => {
+    try {
+      const avatarResponse = await axios.get(
+        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
+        // { responseType: "blob" }
+      );
 
+      // Create object URL from the blob response
+
+      console.log("Avatar URL:", avatarResponse.data);
+      setAvatarUrl(avatarResponse.data.url);
+    } catch (err) {
+      console.log("No avatar found or error fetching avatar:", err);
+      // Not setting an error as avatar might not exist yet
+    }
+  };
+
+  // Add handleAvatarChange function
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file
+    const validTypes = ["image/jpeg", "image/png"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please select a valid image file (JPEG, PNG)");
+      return;
+    }
+
+    // Maximum file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    try {
+      setAvatarLoading(true);
+
+      // Create FormData object
+      const formDataImg = new FormData();
+      formDataImg.append("file", file);
+      formDataImg.append("ownerType", "User");
+      formDataImg.append("ownerId", userId);
+
+      // Determine if we need to upload a new image or update existing one
+      const endpoint = avatarUrl
+        ? "https://psychologysupport-image.azurewebsites.net/image/update"
+        : "https://psychologysupport-image.azurewebsites.net/image/upload";
+
+      const method = avatarUrl ? axios.put : axios.post;
+      await method(endpoint, formDataImg, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("FomeData:", formDataImg);
+      // Refresh avatar
+      await fetchAvatar();
+      toast.success("Profile picture updated successfully!");
+    } catch (err) {
+      console.error("Error updating avatar:", err);
+      toast.error("Failed to update profile picture. Please try again.");
+    } finally {
+      setAvatarLoading(false);
+    }
+  };
+
+  // Add triggerFileInput function
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
   // Fetch doctor data
   useEffect(() => {
     const fetchDoctorData = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${id}`
+          `https://psychologysupport-profile.azurewebsites.net/doctors/${id}`
         );
         const { doctorProfileDto } = response.data;
 
@@ -65,7 +138,7 @@ const ProfileDoctor = () => {
       try {
         // Note: This is a placeholder. You would need to replace with your actual API endpoint
         const response = await axios.get(
-          "https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/specialties"
+          "https://psychologysupport-profile.azurewebsites.net/specialties"
         );
         setSpecialtiesList(response.data);
       } catch (err) {
@@ -86,7 +159,8 @@ const ProfileDoctor = () => {
 
     fetchDoctorData();
     fetchSpecialties();
-  }, [id]);
+    fetchAvatar(); // Add this line
+  }, [id, userId]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -145,7 +219,7 @@ const ProfileDoctor = () => {
 
       console.log("updatedProfileDoctor", updatedProfile);
       await axios.put(
-        `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${id}`,
+        `https://psychologysupport-profile.azurewebsites.net/doctors/${id}`,
         updatedProfile
       );
 
@@ -158,13 +232,91 @@ const ProfileDoctor = () => {
   };
 
   if (loading)
-    return <div className="text-center p-6">Loading doctor data...</div>;
+    return (
+      <div className="text-center py-10">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading...</p>
+      </div>
+    );
   if (error) return <div className="text-center p-6 text-red-600">{error}</div>;
 
   return (
     <div className="max-w-7xl h-[94vh] mx-auto p-6">
       <div className="h-full overflow-y-auto p-2">
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-200 border-4 border-purple-200 shadow-lg">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt="Profile"
+                      className="w-full object-cover object-center transform hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-20 w-20" // Tăng kích thước icon
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  {avatarLoading && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white"></div>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={triggerFileInput}
+                  className="absolute bottom-2 right-2 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 focus:outline-none transform hover:scale-110 transition-transform duration-200">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                accept="image/jpeg, image/png, image/gif"
+                className="hidden"
+              />
+              <p className="mt-4 text-sm text-gray-500 font-medium">
+                Click to {avatarUrl ? "change" : "upload"} profile picture
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Supported formats: JPEG, PNG, GIF (max. 5MB)
+              </p>
+            </div>
+          </div>
           <div className="bg-white shadow-md rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
 

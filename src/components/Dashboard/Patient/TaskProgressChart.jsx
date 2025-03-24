@@ -25,7 +25,7 @@ const TaskProgressChart = () => {
 
         // First API call to get schedule info
         const schedulesResponse = await axios.get(
-          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/schedules?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`
+          `https://psychologysupport-scheduling.azurewebsites.net/schedules?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`
         );
 
         if (schedulesResponse.data.schedules.data.length === 0) {
@@ -36,7 +36,7 @@ const TaskProgressChart = () => {
 
         // Second API call to get sessions data
         const sessionsResponse = await axios.get(
-          `https://psychologysupportscheduling-g0efgxc5bwhbhjgc.southeastasia-01.azurewebsites.net/schedule/get-total-sessions?ScheduleId=${
+          `https://psychologysupport-scheduling.azurewebsites.net/schedule/get-total-sessions?ScheduleId=${
             schedulesResponse.data.schedules.data[0].id
           }&StartDate=${schedulesResponse.data.schedules.data[0].startDate.substring(
             0,

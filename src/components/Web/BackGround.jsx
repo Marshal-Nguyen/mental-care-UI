@@ -7,6 +7,7 @@ import IssueEmotion from "./IssueEmotion";
 import OptionService from "./OptionService";
 import ImproveEmotion from "./ImproveEmotion";
 import QuestionRequest from "./QuestionRequest";
+import GoogleMapComponent from "../GoogleMap/GoogleMapComponent";
 
 const BackGround = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -58,6 +59,7 @@ const BackGround = () => {
       <ImproveEmotion />
       <OptionService />
       <QuestionRequest />
+      <GoogleMapComponent />
     </>
   );
 };

@@ -72,6 +72,10 @@ import RoadMapCreate from "./pages/doctor/Dashboard/RoadMapCreate";
 import TestQuestionList from "./pages/Test/TestQuestionList";
 import PrivateRoute from "./components/Web/PrivateRoute";
 import HistoryDoctor from "./pages/doctor/Dashboard/HistoryDoctor";
+import PaymentSuccess from "./components/Payment/PaymentSuccess";
+import PaymentFailure from "./components/Payment/PaymentFailure";
+import PaymentCallback from "./components/Payment/PaymentCallback";
+import Chat from "./components/Chatbox/Chat";
 function App() {
   return (
     <>
@@ -80,7 +84,7 @@ function App() {
           {/* Các route chính */}
           <Route path="/" element={<Intro />} />
           <Route path="regist" element={<Regist />} />
-          <Route path="/HomeUser" element={<Home />}>
+          <Route path="/EMO" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
             <Route path="counselor" element={<Counselor />} />
@@ -91,7 +95,10 @@ function App() {
             <Route path="workshop" element={<Workshop />} />
             <Route path="testEmotion" element={<TestEmotion />} />
             <Route path="TestQuestionList" element={<TestQuestionList />} />
+            <Route path="payment-success" element={<PaymentSuccess />} />
+            <Route path="payment-failure" element={<PaymentFailure />} />
           </Route>
+          <Route path="/payments/callback" element={<PaymentCallback />} />
           <Route element={<PrivateRoute allowedRoles={["User"]} />}>
             <Route path="/DashboardPartient" element={<DashboardPartient />}>
               <Route index element={<Navigate to="StatictisPatient" />} />
@@ -99,6 +106,7 @@ function App() {
               <Route path="Roadmap" element={<RoadMapPatient />} />
               <Route path="ProfilePatient" element={<ProfilePatient />} />
               <Route path="HistoryPatient" element={<HistoryPatient />} />
+              <Route path="Chat" element={<Chat />} />
             </Route>
           </Route>
           <Route element={<PrivateRoute allowedRoles={["Doctor"]} />}>
@@ -108,6 +116,7 @@ function App() {
               <Route path="RoadmapCreate" element={<RoadMapCreate />} />
               <Route path="ProfileDoctor" element={<ProfileDoctor />} />
               <Route path="History" element={<HistoryDoctor />} />
+              <Route path="Chat" element={<Chat />} />
             </Route>
           </Route>
           {/* Route Manager */}

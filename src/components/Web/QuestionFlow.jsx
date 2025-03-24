@@ -16,7 +16,7 @@ const QuestionFlow = ({ onFinish }) => {
 
   const navigate = useNavigate();
   const handleNavigae = () => {
-    navigate("/HomeUser");
+    navigate("/EMO");
   };
   useEffect(() => {
     if (step === 0) {

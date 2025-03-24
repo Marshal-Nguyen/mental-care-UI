@@ -31,7 +31,7 @@ const NavigaForWeb = () => {
   }, []);
 
   return (
-    <nav className="ml-15 flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
+    <nav className="ml-8 flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
       {/* Left Navigation */}
       <div className="flex space-x-10 text-gray-600 font-medium items-center">
         <Link
@@ -41,7 +41,7 @@ const NavigaForWeb = () => {
               ? "text-purple-500"
               : ""
           }`}>
-          Test
+          Game
         </Link>
         <Link
           to="learnAboutEmo"

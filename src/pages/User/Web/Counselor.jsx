@@ -38,7 +38,7 @@ const DoctorList = () => {
     const fetchDoctors = async () => {
       try {
         const response = await axios.get(
-          "https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors",
+          "https://psychologysupport-profile.azurewebsites.net/doctors",
           {
             params: {
               PageIndex: 1,
@@ -180,7 +180,7 @@ const DoctorList = () => {
 
         <div className="mt-auto">
           <button
-            onClick={() => navigate(`/HomeUser/booking/${doctor.id}`)}
+            onClick={() => navigate(`/EMO/booking/${doctor.id}`)}
             className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition duration-300 flex items-center justify-center">
             <Calendar className="w-4 h-4 mr-2" />
             Book now
@@ -340,10 +340,11 @@ const DoctorList = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => handleFilterChange("rating")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedFilter === "rating"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-                  }`}>
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  selectedFilter === "rating"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}>
                 <div className="flex items-center">
                   <Star className="w-4 h-4 mr-1" />
                   Top Rated
@@ -352,10 +353,11 @@ const DoctorList = () => {
 
               <button
                 onClick={() => handleFilterChange("specialties")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedFilter === "specialties"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-                  }`}>
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  selectedFilter === "specialties"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}>
                 <div className="flex items-center">
                   <Award className="w-4 h-4 mr-1" />
                   Specialty
@@ -366,8 +368,9 @@ const DoctorList = () => {
             <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded ${viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500"
-                  }`}>
+                className={`p-2 rounded ${
+                  viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500"
+                }`}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
@@ -403,8 +406,9 @@ const DoctorList = () => {
 
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded ${viewMode === "list" ? "bg-white shadow-sm" : "text-gray-500"
-                  }`}>
+                className={`p-2 rounded ${
+                  viewMode === "list" ? "bg-white shadow-sm" : "text-gray-500"
+                }`}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"

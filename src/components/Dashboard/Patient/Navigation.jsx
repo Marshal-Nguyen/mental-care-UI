@@ -1,7 +1,14 @@
 import React from "react";
 import styles from "../../../styles/Dashboard/Patients/Navigation.module.css";
 import { Link, useLocation } from "react-router-dom"; // Thêm useLocation
-import { LayoutDashboard, LogOut, Map, FileText, User } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  Map,
+  FileText,
+  User,
+  MessageCircleCode,
+} from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
 
@@ -49,13 +56,18 @@ const Navigation = () => {
             <NavItem icon={<Map size={20} />} text="Roadmap" to="Roadmap" />
             <NavItem
               icon={<FileText size={20} />}
-              text="History"
+              text="Records"
               to="HistoryPatient"
             />
             <NavItem
               icon={<User size={20} />}
               text="Profile Patient"
               to="ProfilePatient"
+            />
+            <NavItem
+              icon={<MessageCircleCode size={20} />}
+              text="Messenger"
+              to="Chat"
             />
           </nav>
         </div>
