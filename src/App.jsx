@@ -75,6 +75,7 @@ import HistoryDoctor from "./pages/doctor/Dashboard/HistoryDoctor";
 import PaymentSuccess from "./components/Payment/PaymentSuccess";
 import PaymentFailure from "./components/Payment/PaymentFailure";
 import PaymentCallback from "./components/Payment/PaymentCallback";
+import Chat from "./components/Chatbox/Chat";
 function App() {
   return (
     <>
@@ -105,6 +106,7 @@ function App() {
               <Route path="Roadmap" element={<RoadMapPatient />} />
               <Route path="ProfilePatient" element={<ProfilePatient />} />
               <Route path="HistoryPatient" element={<HistoryPatient />} />
+              <Route path="Chat" element={<Chat />} />
             </Route>
           </Route>
           <Route element={<PrivateRoute allowedRoles={["Doctor"]} />}>
@@ -114,6 +116,7 @@ function App() {
               <Route path="RoadmapCreate" element={<RoadMapCreate />} />
               <Route path="ProfileDoctor" element={<ProfileDoctor />} />
               <Route path="History" element={<HistoryDoctor />} />
+              <Route path="Chat" element={<Chat />} />
             </Route>
           </Route>
           {/* Route Manager */}

@@ -8,6 +8,7 @@ import {
   ClipboardList,
   UserCircle,
   Heart,
+  MessageCircleCode,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
@@ -25,6 +26,11 @@ const Navigation = () => {
       icon: <Brain size={20} strokeWidth={1.5} />,
       text: "Treatment Plan",
       to: "RoadmapCreate",
+    },
+    {
+      icon: <MessageCircleCode size={20} strokeWidth={1.5} />,
+      text: "Messenger",
+      to: "Chat",
     },
     {
       icon: <ClipboardList size={20} strokeWidth={1.5} />,

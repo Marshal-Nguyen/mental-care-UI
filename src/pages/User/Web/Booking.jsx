@@ -162,8 +162,8 @@ export default function Booking() {
           giftCodeId: null, // As specified, set to null
           paymentMethod: "VNPay", // Using the payment method from the image
         },
-        // returnUrl: "http://localhost:5173/payments/callback",
-        returnUrl: "https://emo-rouge.vercel.app/payments/callback",
+        returnUrl: "http://localhost:5173/payments/callback",
+        // returnUrl: "https://emo-rouge.vercel.app/payments/callback",
       };
 
       // Make API call to create the booking

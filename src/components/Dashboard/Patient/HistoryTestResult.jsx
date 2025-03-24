@@ -114,23 +114,26 @@ const HistoryTestResult = () => {
   const selectedTest = testResults[selectedTestIndex];
 
   return (
-    <div className="flex h-full bg-gray-100">
-      <div className="w-1/3 bg-white shadow-md h-full p-4 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Test History</h2>
-        <div className="space-y-2">
+    <div className="flex h-full overflow-y-auto bg-[#ffffff]">
+      {/* Test History Panel */}
+      <div className="w-1/3 bg-white shadow-md overflow-y-auto">
+        {/* <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">
+          Test History
+        </h2> */}
+        <div className="space-y-3 overflow-y-auto pr-2">
           {testResults.map((test, index) => (
             <div
               key={`${test.id}-${index}`}
-              className={`p-3 rounded cursor-pointer ${
+              className={`p-4 rounded-lg transition-all duration-200 ${
                 selectedTestIndex === index
-                  ? "bg-blue-100 border-l-4 border-blue-500"
-                  : "hover:bg-gray-100"
+                  ? "bg-blue-50 border-l-4 border-blue-500 shadow-md"
+                  : "hover:bg-gray-50 border-l-4 border-transparent"
               }`}
               onClick={() => setSelectedTestIndex(index)}>
-              <div className="font-medium">
+              <div className="font-medium text-gray-800">
                 Test on {formatDate(test.takenAt)}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 mt-1">
                 Level: {test.severityLevel}
               </div>
             </div>
@@ -139,8 +142,10 @@ const HistoryTestResult = () => {
       </div>
 
       {/* Test Details Panel */}
-      <div className="w-2/3 p-6 bg-gray-100 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Test Details</h2>
+      <div className="w-2/3 p-4 bg-white overflow-y-auto">
+        {/* <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">
+          Test Details
+        </h2> */}
 
         {/* Depression Score */}
         <div className="bg-white rounded-lg p-4 mb-4 shadow">

@@ -81,9 +81,14 @@ export default function Pricing() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "https://psychologysupport-subscription.azurewebsites.net/service-packages?PageIndex=1&PageSize=10"
-        );
+        // Xác định URL dựa trên profileId
+        const baseUrl =
+          "https://psychologysupport-subscription.azurewebsites.net/service-packages";
+        const url = profileId
+          ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
+          : `${baseUrl}?PageIndex=1&PageSize=10`;
+
+        const response = await axios.get(url);
 
         const activePackages =
           response.data?.servicePackages?.data?.filter((pkg) => pkg.isActive) ||
@@ -100,7 +105,7 @@ export default function Pricing() {
                   price: updatedPkg.price,
                   description: updatedPkg.description,
                   durationDays: updatedPkg.durationDays,
-                  serviceId: updatedPkg.id, // Store the actual API ID here
+                  serviceId: updatedPkg.id,
                 }
               : pkg;
           })
@@ -149,8 +154,8 @@ export default function Pricing() {
           endDate: endDateISO, // Ngày kết thúc lớn hơn ngày bắt đầu
           paymentMethodName: "VNPay",
         },
-        // returnUrl: "http://localhost:5173/payments/callback",
-        returnUrl: "https://emo-rouge.vercel.app/payments/callback",
+        returnUrl: "http://localhost:5173/payments/callback",
+        // returnUrl: "https://emo-rouge.vercel.app/payments/callback",
       };
 
       console.log("payloadData", JSON.stringify(payloadData, null, 2));

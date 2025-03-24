@@ -23,7 +23,7 @@ const StatictisDoctor = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors/${profileId}`
+          `https://psychologysupport-profile.azurewebsites.net/doctors/${profileId}`
         );
         console.log("API Response:", response.data);
         setName(response.data.doctorProfileDto.fullName);
@@ -39,7 +39,7 @@ const StatictisDoctor = () => {
   }, [profileId]); // Thêm profileId vào dependency array
 
   return (
-    <div className="h-full grid grid-cols-6 grid-rows-5 gap-4">
+    <div className="h-full grid grid-cols-6 grid-rows-5 py-6 gap-4">
       <div className="col-span-4 relative flex row-span-2 h-full bg-gradient-to-br from-[#8047db] to-[#c2a6ee] rounded-2xl">
         <div className="w-[380px] py-6 pl-6">
           <p className="text-sm text-white">{currentDate}</p>

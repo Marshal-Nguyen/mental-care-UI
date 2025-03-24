@@ -15,10 +15,12 @@ import {
   openLoginModal,
 } from "../../store/authSlice";
 const LogIn = () => {
+  const userId = localStorage.getItem("userId");
   const dispatch = useDispatch();
   const isModalOpen = useSelector((state) => state.auth.isLoginModalOpen);
   const [userRole, setUserRole] = useState(null);
   const [open, setOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [isModalOpen, setIsModalOpen] = useState(StateModalOpen);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
   const [userImage, setUserImage] = useState(null); // Lưu ảnh đại diện
@@ -37,22 +39,56 @@ const LogIn = () => {
       [name]: value,
     }));
   };
-
+  const [avatarUrl, setAvatarUrl] = useState(null);
   // Xử lý đăng nhập
-  // ✅ Kiểm tra LocalStorage khi component được mount
+  const fetchAvatar = async () => {
+    try {
+      const avatarResponse = await axios.get(
+        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
+      );
+
+      console.log("Avatar URL Home:", avatarResponse.data);
+      setAvatarUrl(avatarResponse.data.url);
+    } catch (err) {
+      console.log("No avatar found or error fetching avatar:", err);
+      // Not setting an error as avatar might not exist yet
+    }
+  };
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserRole = localStorage.getItem("userRole");
+    const storedProfileId = localStorage.getItem("profileId");
     const storedUserImage = localStorage.getItem("userImage");
+    const storedUserId = localStorage.getItem("userId");
 
     if (storedToken && storedUserRole) {
-      setIsLoggedIn(true);
-      setUserRole(storedUserRole);
-      setUserImage(storedUserImage || "https://i.pravatar.cc/150?img=3");
+      try {
+        const decodedToken = jwtDecode(storedToken);
+        // Kiểm tra token hết hạn
+        if (decodedToken.exp * 1000 > Date.now()) {
+          setIsLoggedIn(true);
+          setUserRole(storedUserRole);
+          setUserImage(storedUserImage || "https://i.pravatar.cc/150?img=3");
+          dispatch(
+            setCredentials({
+              token: storedToken,
+              userRole: storedUserRole,
+              profileId: storedProfileId,
+              userId: storedUserId,
+            })
+          );
+          fetchAvatar();
+        } else {
+          // Token hết hạn, logout
+          handleLogout();
+        }
+      } catch (error) {
+        console.error("Token decode error:", error);
+        handleLogout();
+      }
     }
-  }, []);
+  }, [dispatch]);
 
-  // Xử lý đăng nhập
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -64,63 +100,70 @@ const LogIn = () => {
 
       const token = response.data.token;
       const decodedToken = jwtDecode(token);
-      const userRole = decodedToken.role;
-      const profileId = decodedToken.profileId;
 
-      // ✅ Lưu thông tin vào Redux và LocalStorage
-      dispatch(setCredentials({ token, userRole, profileId }));
+      // Lấy role từ claim
+      const userRole =
+        decodedToken[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ];
+      const profileId = decodedToken.profileId;
+      const userId = decodedToken.userId;
+      const username =
+        decodedToken[
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        ];
+
+      // Lưu thông tin và cập nhật state
+      localStorage.setItem("token", token);
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", userRole);
+      localStorage.setItem("profileId", profileId);
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("username", username);
       localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
 
       setIsLoggedIn(true);
       setUserRole(userRole);
       setUserImage("https://i.pravatar.cc/150?img=3");
 
-      toast.success("Đăng nhập thành công!", { position: "top-right" });
+      // Dispatch to Redux và đóng modal
+      dispatch(setCredentials({ token, userRole, profileId, userId }));
       dispatch(closeLoginModal());
+      fetchAvatar();
+      // Thông báo thành công
+      toast.success("Đăng nhập thành công!", { position: "top-right" });
     } catch (err) {
-      toast.error("Lỗi đăng nhập, vui lòng thử lại!", {
-        position: "top-right",
-      });
+      console.error("Login error:", err);
+      toast.error("Lỗi đăng nhập, vui lòng thử lại!");
     }
   };
 
-  // Đăng nhập bằng Google
+  // Sửa lại handleGoogleLogin để cũng navigate ngay
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Lấy Firebase ID Token
-      const idToken = await user.getIdToken();
-      console.log("Firebase ID Token:", idToken); // In token ra để kiểm tra
-
       if (!user.email.endsWith("@fpt.edu.vn")) {
-        toast.warn("Chỉ email FPT được phép đăng nhập!", {
-          position: "top-right",
-        });
-        await auth.signOut(); // Đảm bảo signOut hoàn tất
+        toast.warn("Chỉ email FPT được phép đăng nhập!");
+        await auth.signOut();
         return;
       }
 
-      // Lưu token vào localStorage hoặc sử dụng theo nhu cầu
+      // Lưu thông tin
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", "User");
       localStorage.setItem("userImage", user.photoURL);
-      localStorage.setItem("idToken", idToken); // Lưu token nếu cần
 
       setIsLoggedIn(true);
       setUserRole("User");
       setUserImage(user.photoURL);
-      dispatch(closeLoginModal());
 
-      toast.success("Đăng nhập thành công!", { position: "top-right" });
+      dispatch(closeLoginModal());
+      toast.success("Đăng nhập thành công!");
     } catch (error) {
-      console.error("Error during Google login:", error); // Log lỗi để debug
-      toast.error("Lỗi đăng nhập! Vui lòng thử lại.", {
-        position: "top-right",
-      });
+      console.error("Google login error:", error);
+      toast.error("Lỗi đăng nhập! Vui lòng thử lại.");
     }
   };
 
@@ -132,7 +175,10 @@ const LogIn = () => {
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("userRole");
       localStorage.removeItem("userImage");
-
+      localStorage.removeItem("token");
+      localStorage.removeItem("profileId");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("username");
       setIsLoggedIn(false);
       setUserRole(null);
       setUserImage(null);
@@ -145,18 +191,39 @@ const LogIn = () => {
       });
     }
   };
-
+  const handleDropdownClick = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+  const handleDashboardClick = () => {
+    if (!isLoggedIn) {
+      dispatch(openLoginModal());
+    } else {
+      const currentRole = localStorage.getItem("userRole");
+      if (currentRole === "User") {
+        navigate("/DashboardPartient");
+      } else if (currentRole === "Doctor") {
+        navigate("/DashboardDoctor");
+      } else if (currentRole === "Staff") {
+        navigate("/staff");
+      }
+    }
+    setDropdownOpen(false);
+  };
   return (
     <div className="relative">
       {/* Avatar Button */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleDropdownClick}
         className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-300 hover:shadow-purple-400 transition-all overflow-hidden">
-        {isLoggedIn && userImage ? (
+        {isLoggedIn && avatarUrl ? (
           <img
-            src={userImage}
+            src={avatarUrl || "https://i.pravatar.cc/150?img=3"} // Thêm fallback image
             alt="Avatar"
             className="w-full h-full object-cover rounded-full"
+            onError={(e) => {
+              e.target.onerror = null; // Prevent infinite loop
+              e.target.src = "https://i.pravatar.cc/150?img=3"; // Fallback image
+            }}
           />
         ) : (
           <FaUser className="text-white text-2xl" />
@@ -164,28 +231,11 @@ const LogIn = () => {
       </button>
 
       {/* Dropdown Menu */}
-      {open && (
+      {dropdownOpen && (
         <div className="absolute right-0 mt-2 w-30  bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
           {/* Login Button */}
           <button
-            onClick={() => {
-              if (!isLoggedIn) {
-                dispatch(openLoginModal());
-              } else {
-                // Check the role and navigate accordingly
-                if (userRole === "User") {
-                  navigate("/DashboardPartient");
-                } else if (userRole === "Doctor") {
-                  navigate("/DashboardDoctor");
-                } else if (userRole === "Staff") {
-                  navigate("/staff");
-                } else {
-                  // Handle unexpected roles if necessary
-                  console.error("Unknown user role");
-                }
-              }
-              setOpen(false);
-            }}
+            onClick={handleDashboardClick}
             className="w-full bg-purple-300 py-1 text-[#4d4d4d] font-mono rounded-2xl mb-2 hover:bg-purple-400">
             {isLoggedIn ? "Dashboard" : "LogIn"}
           </button>
