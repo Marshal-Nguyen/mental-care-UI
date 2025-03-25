@@ -131,6 +131,12 @@ const LogIn = () => {
       dispatch(closeLoginModal());
       fetchAvatar();
       // Thông báo thành công
+
+      const currentRole = localStorage.getItem("userRole");
+      if (currentRole === "Staff") {
+        navigate("/staff");
+      }
+
       toast.success("Đăng nhập thành công!", { position: "top-right" });
     } catch (err) {
       console.error("Login error:", err);

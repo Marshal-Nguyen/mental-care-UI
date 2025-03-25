@@ -3,12 +3,15 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import DoctorScheduleViewer from "../../../components/Dashboard/Doctor/DoctorScheduleViewer";
 import MedicalRecordsList from "../../../components/Dashboard/Doctor/MedicalRecordsList ";
+
 const StatictisDoctor = () => {
   const [currentDate, setCurrentDate] = useState("");
   const profileId = useSelector((state) => state.auth.profileId);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [newPatientsCount, setNewPatientsCount] = useState(0);
+  const [oldPatientsCount, setOldPatientsCount] = useState(0);
 
   useEffect(() => {
     const date = new Date();
@@ -17,16 +20,50 @@ const StatictisDoctor = () => {
   }, []);
 
   useEffect(() => {
-    if (!profileId) return; // Chỉ fetch nếu profileId có giá trị
+    if (!profileId) return;
 
-    const fetchDoctorData = async () => {
+    const fetchAllMedicalRecords = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
+        // Fetch doctor profile
+        const profileResponse = await axios.get(
           `https://psychologysupport-profile.azurewebsites.net/doctors/${profileId}`
         );
-        console.log("API Response:", response.data);
-        setName(response.data.doctorProfileDto.fullName);
+        setName(profileResponse.data.doctorProfileDto.fullName);
+
+        // Fetch total number of pages
+        const initialResponse = await axios.get(
+          `https://psychologysupport-profile.azurewebsites.net/medical-records?PageIndex=1&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`
+        );
+
+        const totalPages = initialResponse.data.medicalRecords.totalPages;
+        const totalCount = initialResponse.data.medicalRecords.totalCount;
+
+        // Fetch all pages
+        const allRecords = [];
+        for (let page = 1; page <= totalPages; page++) {
+          const response = await axios.get(
+            `https://psychologysupport-profile.azurewebsites.net/medical-records?PageIndex=${page}&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`
+          );
+
+          allRecords.push(...response.data.medicalRecords.data);
+        }
+
+        // Count unique patients by status
+        const processingPatientIds = new Set(
+          allRecords
+            .filter((record) => record.status === "Processing")
+            .map((record) => record.patientProfileId)
+        );
+
+        const donePatientIds = new Set(
+          allRecords
+            .filter((record) => record.status === "Done")
+            .map((record) => record.patientProfileId)
+        );
+
+        setNewPatientsCount(processingPatientIds.size);
+        setOldPatientsCount(donePatientIds.size);
       } catch (err) {
         setError("Error fetching doctor data. Please try again.");
         console.error("Error fetching doctor data:", err);
@@ -35,8 +72,8 @@ const StatictisDoctor = () => {
       }
     };
 
-    fetchDoctorData();
-  }, [profileId]); // Thêm profileId vào dependency array
+    fetchAllMedicalRecords();
+  }, [profileId]);
 
   return (
     <div className="h-full grid grid-cols-6 grid-rows-5 py-6 gap-4">
@@ -53,14 +90,14 @@ const StatictisDoctor = () => {
           <div className=" bottom-6 absolute flex w-[350px] h-[85px] gap-4 mt-12">
             <div className="bg-[#ffffffb6] relative w-1/2 text-black p-3 rounded-lg shadow-md">
               <p className="text-sm font-semibold">New Patients</p>
-              <p className="text-4xl font-serif">40</p>
+              <p className="text-4xl font-serif">{newPatientsCount}</p>
               <span className="text-green-600 absolute bottom-2 right-2 bg-[#d3fdd0] px-3 py-1 rounded-md text-[13px] font-mono">
                 51% &#x2197;
               </span>
             </div>
             <div className="bg-[#ffffffb6] relative w-1/2 text-black p-3 rounded-lg shadow-md">
               <p className="text-sm font-semibold">Old Patients</p>
-              <p className="text-4xl font-serif">64</p>
+              <p className="text-4xl font-serif">{oldPatientsCount}</p>
               <span className="text-red-600 absolute bottom-2 right-2 bg-red-200 px-3 py-1 rounded-md text-[13px] font-mono">
                 20% &#x2198;
               </span>

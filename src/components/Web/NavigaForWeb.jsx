@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import styles from "../../styles/Web/Navigation.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { openLoginModal } from "../../store/authSlice"; // Import action mở modal
+import { toast } from "react-toastify"; // Import toast
 
 const NavigaForWeb = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,13 +11,13 @@ const NavigaForWeb = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  // ✅ Lấy trạng thái đăng nhập từ Redux store
+  // ✅ Lấy role từ Redux
   const userRole = useSelector((state) => state.auth.userRole);
   const [isLoggedIn, setIsLoggedIn] = useState(!!userRole);
 
   useEffect(() => {
     setIsLoggedIn(!!userRole);
-  }, [userRole]); // Theo dõi userRole
+  }, [userRole]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -29,6 +30,14 @@ const NavigaForWeb = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // ✅ Chặn Doctor, Staff, Manager không được làm test
+  const handleTestClick = (event) => {
+    if (["Doctor", "Staff", "Manager"].includes(userRole)) {
+      event.preventDefault(); // Chặn chuyển trang
+      toast.warning("Bạn không thể truy cập vào bài kiểm tra!"); // Hiển thị thông báo
+    }
+  };
 
   return (
     <nav className="ml-8 flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
@@ -116,6 +125,7 @@ const NavigaForWeb = () => {
         {isLoggedIn ? (
           <Link
             to="testEmotion"
+            onClick={handleTestClick} // Chặn role bị cấm
             className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
             Take the test
           </Link>
