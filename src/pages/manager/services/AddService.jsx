@@ -1,148 +1,178 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { FaBox, FaPen, FaMoneyBillWave, FaClock, FaSpinner, FaCheckCircle } from 'react-icons/fa';
+import { motion } from "framer-motion";
 
-const AddPromotion = () => {
-    const [promotion, setPromotion] = useState({
-        name: "",
-        description: "",
-        startDate: "",
-        endDate: "",
-        applicablePackages: [],
+const ServicePackageForm = () => {
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        price: '',
+        durationDays: ''
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    const packageOptions = ["Free", "AI", "Bác sĩ tâm lý"];
-
-    const handleInputChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
-        setPromotion({ ...promotion, [name]: value });
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    const handleCheckboxChange = (packageName) => {
-        setPromotion((prevState) => {
-            const isSelected = prevState.applicablePackages.includes(packageName);
-            const updatedPackages = isSelected
-                ? prevState.applicablePackages.filter((pkg) => pkg !== packageName)
-                : [...prevState.applicablePackages, packageName];
-            return { ...prevState, applicablePackages: updatedPackages };
-        });
-    };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Promotion added:", promotion);
-        // Logic gửi dữ liệu lên server (API call)
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await axios.post(
+                'https://psychologysupport-subscription.azurewebsites.net/service-packages',
+                {
+                    servicePackage: {
+                        name: formData.name,
+                        description: formData.description,
+                        price: Number(formData.price),
+                        durationDays: Number(formData.durationDays)
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
+
+            if (response.status === 200 || response.status === 201) {
+                alert('Service package added successfully!');
+                setFormData({ name: '', description: '', price: '', durationDays: '' });
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'An error occurred while adding the service package');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="container mx-auto mt-10 p-6 bg-white shadow-md rounded-xl">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-                Thêm chương trình khuyến mãi
-            </h2>
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-6">
+            <motion.div
+                className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-8"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                {/* <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-8"> */}
+                {/* Title outside the grid */}
+                <h2 className="text-3xl font-bold text-indigo-700 mb-8 flex items-center justify-center gap-2">
+                    <FaBox className="text-indigo-500" /> Add Service Package
+                </h2>
 
-            <form>
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2" htmlFor="name">
-                        Tên chương trình
-                    </label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={promotion.name}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                        placeholder="Nhập tên chương trình"
-                        required
-                    />
-                </div>
-
-                <div className="mb-4">
-                    <label
-                        className="block text-gray-700 font-medium mb-2"
-                        htmlFor="description"
-                    >
-                        Mô tả chương trình
-                    </label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        value={promotion.description}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                        placeholder="Nhập mô tả chương trình"
-                        required
-                    />
-                </div>
-
-                <div className="mb-4">
-                    <label
-                        className="block text-gray-700 font-medium mb-2"
-                        htmlFor="startDate"
-                    >
-                        Ngày bắt đầu
-                    </label>
-                    <input
-                        type="date"
-                        id="startDate"
-                        name="startDate"
-                        value={promotion.startDate}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                        required
-                    />
-                </div>
-
-                <div className="mb-4">
-                    <label
-                        className="block text-gray-700 font-medium mb-2"
-                        htmlFor="endDate"
-                    >
-                        Ngày kết thúc
-                    </label>
-                    <input
-                        type="date"
-                        id="endDate"
-                        name="endDate"
-                        value={promotion.endDate}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                        required
-                    />
-                </div>
-
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">
-                        Gói áp dụng
-                    </label>
-                    <div className="flex flex-wrap gap-4">
-                        {packageOptions.map((pkg) => (
-                            <div key={pkg} className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    id={pkg}
-                                    name="applicablePackages"
-                                    checked={promotion.applicablePackages.includes(pkg)}
-                                    onChange={() => handleCheckboxChange(pkg)}
-                                    className="mr-2"
-                                />
-                                <label htmlFor={pkg} className="text-gray-700">
-                                    {pkg}
-                                </label>
+                {/* Two-column grid */}
+                <div className=" grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Left Column: Form */}
+                    <div className="transform transition-all flex flex-col">
+                        {error && (
+                            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-lg border border-red-200 w-full">
+                                {error}
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        )}
 
-                <div className="flex justify-center">
-                    <div
-                        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 cursor-pointer"
-                        onClick={handleSubmit}
-                    >
-                        Lưu chương trình
+                        <form onSubmit={handleSubmit} className="space-y-6 w-full">
+                            <div className="relative">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <FaPen className="text-indigo-500" /> Package Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder="e.g., Basic Package"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none transition-all duration-300"
+                                    required
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <FaPen className="text-indigo-500" /> Description
+                                </label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    placeholder="Describe the service package"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none transition-all duration-300 resize-y"
+                                    rows="4"
+                                    required
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <FaMoneyBillWave className="text-indigo-500" /> Price (VND)
+                                </label>
+                                <input
+                                    type="number"
+                                    name="price"
+                                    value={formData.price}
+                                    onChange={handleChange}
+                                    placeholder="e.g., 500000"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none transition-all duration-300"
+                                    min="0"
+                                    required
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <FaClock className="text-indigo-500" /> Duration (days)
+                                </label>
+                                <input
+                                    type="number"
+                                    name="durationDays"
+                                    value={formData.durationDays}
+                                    onChange={handleChange}
+                                    placeholder="e.g., 30"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-500 outline-none transition-all duration-300"
+                                    min="1"
+                                    required
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full py-3 px-4 rounded-lg text-white font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:scale-105'
+                                    }`}
+                            >
+                                {loading ? (
+                                    <FaSpinner className="text-white" />
+                                ) : (
+                                    <FaCheckCircle className="text-white" />
+                                )}
+                                {loading ? 'Processing...' : 'Add Service Package'}
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Right Column: Preview */}
+                    <div className="mt-8 p-6 bg-indigo-50 rounded-lg border border-indigo-100">
+                        <h3 className="text-sm font-semibold text-indigo-600 mb-3">Preview:</h3>
+                        <div className="text-sm text-gray-700 space-y-2">
+                            <p><span className="font-medium text-indigo-600">Name:</span> {formData.name || 'Basic Package'}</p>
+                            <p><span className="font-medium text-indigo-600">Description:</span> {formData.description || 'Basic psychological support'}</p>
+                            <p><span className="font-medium text-indigo-600">Price:</span> {formData.price ? `${Number(formData.price).toLocaleString()} VND` : '500,000 VND'}</p>
+                            <p><span className="font-medium text-indigo-600">Duration:</span> {formData.durationDays || '30'} days</p>
+                        </div>
                     </div>
                 </div>
-            </form>
+                {/* </div> */}
+            </motion.div>
         </div>
     );
 };
 
-export default AddPromotion;
+export default ServicePackageForm;

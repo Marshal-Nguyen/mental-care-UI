@@ -9,7 +9,6 @@ import Loader from "../../../components/Web/Loader";
 import { useNavigate } from "react-router-dom";
 
 const BASE_API_URL = "https://psychologysupport-subscription.azurewebsites.net/service-packages";
-const IMAGE_API_URL = "https://psychologysupport-image.azurewebsites.net/image/get";
 
 const ServicePackageList = () => {
     const [packages, setPackages] = useState([]);
@@ -20,6 +19,7 @@ const ServicePackageList = () => {
     const [pageIndex, setPageIndex] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all"); // "all", "active", "inactive"
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [selectedPackage, setSelectedPackage] = useState(null);
     const [updateForm, setUpdateForm] = useState({
@@ -34,36 +34,25 @@ const ServicePackageList = () => {
     const fetchPackages = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(BASE_API_URL, {
-                params: {
-                    PageIndex: pageIndex,
-                    PageSize: pageSize,
-                },
-            });
+            const params = {
+                PageIndex: pageIndex,
+                PageSize: pageSize,
+            };
 
-            const packagesWithImages = await Promise.all(
-                response.data.servicePackages.data.map(async (pkg) => {
-                    try {
-                        const imageResponse = await axios.get(IMAGE_API_URL, {
-                            params: { ownerType: "ServicePackage", ownerId: pkg.imageId },
-                        });
-                        return {
-                            ...pkg,
-                            imageUrl:
-                                imageResponse.data.url ||
-                                "https://via.placeholder.com/150?text=No+Image",
-                        };
-                    } catch (imgError) {
-                        console.error("Error fetching image for package:", pkg.id, imgError);
-                        return {
-                            ...pkg,
-                            imageUrl: "https://via.placeholder.com/150?text=No+Image",
-                        };
-                    }
-                })
-            );
+            // Chỉ thêm Status vào params nếu statusFilter không phải "all"
+            if (statusFilter !== "all") {
+                params.Status = statusFilter === "active" ? true : false;
+            }
+
+            const response = await axios.get(BASE_API_URL, { params });
+
+            const packagesWithImages = response.data.servicePackages.data.map(pkg => ({
+                ...pkg,
+                imageUrl: "https://via.placeholder.com/150?text=No+Image"
+            }));
+
             setPackages(packagesWithImages);
-            setFilteredPackages(packagesWithImages);
+            applySearchFilter(packagesWithImages);
         } catch (error) {
             setError("Failed to load service packages. Please try again.");
             console.error("Error fetching data:", error);
@@ -73,21 +62,29 @@ const ServicePackageList = () => {
         }
     };
 
-    // Handle search filtering
-    useEffect(() => {
+    // Hàm áp dụng bộ lọc tìm kiếm theo tên
+    const applySearchFilter = (data) => {
         if (searchQuery.trim() === "") {
-            setFilteredPackages(packages);
+            setFilteredPackages(data);
         } else {
-            const filtered = packages.filter((pkg) =>
+            const filtered = data.filter((pkg) =>
                 pkg.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredPackages(filtered);
         }
-    }, [searchQuery, packages]);
+    };
 
     useEffect(() => {
         fetchPackages();
-    }, [pageIndex, pageSize]);
+    }, [pageIndex, pageSize, statusFilter]); // Thêm statusFilter vào dependency
+
+    useEffect(() => {
+        applySearchFilter(packages);
+    }, [searchQuery]);
+
+    const countActivePackages = () => {
+        return packages.filter(pkg => pkg.isActive).length;
+    };
 
     const handleUpdateClick = (pkg) => {
         setSelectedPackage(pkg);
@@ -103,21 +100,30 @@ const ServicePackageList = () => {
 
     const handleUpdateSubmit = async (e) => {
         e.preventDefault();
+        const activeCount = countActivePackages();
+        if (!updateForm.isActive && selectedPackage.isActive) {
+            // Cho phép chuyển từ Active sang Inactive
+        } else if (updateForm.isActive && !selectedPackage.isActive && activeCount >= 3) {
+            alert("Cannot activate more than 3 packages!");
+            return;
+        }
+
         try {
             const response = await axios.put(
                 `${BASE_API_URL}/${selectedPackage.id}`,
                 {
-                    ...updateForm,
+                    name: updateForm.name,
+                    description: updateForm.description,
                     price: parseFloat(updateForm.price),
-                    durationDays: parseInt(updateForm.durationDays)
+                    durationDays: parseInt(updateForm.durationDays),
+                    isActive: updateForm.isActive
                 }
             );
-            setPackages(packages.map(p =>
+            const updatedPackages = packages.map(p =>
                 p.id === selectedPackage.id ? { ...p, ...updateForm } : p
-            ));
-            setFilteredPackages(filteredPackages.map(p =>
-                p.id === selectedPackage.id ? { ...p, ...updateForm } : p
-            ));
+            );
+            setPackages(updatedPackages);
+            applySearchFilter(updatedPackages);
             setShowUpdateModal(false);
         } catch (error) {
             console.error("Error updating package:", error);
@@ -173,6 +179,15 @@ const ServicePackageList = () => {
                                 <option value={10}>10 per page</option>
                                 <option value={20}>20 per page</option>
                             </select>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -221,14 +236,6 @@ const ServicePackageList = () => {
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex justify-center gap-4">
                                             <motion.button
-                                                className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
-                                                title="View Detail"
-                                                onClick={() => navigate(`${pkg.id}`)}
-                                                whileHover={{ scale: 1.15 }}
-                                            >
-                                                <AiFillEye size={20} />
-                                            </motion.button>
-                                            <motion.button
                                                 className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
                                                 title="Update Package"
                                                 onClick={() => handleUpdateClick(pkg)}
@@ -245,10 +252,9 @@ const ServicePackageList = () => {
                 </div>
             </motion.div>
 
-            {/* Update Modal */}
             {showUpdateModal && (
                 <motion.div
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    className="fixed inset-0 bg-gray bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-999"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                 >
@@ -298,17 +304,24 @@ const ServicePackageList = () => {
                                     required
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 mb-2">Status</label>
-                                <select
-                                    value={updateForm.isActive}
-                                    onChange={(e) => setUpdateForm({ ...updateForm, isActive: e.target.value === 'true' })}
-                                    className="w-full p-2 border rounded-lg"
-                                >
-                                    <option value={true}>Active</option>
-                                    <option value={false}>Inactive</option>
-                                </select>
-                            </div>
+                            {(countActivePackages() < 3 || selectedPackage.isActive) && (
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 mb-2">Status</label>
+                                    <select
+                                        value={updateForm.isActive}
+                                        onChange={(e) => setUpdateForm({ ...updateForm, isActive: e.target.value === 'true' })}
+                                        className="w-full p-2 border rounded-lg"
+                                    >
+                                        <option value={true}>Active</option>
+                                        <option value={false}>Inactive</option>
+                                    </select>
+                                </div>
+                            )}
+                            {countActivePackages() >= 3 && !selectedPackage.isActive && (
+                                <div className="mb-4 text-gray-600">
+                                    Status: Inactive (Maximum 3 active packages allowed)
+                                </div>
+                            )}
                             <div className="flex justify-end gap-4">
                                 <button
                                     type="button"

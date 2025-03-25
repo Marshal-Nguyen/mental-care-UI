@@ -186,6 +186,7 @@ const PsychologistList = () => {
                                             <motion.button
                                                 className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
                                                 title="Edit"
+                                                onClick={() => navigate(`/manager/ProfileDoctor/${doctor.id}`)}
                                                 whileHover={{ scale: 1.15 }}
                                             >
                                                 <AiFillEdit size={20} />

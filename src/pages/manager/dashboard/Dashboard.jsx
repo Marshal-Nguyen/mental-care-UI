@@ -10,21 +10,21 @@ import { saveAs } from 'file-saver';
 import styled from 'styled-components';
 import Loader from "../../../components/Web/Loader";
 
-// Updated color scheme
 const COLORS = {
-    primary: "#4F46E5",    // Deeper indigo
-    secondary: "#F472B6",  // Softer pink
-    accent: "#60A5FA",     // Brighter blue
-    success: "#34D399",    // Fresher green
-    warning: "#FBBF24",    // Warmer yellow
-    danger: "#F87171",     // Softer red
+    primary: "#4F46E5",
+    secondary: "#F472B6",
+    accent: "#60A5FA",
+    warning: "#FBBF24",
+    success: "#34D399",
+    danger: "#F87171",
     bgGradientStart: "#E0E7FF",
     bgGradientEnd: "#F9FAFB",
-    textPrimary: "#1F2937",      // Primary text
-    textSecondary: "#6B7280",    // Secondary text
+    textPrimary: "#1F2937",
+    textSecondary: "#6B7280",
     cardBg: "linear-gradient(145deg, #FFFFFF, #F3F4F6)",
     cardShadow: "#00000015",
-    border: "#E5E7EB",          // Light gray border
+    border: "#E5E7EB",
+    number: "#100341"
 };
 
 const ICON_CONFIG = {
@@ -36,9 +36,12 @@ const ICON_CONFIG = {
     bookings: { Icon: Clock, color: COLORS.accent, bg: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accent}80)` },
     topDoctors: { Icon: Star, color: COLORS.danger, bg: `linear-gradient(135deg, ${COLORS.danger}, ${COLORS.danger}80)` },
     growth: { Icon: TrendingUp, color: COLORS.secondary, bg: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondary}80)` },
+    salesOverview: { Icon: TrendingUp, color: COLORS.accent, bg: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accent}80)` },
+    revenueGrowth: { Icon: DollarSign, color: COLORS.success, bg: `linear-gradient(135deg, ${COLORS.success}, ${COLORS.success}80)` },
+    userDistribution: { Icon: Users, color: COLORS.primary, bg: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primary}80)` },
+    performance: { Icon: Star, color: COLORS.warning, bg: `linear-gradient(135deg, ${COLORS.warning}, ${COLORS.warning}80)` },
 };
 
-// StatCard Component
 const StatCard = memo(({ config, label, value, details }) => (
     <motion.div
         className="p-5 rounded-xl shadow-lg flex items-center gap-4 transition-transform hover:scale-105"
@@ -52,8 +55,8 @@ const StatCard = memo(({ config, label, value, details }) => (
             <config.Icon className="w-6 h-6 relative z-10" style={{ color: '#FFFFFF' }} />
         </div>
         <div>
-            <p className="text-sm font-medium tracking-wide uppercase" style={{ color: config.color, letterSpacing: '0.05em' }}>{label}</p>
-            <h3 className="text-2xl font-bold mt-1" style={{ color: COLORS.textPrimary }}>{value}</h3>
+            <p className="text-sm font-bold tracking-wide uppercase" style={{ color: config.color, letterSpacing: '0.05em' }}>{label}</p>
+            <h3 className="text-2xl font-bold mt-1" style={{ color: COLORS.number }}>{value}</h3>
             {details && (
                 <div className="mt-2 text-sm" style={{ color: COLORS.textPrimary }}>
                     {details}
@@ -63,8 +66,7 @@ const StatCard = memo(({ config, label, value, details }) => (
     </motion.div>
 ));
 
-// ChartCard Component
-const ChartCard = memo(({ title, children }) => (
+const ChartCard = memo(({ title, children, config }) => (
     <motion.div
         className="p-6 rounded-xl shadow-lg transition-transform hover:scale-102"
         style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
@@ -72,14 +74,19 @@ const ChartCard = memo(({ title, children }) => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
     >
-        <h2 className="text-lg font-semibold mb-4 tracking-tight" style={{ color: COLORS.textPrimary }}>
-            {title}
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-full relative overflow-hidden">
+                <div className="absolute inset-0" style={{ background: config.bg }} />
+                <config.Icon className="w-5 h-5 relative z-10" style={{ color: '#FFFFFF' }} />
+            </div>
+            <h2 className="text-lg font-semibold tracking-tight" style={{ color: COLORS.textPrimary }}>
+                {title}
+            </h2>
+        </div>
         {children}
     </motion.div>
 ));
 
-// Custom Button Component
 const ExportButton = ({ onClick }) => (
     <StyledWrapper>
         <button className="button" type="button" onClick={onClick}>
@@ -169,6 +176,7 @@ export default function Dashboard() {
         bookings: { total: "N/A", details: [] },
         topDoctors: { total: "N/A", details: [] },
         totalRevenue: "N/A",
+        dailySales: []
     });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -186,7 +194,7 @@ export default function Dashboard() {
             try {
                 setLoading(true);
 
-                const [usersData, doctorsData, productsData, subscriptionsData, bookingsData, topDoctorsData, revenueData] = await Promise.all([
+                const [usersData, doctorsData, productsData, subscriptionsData, bookingsData, topDoctorsData, dailyRevenueData] = await Promise.all([
                     Promise.all(["Male", "Female", "Else"].map(gender =>
                         fetch(`https://psychologysupport-profile.azurewebsites.net/patients/total?startDate=${dates.start}&endDate=${dates.end}&gender=${gender}`)
                             .then(res => res.json())
@@ -216,11 +224,24 @@ export default function Dashboard() {
                     fetch(`https://psychologysupport-scheduling.azurewebsites.net/bookings/top-doctors?StartDate=${dates.start}&EndDate=${dates.end}`)
                         .then(res => res.json()),
 
-                    fetch(`https://psychologysupport-payment.azurewebsites.net/payments/revenue?startTime=${dates.start}&endTime=${dates.end}`)
+                    fetch(`https://psychologysupport-payment.azurewebsites.net/payments/daily-revenue?startTime=${dates.start}&endTime=${dates.end}`)
                         .then(res => res.json())
                 ]);
 
                 if (!isMounted.current) return;
+
+                const startDate = new Date(dates.start);
+                const endDate = new Date(dates.end);
+                const dailyRevenueMap = new Map(dailyRevenueData.revenues.map(item => [item.date, item.totalRevenue]));
+                const dailySalesData = [];
+
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    dailySalesData.push({
+                        name: dateStr,
+                        value: dailyRevenueMap.get(dateStr) || 0
+                    });
+                }
 
                 setState({
                     users: usersData,
@@ -244,7 +265,8 @@ export default function Dashboard() {
                             bookings: doctor.totalBookings.toLocaleString()
                         }))
                     },
-                    totalRevenue: `${parseFloat(revenueData.totalRevenue).toLocaleString('vi-VN')} ₫`
+                    totalRevenue: `${dailySalesData.reduce((sum, item) => sum + item.value, 0).toLocaleString('vi-VN')} ₫`,
+                    dailySales: dailySalesData
                 });
             } catch (err) {
                 if (isMounted.current) setError(err.message);
@@ -284,19 +306,6 @@ export default function Dashboard() {
         return total ? total.toLocaleString() : "N/A";
     };
 
-    const getSalesData = () => {
-        const start = new Date(dates.start);
-        const end = new Date(dates.end);
-        const months = [];
-        for (let d = new Date(start); d <= end; d.setMonth(d.getMonth() + 1)) {
-            months.push({
-                name: d.toLocaleString('default', { month: 'short', year: 'numeric' }),
-                value: parseInt(state.productsSold.total.replace(/,/g, '') || 0) / ((end.getMonth() - start.getMonth() + 1) || 1),
-            });
-        }
-        return months;
-    };
-
     const exportToCSV = () => {
         const monthName = new Date(0, dates.month - 1).toLocaleString('default', { month: 'long' });
         const csvData = [
@@ -306,22 +315,27 @@ export default function Dashboard() {
             ['Category', 'Value', 'Details'],
             ['Total Users', getTotalUsers(), `Male: ${state.users.male}, Female: ${state.users.female}, Other: ${state.users.else}`],
             ['Total Doctors', state.totalDoctors, ''],
-            ['Products Sold', state.productsSold.total, state.productsSold.details.map(item => `${item.name}: ${item.totalSubscriptions}`).join('; ')],
+            ['Service Packages Sold', state.productsSold.total, state.productsSold.details.map(item => `${item.name}: ${item.totalSubscriptions}`).join('; ')],
             ['Subscriptions', state.subscriptions.total, Object.entries(state.subscriptions.details).map(([k, v]) => `${k}: ${v}`).join('; ')],
-            ['Total Bookings', state.bookings.total],
+            ['Total Bookings', state.bookings.total, state.bookings.details.map(item => `${item.fullName}: ${item.bookings}`).join('; ')],
             ['Top Doctors', state.topDoctors.total, state.topDoctors.details.map(item => `${item.fullName}: ${item.bookings}`).join('; ')],
+            ['Total Revenue', state.totalRevenue, ''],
+            [],
+            ['Daily Sales'],
+            ['Date', 'Revenue'],
+            ...state.dailySales.map(item => [item.name, `${item.value.toLocaleString('vi-VN')} ₫`])
         ];
 
         const csvContent = csvData.map(row => row.join(',')).join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
         saveAs(blob, `monthly_statistics_${monthName}_${dates.year}.csv`);
     };
-
     const userDistributionData = [
         { name: "Male", value: parseInt(state.users.male.replace(/,/g, '') || 0), color: COLORS.accent },
         { name: "Female", value: parseInt(state.users.female.replace(/,/g, '') || 0), color: COLORS.secondary },
-        { name: "Other", value: parseInt(state.users.else.replace(/,/g, '') || 0), color: COLORS.warning },
+        { name: "Other", value: parseInt(state.users.else.replace(/,/g, '') || 0), color: "linear-gradient(90deg, #60A5FA, #ff96ff)" },
     ].filter(item => item.value > 0);
+
 
     const revenueGrowthData = Object.entries(state.subscriptions.details).map(([status, count]) => ({
         name: status,
@@ -329,7 +343,7 @@ export default function Dashboard() {
         fill: status === "Active" ? COLORS.success :
             status === "AwaitPayment" ? COLORS.warning :
                 status === "Expired" ? COLORS.danger :
-                    COLORS.danger,
+                    COLORS.secondary,
     }));
 
     const performanceData = [
@@ -346,7 +360,7 @@ export default function Dashboard() {
                     className="p-3 rounded-lg shadow-md"
                     style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
                 >
-                    <p className="text-sm font-medium" style={{ color: COLORS.textPrimary }}>{`${label}: ${payload[0].value}`}</p>
+                    <p className="text-sm font-medium" style={{ color: COLORS.textPrimary }}>{`${label}: ${payload[0].value.toLocaleString('vi-VN')} ₫`}</p>
                 </div>
             );
         }
@@ -357,17 +371,17 @@ export default function Dashboard() {
 
     return (
         <div
-            className="min-h-screen py-8 px-6"
+            className="min-h-screen py-6 px-4"
             style={{ background: `radial-gradient(circle at top left, ${COLORS.bgGradientStart}, ${COLORS.bgGradientEnd})` }}
         >
             <div className="max-w-7xl mx-auto">
                 <motion.div
-                    className="sticky top-0 z-10 bg-white/80 backdrop-blur-md p-4 rounded-b-xl shadow-md flex justify-between items-center mb-8"
+                    className="sticky top-0 z-10 bg-white/80 backdrop-blur-md p-4 rounded-b-xl shadow-md flex justify-between items-center mb-2"
                     initial={{ y: -50 }}
                     animate={{ y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <h1 className="text-2xl font-bold tracking-tight" style={{ color: COLORS.textPrimary }}>
+                    <h1 className="text-2xl font-bold tracking-tight text-purple-400">
                         Hi Mahi, Welcome back 👋
                     </h1>
                     <div className="flex items-center gap-3">
@@ -411,86 +425,108 @@ export default function Dashboard() {
                         <ExportButton onClick={exportToCSV} />
                     </div>
                 </motion.div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
+                    <div className="lg:col-span-2">
+                        <ChartCard title="Sales Overview" config={ICON_CONFIG.salesOverview}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={state.dailySales}>
+                                    <XAxis
+                                        dataKey="name"
+                                        stroke={COLORS.textSecondary}
+                                        tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                        tickFormatter={(value) => new Date(value).getDate()}
+                                    />
+                                    <YAxis
+                                        stroke={COLORS.textSecondary}
+                                        tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke={`url(#lineGradient)`}
+                                        strokeWidth={3}
+                                        dot={{ fill: COLORS.accent, r: 5, stroke: COLORS.accent, strokeWidth: 2 }}
+                                        name="Daily Revenue"
+                                    />
+                                    <defs>
+                                        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stopColor={COLORS.accent} />
+                                            <stop offset="100%" stopColor={COLORS.primary} />
+                                        </linearGradient>
+                                    </defs>
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </ChartCard>
+                    </div>
+                    <div className="space-y-2">
                         <StatCard
                             config={ICON_CONFIG.users}
                             label="New Users"
                             value={getTotalUsers()}
-                            details={`Male: ${state.users.male} | Female: ${state.users.female} | Other: ${state.users.else}`}
+                            details={
+                                <div>
+                                    <strong style={{ color: '#60A5FA' }}>Male</strong>: <span>{state.users.male}</span> |
+                                    <strong style={{ color: '#ff96ff' }}> Female</strong>: <span>{state.users.female}</span> |
+                                    <strong style={{
+                                        background: 'linear-gradient(90deg, #60A5FA, #ff96ff)',
+                                        WebkitBackgroundClip: 'text',
+                                        color: 'transparent'
+                                    }}> Other</strong>: <span>{state.users.else}</span>
+                                </div>
+                            }
                         />
-                        <StatCard config={ICON_CONFIG.doctors} label="Total Doctors" value={state.totalDoctors} />
+                        <StatCard config={ICON_CONFIG.revenue} label="Total Revenue" value={state.totalRevenue} />
+
                         <StatCard
                             config={ICON_CONFIG.sales}
-                            label="Products Sold"
+                            label="Service Packages Sold"
                             value={state.productsSold.total}
                             details={state.productsSold.details.map((item, i) => (
                                 <p
                                     key={i}
+                                    className="my-1 flex justify-between"
+
                                     style={{ color: ['blue', 'red', 'green', 'purple', 'orange'][i % 5] }}
                                 >
-                                    {item.name}: {item.totalSubscriptions}
+                                    <span>{i + 1}. {item.name}</span>
+                                    <strong>{item.totalSubscriptions}</strong>
                                 </p>
                             ))}
                         />
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-2">
                         <StatCard
                             config={ICON_CONFIG.bookings}
                             label="New Bookings"
                             value={state.bookings.total}
-
                         />
+                        <StatCard config={ICON_CONFIG.doctors} label="Total Doctors" value={state.totalDoctors} />
                         <StatCard
                             config={ICON_CONFIG.topDoctors}
-                            label="Top 5 Doctors"
-                            // value={state.topDoctors.total}
+                            label="Top Performing Doctors"
                             details={state.topDoctors.details.map((item, i) => (
-                                <p key={i}>{item.fullName}: {item.bookings}</p>
+                                <div
+                                    key={i}
+                                    className="my-1 flex justify-between"
+                                    style={{ color: ['red', 'orange', 'green', 'purple', 'blue'][i % 5] }}
+                                >
+                                    <span>{i + 1}. {item.fullName}</span>
+                                    <strong>{item.bookings}</strong>
+                                </div>
                             ))}
                         />
-                        <StatCard config={ICON_CONFIG.revenue} label="Total Revenue" value={state.totalRevenue} />
-                    </div>
 
-                    <ChartCard title="Sales Overview">
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={getSalesData()}>
-                                <XAxis
-                                    dataKey="name"
-                                    stroke={COLORS.textSecondary}
-                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
-                                />
-                                <YAxis
-                                    stroke={COLORS.textSecondary}
-                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
-                                <Line
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke={`url(#lineGradient)`}
-                                    strokeWidth={3}
-                                    dot={{ fill: COLORS.primary, r: 5, stroke: COLORS.primary, strokeWidth: 2 }}
-                                    name="Sales"
-                                />
-                                <defs>
-                                    <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stopColor={COLORS.primary} />
-                                        <stop offset="100%" stopColor={COLORS.accent} />
-                                    </linearGradient>
-                                </defs>
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </ChartCard>
+                    </div>
                 </div>
 
-                <div className="my-6 border-t" style={{ borderColor: COLORS.border }} />
+                <div className="my-2 border-t" style={{ borderColor: COLORS.border }} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                    <ChartCard title="Revenue Growth">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
+                    <ChartCard title="Subscription Status Overview" config={ICON_CONFIG.revenueGrowth}>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={revenueGrowthData}>
                                 <XAxis
@@ -521,7 +557,7 @@ export default function Dashboard() {
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    <ChartCard title="User Distribution">
+                    <ChartCard title="User Distribution" config={ICON_CONFIG.userDistribution}>
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
@@ -560,7 +596,7 @@ export default function Dashboard() {
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    <ChartCard title="Performance Analysis">
+                    <ChartCard title="Key Metrics Comparison" config={ICON_CONFIG.performance}>
                         <ResponsiveContainer width="100%" height={300}>
                             <RadarChart outerRadius={120} data={performanceData}>
                                 <PolarGrid stroke={COLORS.border} />
@@ -578,7 +614,7 @@ export default function Dashboard() {
                                 <Radar
                                     name="Current"
                                     dataKey="A"
-                                    stroke={COLORS.primary}
+                                    stroke={COLORS.warning}
                                     fill={`url(#radarGradient)`}
                                     fillOpacity={0.7}
                                 />
@@ -593,7 +629,7 @@ export default function Dashboard() {
                                 <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
                                 <defs>
                                     <linearGradient id="radarGradient" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stopColor={COLORS.primary} />
+                                        <stop offset="0%" stopColor={COLORS.warning} />
                                         <stop offset="100%" stopColor={COLORS.accent} />
                                     </linearGradient>
                                 </defs>
