@@ -2,13 +2,15 @@ import { useState, useEffect, useRef, memo } from "react";
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart,
-    Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend
+    Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend,
+    AreaChart, Area
 } from "recharts";
 import { motion } from "framer-motion";
 import { Users, Briefcase, ShoppingCart, DollarSign, TrendingUp, CreditCard, Clock, Star } from "lucide-react";
 import { saveAs } from 'file-saver';
 import styled from 'styled-components';
 import Loader from "../../../components/Web/Loader";
+import * as XLSX from 'xlsx';
 
 const COLORS = {
     primary: "#4F46E5",
@@ -90,7 +92,7 @@ const ChartCard = memo(({ title, children, config }) => (
 const ExportButton = ({ onClick }) => (
     <StyledWrapper>
         <button className="button" type="button" onClick={onClick}>
-            <span className="button__text">CSV</span>
+            <span className="button__text">Excel</span>
             <span className="button__icon">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" className="svg">
                     <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z" />
@@ -187,6 +189,7 @@ export default function Dashboard() {
         end: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()).padStart(2, '0')}`
     });
     const isMounted = useRef(false);
+    const userName = localStorage.getItem("username");
 
     useEffect(() => {
         isMounted.current = true;
@@ -306,11 +309,13 @@ export default function Dashboard() {
         return total ? total.toLocaleString() : "N/A";
     };
 
-    const exportToCSV = () => {
-        const monthName = new Date(0, dates.month - 1).toLocaleString('default', { month: 'long' });
-        const csvData = [
+    const exportToExcel = () => {
+        const monthName = new Date(0, dates.month - 1).toLocaleString('en-US', { month: 'long' });
+        const wb = XLSX.utils.book_new();
+
+        const overviewData = [
             [`Monthly Statistics for ${monthName} ${dates.year}`],
-            ['Generated on', new Date().toLocaleString()],
+            ['Generated on', new Date().toLocaleString('en-US')],
             [],
             ['Category', 'Value', 'Details'],
             ['Total Users', getTotalUsers(), `Male: ${state.users.male}, Female: ${state.users.female}, Other: ${state.users.else}`],
@@ -319,23 +324,59 @@ export default function Dashboard() {
             ['Subscriptions', state.subscriptions.total, Object.entries(state.subscriptions.details).map(([k, v]) => `${k}: ${v}`).join('; ')],
             ['Total Bookings', state.bookings.total, state.bookings.details.map(item => `${item.fullName}: ${item.bookings}`).join('; ')],
             ['Top Doctors', state.topDoctors.total, state.topDoctors.details.map(item => `${item.fullName}: ${item.bookings}`).join('; ')],
-            ['Total Revenue', state.totalRevenue, ''],
-            [],
+            ['Total Revenue', state.totalRevenue, '']
+        ];
+        const ws1 = XLSX.utils.aoa_to_sheet(overviewData);
+        XLSX.utils.book_append_sheet(wb, ws1, 'Overview');
+
+        const dailySalesData = [
             ['Daily Sales'],
             ['Date', 'Revenue'],
             ...state.dailySales.map(item => [item.name, `${item.value.toLocaleString('vi-VN')} ₫`])
         ];
+        const ws2 = XLSX.utils.aoa_to_sheet(dailySalesData);
+        XLSX.utils.book_append_sheet(wb, ws2, 'Daily Sales');
 
-        const csvContent = csvData.map(row => row.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-        saveAs(blob, `monthly_statistics_${monthName}_${dates.year}.csv`);
+        const packagesData = [
+            ['Service Packages Sold'],
+            ['Name', 'Total Subscriptions'],
+            ...state.productsSold.details.map(item => [item.name, item.totalSubscriptions])
+        ];
+        const ws3 = XLSX.utils.aoa_to_sheet(packagesData);
+        XLSX.utils.book_append_sheet(wb, ws3, 'Service Packages');
+
+        const subscriptionsData = [
+            ['Subscriptions Details'],
+            ['Status', 'Count'],
+            ...Object.entries(state.subscriptions.details).map(([status, count]) => [status, count])
+        ];
+        const ws4 = XLSX.utils.aoa_to_sheet(subscriptionsData);
+        XLSX.utils.book_append_sheet(wb, ws4, 'Subscriptions');
+
+        const topDoctorsData = [
+            ['Top Performing Doctors'],
+            ['Name', 'Bookings'],
+            ...state.topDoctors.details.map(item => [item.fullName, item.bookings])
+        ];
+        const ws5 = XLSX.utils.aoa_to_sheet(topDoctorsData);
+        XLSX.utils.book_append_sheet(wb, ws5, 'Top Doctors');
+
+        const bookingsData = [
+            ['Bookings'],
+            ['Doctor Name', 'Bookings'],
+            ...state.bookings.details.map(item => [item.fullName, item.bookings])
+        ];
+        const ws6 = XLSX.utils.aoa_to_sheet(bookingsData);
+        XLSX.utils.book_append_sheet(wb, ws6, 'Bookings');
+
+        XLSX.writeFile(wb, `monthly_statistics_${monthName}_${dates.year}.xlsx`);
     };
+
     const userDistributionData = [
         { name: "Male", value: parseInt(state.users.male.replace(/,/g, '') || 0), color: COLORS.accent },
         { name: "Female", value: parseInt(state.users.female.replace(/,/g, '') || 0), color: COLORS.secondary },
         { name: "Other", value: parseInt(state.users.else.replace(/,/g, '') || 0), color: "linear-gradient(90deg, #60A5FA, #ff96ff)" },
     ].filter(item => item.value > 0);
-
 
     const revenueGrowthData = Object.entries(state.subscriptions.details).map(([status, count]) => ({
         name: status,
@@ -346,12 +387,13 @@ export default function Dashboard() {
                     COLORS.secondary,
     }));
 
-    const performanceData = [
-        { subject: "Users", A: parseInt(getTotalUsers().replace(/,/g, '') || 0), fullMark: 1000 },
-        { subject: "Doctors", A: parseInt(state.totalDoctors.replace(/,/g, '') || 0), fullMark: 100 },
-        { subject: "Sales", A: parseInt(state.productsSold.total.replace(/,/g, '') || 0), fullMark: 500 },
-        { subject: "Bookings", A: parseInt(state.bookings.total.replace(/,/g, '') || 0), fullMark: 500 },
-    ];
+    // New Data for Stacked Bar Chart (Assuming a simple split for demo purposes)
+    const servicePackagesData = state.productsSold.details.map(item => ({
+        name: item.name,
+        total: parseInt(item.totalSubscriptions.replace(/,/g, '') || 0),
+        newSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.7), // 70% new
+        renewedSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.3), // 30% renewed
+    }));
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
@@ -382,7 +424,7 @@ export default function Dashboard() {
                     transition={{ duration: 0.5 }}
                 >
                     <h1 className="text-2xl font-bold tracking-tight text-purple-400">
-                        Hi Mahi, Welcome back 👋
+                        Hi {userName}, Welcome back 👋
                     </h1>
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
@@ -399,7 +441,7 @@ export default function Dashboard() {
                             >
                                 {Array.from({ length: 12 }, (_, i) => (
                                     <option key={i + 1} value={i + 1} style={{ color: COLORS.textPrimary }}>
-                                        {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                                        {new Date(0, i).toLocaleString('en-US', { month: 'long' })}
                                     </option>
                                 ))}
                             </select>
@@ -422,12 +464,13 @@ export default function Dashboard() {
                                 })}
                             </select>
                         </div>
-                        <ExportButton onClick={exportToCSV} />
+                        <ExportButton onClick={exportToExcel} />
                     </div>
                 </motion.div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
                     <div className="lg:col-span-2">
-                        <ChartCard title="Sales Overview" config={ICON_CONFIG.salesOverview}>
+                        <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.salesOverview}>
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart data={state.dailySales}>
                                     <XAxis
@@ -479,7 +522,6 @@ export default function Dashboard() {
                             }
                         />
                         <StatCard config={ICON_CONFIG.revenue} label="Total Revenue" value={state.totalRevenue} />
-
                         <StatCard
                             config={ICON_CONFIG.sales}
                             label="Service Packages Sold"
@@ -488,7 +530,6 @@ export default function Dashboard() {
                                 <p
                                     key={i}
                                     className="my-1 flex justify-between"
-
                                     style={{ color: ['blue', 'red', 'green', 'purple', 'orange'][i % 5] }}
                                 >
                                     <span>{i + 1}. {item.name}</span>
@@ -497,7 +538,6 @@ export default function Dashboard() {
                             ))}
                         />
                     </div>
-
                     <div className="space-y-2">
                         <StatCard
                             config={ICON_CONFIG.bookings}
@@ -519,15 +559,14 @@ export default function Dashboard() {
                                 </div>
                             ))}
                         />
-
                     </div>
                 </div>
 
                 <div className="my-2 border-t" style={{ borderColor: COLORS.border }} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <ChartCard title="Subscription Status Overview" config={ICON_CONFIG.revenueGrowth}>
-                        <ResponsiveContainer width="100%" height={200}>
+                        <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={revenueGrowthData}>
                                 <XAxis
                                     dataKey="name"
@@ -558,7 +597,7 @@ export default function Dashboard() {
                     </ChartCard>
 
                     <ChartCard title="User Distribution" config={ICON_CONFIG.userDistribution}>
-                        <ResponsiveContainer width="100%" height={200}>
+                        <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
                                 <Pie
                                     data={userDistributionData}
@@ -596,44 +635,103 @@ export default function Dashboard() {
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    <ChartCard title="Key Metrics Comparison" config={ICON_CONFIG.performance}>
+                    {/* New Chart 1: Top Doctors Performance (Radar Chart) */}
+                    <ChartCard title="Top Doctors Performance" config={ICON_CONFIG.performance}>
                         <ResponsiveContainer width="100%" height={300}>
-                            <RadarChart outerRadius={120} data={performanceData}>
-                                <PolarGrid stroke={COLORS.border} />
+                            <RadarChart data={state.topDoctors.details.map(item => ({
+                                subject: item.fullName.split(' ').slice(-1)[0], // Last name for brevity
+                                bookings: parseInt(item.bookings.replace(/,/g, '') || 0),
+                                fullName: item.fullName
+                            }))}>
+                                <PolarGrid stroke={COLORS.textSecondary} />
                                 <PolarAngleAxis
                                     dataKey="subject"
-                                    stroke={COLORS.textSecondary}
-                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                    stroke={COLORS.textPrimary}
+                                    tick={{ fill: COLORS.textPrimary, fontSize: 12 }}
                                 />
                                 <PolarRadiusAxis
-                                    angle={30}
-                                    domain={[0, 1000]}
+                                    angle={90}
+                                    domain={[0, 'dataMax']}
                                     stroke={COLORS.textSecondary}
                                     tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
                                 />
                                 <Radar
-                                    name="Current"
-                                    dataKey="A"
+                                    name="Bookings"
+                                    dataKey="bookings"
                                     stroke={COLORS.warning}
                                     fill={`url(#radarGradient)`}
-                                    fillOpacity={0.7}
+                                    fillOpacity={0.6}
+                                    animationDuration={1000}
                                 />
                                 <Tooltip
-                                    contentStyle={{
-                                        background: COLORS.cardBg,
-                                        borderRadius: '8px',
-                                        border: `1px solid ${COLORS.border}`,
-                                        color: COLORS.textPrimary
-                                    }}
+                                    content={({ active, payload }) =>
+                                        active && payload && payload.length ? (
+                                            <div
+                                                className="p-3 rounded-lg shadow-md"
+                                                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+                                            >
+                                                <p style={{ color: COLORS.textPrimary }}>
+                                                    {`${payload[0].payload.fullName}: ${payload[0].value} bookings`}
+                                                </p>
+                                            </div>
+                                        ) : null
+                                    }
                                 />
                                 <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
                                 <defs>
                                     <linearGradient id="radarGradient" x1="0" y1="0" x2="1" y2="1">
                                         <stop offset="0%" stopColor={COLORS.warning} />
-                                        <stop offset="100%" stopColor={COLORS.accent} />
+                                        <stop offset="100%" stopColor={`${COLORS.warning}80`} />
                                     </linearGradient>
                                 </defs>
                             </RadarChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+
+                    {/* New Chart 2: Service Packages Sold (Stacked Bar Chart) */}
+                    <ChartCard title="Service Packages Breakdown" config={ICON_CONFIG.sales}>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={servicePackagesData}>
+                                <XAxis
+                                    dataKey="name"
+                                    stroke={COLORS.textSecondary}
+                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                />
+                                <YAxis
+                                    stroke={COLORS.textSecondary}
+                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                />
+                                <Tooltip
+                                    content={({ active, payload, label }) =>
+                                        active && payload && payload.length ? (
+                                            <div
+                                                className="p-3 rounded-lg shadow-md"
+                                                style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+                                            >
+                                                <p style={{ color: COLORS.textPrimary }}>{label}</p>
+                                                {payload.map((entry, index) => (
+                                                    <p key={index} style={{ color: entry.color }}>
+                                                        {`${entry.name}: ${entry.value}`}
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        ) : null
+                                    }
+                                />
+                                <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
+                                <Bar dataKey="newSubscriptions" stackId="a" fill={`url(#stackGradientNew)`} name="New" radius={[8, 8, 0, 0]} />
+                                <Bar dataKey="renewedSubscriptions" stackId="a" fill={`url(#stackGradientRenewed)`} name="Renewed" radius={[8, 8, 0, 0]} />
+                                <defs>
+                                    <linearGradient id="stackGradientNew" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={COLORS.accent} />
+                                        <stop offset="100%" stopColor={`${COLORS.accent}80`} />
+                                    </linearGradient>
+                                    <linearGradient id="stackGradientRenewed" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={COLORS.secondary} />
+                                        <stop offset="100%" stopColor={`${COLORS.secondary}80`} />
+                                    </linearGradient>
+                                </defs>
+                            </BarChart>
                         </ResponsiveContainer>
                     </ChartCard>
                 </div>

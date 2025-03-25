@@ -213,7 +213,7 @@ const Regit = () => {
                 </form>
 
                 <button
-                    onClick={() => navigate('/HomeUser')}
+                    onClick={() => navigate('/Emo')}
                     className="w-full mt-4 py-2 bg-gray-500 text-white font-bold rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 >
                     Back to Home

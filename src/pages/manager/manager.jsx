@@ -7,13 +7,15 @@ export default function Manager() {
     const navigate = useNavigate();
     const [history, setHistory] = useState(["Dashboard"]);
     const [activeTab, setActiveTab] = useState("Dashboard");
-    // useEffect(() => {
-    //     const Authorization = localStorage.getItem('token');
-    //     const role = localStorage.getItem('userRole');
-    //     if (!Authorization || role !== 'Manager') {
-    //         navigate('/HomeUser');
-    //     }
-    // }, [navigate]);
+    const userName = localStorage.getItem("username");
+
+    useEffect(() => {
+        const Authorization = localStorage.getItem('token');
+        const role = localStorage.getItem('userRole');
+        if (!Authorization || role !== 'Manager') {
+            navigate('/Emo');
+        }
+    }, [navigate]);
     const handleMenuClick = (menuText) => {
         setActiveTab(menuText);
         setHistory((prevHistory) => {
@@ -34,7 +36,7 @@ export default function Manager() {
                         <div className="fixed top-0 py-2 left-0 w-full border border-gray-200 bg-white z-100 ml-56">
                             <div className="flex justify-end items-center space-x-2 mr-58">
                                 <span className="text-blue-800 text-lg font-medium">
-                                    Manager Name
+                                    {userName}
                                 </span>
                                 <button onClick={() => navigate("/manager/profile")}>
                                     <img
