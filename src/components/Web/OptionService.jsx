@@ -141,7 +141,7 @@ export default function Pricing() {
       const currentDate = new Date();
       const startDate = currentDate.toISOString(); // Ngày bắt đầu là hiện tại
       const endDate = new Date(currentDate);
-      endDate.setDate(endDate.getDate() + 1); // Cộng thêm 1 ngày
+      endDate.setDate(endDate.getDate() + 14);
       const endDateISO = endDate.toISOString();
 
       const payloadData = {

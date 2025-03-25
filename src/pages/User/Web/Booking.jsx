@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../../../components/Web/Loader";
 import {
   ArrowLeft,
   CalendarIcon,
@@ -156,7 +155,7 @@ export default function Booking() {
           patientId: profileId, // Using the value from the image
           date: selectedDate.toLocaleDateString("en-CA").split("T")[0], // Format: YYYY-MM-DD
           startTime: startTime,
-          duration: selectedTimeSlot.duration || 30, // Default to 60 if not available
+          duration: selectedTimeSlot.duration || 60, // Default to 60 if not available
           price: 200000,
           promoCode: promoCode.trim() || null,
           giftCodeId: null, // As specified, set to null
@@ -191,7 +190,14 @@ export default function Booking() {
     }
   };
 
-  if (loading) return <Loader />;
+  if (loading)
+    return (
+      <div className="text-center py-10">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading...</p>
+      </div>
+    );
+
   if (error)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Loader from "../../../components/Web/Loader";
 import {
   Star,
   MapPin,
@@ -13,51 +12,103 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-// Giả định Loader component
-// const Loader = () => (
-//   <div className="flex justify-center items-center h-64">
-//     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-//   </div>
-// );
-
 const DoctorList = () => {
   const navigate = useNavigate();
   const isFetched = useRef(false);
   const [doctors, setDoctors] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState("rating");
   const [viewMode, setViewMode] = useState("grid");
-
+  // New state for filtering
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   // Refs for specialty scrolling
   const specialtyScrollRef = useRef(null);
 
+  const fetchDoctors = async (params = {}) => {
+    try {
+      setLoading(true);
+      const defaultParams = {
+        PageIndex: 1,
+        PageSize: 10,
+        SortBy: "Rating",
+        SortOrder: "desc",
+      };
+
+      // Merge default params with provided params
+      const mergedParams = { ...defaultParams, ...params };
+
+      // Format StartDate and EndDate to match the exact format
+      if (startDate && startTime && endDate && endTime) {
+        // Create date strings in the format "YYYY-MM-DD HH:mm"
+        const formattedStartDate = `${startDate} ${startTime}`;
+        const formattedEndDate = `${endDate} ${endTime}`;
+
+        mergedParams.StartDate = formattedStartDate;
+        mergedParams.EndDate = formattedEndDate;
+      }
+
+      const doctorsResponse = await axios.get(
+        "https://psychologysupport-profile.azurewebsites.net/doctors",
+        { params: mergedParams }
+      );
+
+      setDoctors(doctorsResponse.data.doctorProfiles.data || []);
+    } catch (error) {
+      console.error("Error fetching doctors:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
     if (isFetched.current) return;
     isFetched.current = true;
 
-    const fetchDoctors = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await axios.get(
-          "https://psychologysupport-profile.azurewebsites.net/doctors",
+        const specialtiesResponse = await axios.get(
+          "https://psychologysupport-profile.azurewebsites.net/specialties",
           {
             params: {
               PageIndex: 1,
               PageSize: 10,
-              SortBy: "Rating",
-              SortOrder: "desc",
             },
           }
         );
-        setDoctors(response.data.doctorProfiles.data || []);
+
+        setSpecialties(specialtiesResponse.data.specialties || []);
+        fetchDoctors(); // Initial doctor fetch
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách bác sĩ:", error);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching initial data:", error);
       }
     };
 
-    fetchDoctors();
+    fetchInitialData();
   }, []);
+
+  // Handle specialty selection
+  const handleSpecialtySelect = (specialtyId) => {
+    setSelectedSpecialty(specialtyId);
+    fetchDoctors({ Specialties: specialtyId });
+  };
+
+  // Handle date and time filtering
+  const handleDateTimeFilter = () => {
+    const params = {};
+
+    // Add specialty to params if selected
+    if (selectedSpecialty) {
+      params.Specialties = selectedSpecialty;
+    }
+
+    fetchDoctors(params);
+  };
 
   const handleFilterChange = (filter) => {
     setSelectedFilter(filter);
@@ -190,73 +241,6 @@ const DoctorList = () => {
     </div>
   );
 
-  const DoctorListItem = ({ doctor }) => (
-    <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 border border-gray-100">
-      <div className="flex p-4">
-        <div className="mr-4 flex-shrink-0">
-          <img
-            src={
-              doctor.image ||
-              "https://cdn-healthcare.hellohealthgroup.com/2023/09/1695616991_65110fdf078417.49245494.jpg?w=1920&q=100"
-            }
-            alt={doctor.fullName}
-            className="w-20 h-20 rounded-full object-cover border-2 border-blue-100"
-          />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-bold text-gray-800 truncate">
-                {doctor.fullName}
-              </h3>
-              <div className="w-full max-w-xs my-1">
-                <SpecialtyScroller specialties={doctor.specialties} />
-              </div>
-            </div>
-
-            <div className="flex items-center bg-blue-50 px-2 py-1 rounded-full flex-shrink-0 ml-2">
-              <Star
-                className="w-4 h-4 text-yellow-500 mr-1"
-                fill="currentColor"
-              />
-              <span className="text-sm font-semibold">
-                {doctor.rating || "N/A"}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-sm text-gray-600">
-            <div className="flex items-center">
-              <Phone className="w-4 h-4 mr-1 text-blue-500 flex-shrink-0" />
-              <span className="truncate">{doctor.contactInfo.phoneNumber}</span>
-            </div>
-
-            <div className="flex items-center">
-              <Mail className="w-4 h-4 mr-1 text-blue-500 flex-shrink-0" />
-              <span className="truncate">{doctor.contactInfo.email}</span>
-            </div>
-
-            <div className="flex items-start col-span-2">
-              <MapPin className="w-4 h-4 mr-1 text-blue-500 mt-1 flex-shrink-0" />
-              <span className="text-xs line-clamp-1">
-                {doctor.contactInfo?.address || "Không có địa chỉ"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="ml-4 flex items-center flex-shrink-0">
-          <button
-            onClick={() => navigate(`/HomeUser/booking/${doctor.id}`)}
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300 whitespace-nowrap">
-            Book now
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
   // Custom filter để hiển thị các chuyên khoa phổ biến với thanh trượt
   const SpecialtyFilter = () => {
     const filterScrollRef = useRef(null);
@@ -278,50 +262,60 @@ const DoctorList = () => {
           className="flex overflow-x-auto py-1 hide-scrollbar"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           <div className="flex space-x-2 px-1">
-            <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex-shrink-0">
+            <button
+              onClick={() => {
+                setSelectedSpecialty("");
+                fetchDoctors();
+              }}
+              className={`px-3 py-1 rounded-full text-sm font-medium flex-shrink-0 ${
+                !selectedSpecialty
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}>
               Tất cả
             </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Tâm lý học
-            </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Tư vấn tâm lý
-            </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Sức khỏe tinh thần
-            </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Trị liệu gia đình
-            </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Trầm cảm
-            </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Lo âu
-            </button>
-            <button className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full text-sm flex-shrink-0">
-              Rối loạn giấc ngủ
-            </button>
+            {specialties.map((specialty) => (
+              <button
+                key={specialty.id}
+                onClick={() => handleSpecialtySelect(specialty.id)}
+                className={`px-3 py-1 rounded-full text-sm flex-shrink-0 ${
+                  selectedSpecialty === specialty.id
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}>
+                {specialty.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        <button
-          onClick={() => scrollFilter("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="Scroll left">
-          <ChevronLeft className="w-4 h-4 text-gray-600" />
-        </button>
-        <button
-          onClick={() => scrollFilter("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label="Scroll right">
-          <ChevronRight className="w-4 h-4 text-gray-600" />
-        </button>
+        {specialties.length > 6 && (
+          <>
+            <button
+              onClick={() => scrollFilter("left")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Scroll left">
+              <ChevronLeft className="w-4 h-4 text-gray-600" />
+            </button>
+            <button
+              onClick={() => scrollFilter("right")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Scroll right">
+              <ChevronRight className="w-4 h-4 text-gray-600" />
+            </button>
+          </>
+        )}
       </div>
     );
   };
 
-  if (loading) return <Loader />;
+  if (loading)
+    return (
+      <div className="text-center py-10">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading...</p>
+      </div>
+    );
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white min-h-screen p-6">
@@ -364,81 +358,92 @@ const DoctorList = () => {
                 </div>
               </button>
             </div>
-
-            <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded ${
-                  viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500"
-                }`}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                  />
-                </svg>
-              </button>
-
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded ${
-                  viewMode === "list" ? "bg-white shadow-sm" : "text-gray-500"
-                }`}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            </div>
           </div>
 
           {selectedFilter === "specialties" && <SpecialtyFilter />}
+
+          {/* Date and Time Filtering Section */}
+          <div className="mt-4 grid grid-cols-4 gap-4 items-end">
+            <div className="flex flex-col">
+              <label
+                htmlFor="start-date"
+                className="text-sm font-medium text-gray-700 mb-1.5">
+                Start Date
+              </label>
+              <input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label
+                htmlFor="start-time"
+                className="text-sm font-medium text-gray-700 mb-1.5">
+                Start Time
+              </label>
+              <input
+                id="start-time"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label
+                htmlFor="end-date"
+                className="text-sm font-medium text-gray-700 mb-1.5">
+                End Date
+              </label>
+              <input
+                id="end-date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <label
+                htmlFor="end-time"
+                className="text-sm font-medium text-gray-700 mb-1.5">
+                End Time
+              </label>
+              <input
+                id="end-time"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                required
+              />
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={handleDateTimeFilter}
+                className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-md 
+      hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 
+      transition-all duration-300 ease-in-out transform active:scale-95 shadow-md">
+                Apply Filter
+              </button>
+            </div>
+          </div>
         </div>
 
-        {viewMode === "grid" ? (
+        {viewMode === "grid" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {doctors.map((doctor, index) => (
               <DoctorCard key={doctor.id || index} doctor={doctor} />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {doctors.map((doctor, index) => (
-              <DoctorListItem key={doctor.id || index} doctor={doctor} />
             ))}
           </div>
         )}

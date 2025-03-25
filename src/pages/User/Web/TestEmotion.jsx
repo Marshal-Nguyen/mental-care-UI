@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import arrowDownAnimation from "../../../util/icon/arrowDown.json";
 import alertIcon from "../../../util/icon/alertOctagon.json";
 import Lottie from "lottie-react";
-import Loader from "../../../components/Web/Loader";
 import { useSelector, useDispatch } from "react-redux";
 // Color mapping based on the API response values
 const colorMap = {
@@ -223,7 +222,13 @@ const TestEmotion = () => {
     fetchCurrentQuestion(0);
   }, [fetchCurrentQuestion]);
 
-  if (loading) return <Loader />;
+  if (loading)
+    return (
+      <div className="text-center py-10">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading...</p>
+      </div>
+    );
   if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
