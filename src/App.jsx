@@ -36,10 +36,12 @@ import CustomerDetail from "./components/manager/customer/CustomerDetail";
 import DoctorDetail from "./components/manager/doctor/DoctorDetail";
 import AcceptDoctor from "./pages/manager/doctor/AcceptDoctor";
 import ListDoctor from "./pages/manager/doctor/ListDoctor";
+import EditDoctor from "./pages/manager/doctor/EditDoctor";
 import AddPackages from "./pages/manager/services/AddService";
 import ListPackages from "./pages/manager/services/ListService";
 import ListPendingReplies from "./pages/manager/pending_replies/ListPendingReplies";
 import ProfileManager from "./pages/manager/profile/Profile";
+import HistoryPatient1 from "./components/manager/customer/HistoryPatient";
 //staff
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
@@ -129,12 +131,14 @@ function App() {
             <Route path="addCustomer" element={<AddCustomerManager />} />
             <Route path="viewCustomer" element={<ListCustomerManager />} />
             <Route path="viewCustomer/:id" element={<CustomerDetail />} />
+            {/* <Route path="viewCustomer/:id" element={<HistoryPatient1 />} /> */}
             {/* <Route path="staff" element={<AddStaff />} /> */}
             <Route path="addStaff" element={<AddStaff />} />
             <Route path="viewStaff" element={<ListStaff />} />
             {/* <Route path="doctor" element={<AcceptDoctor />} /> */}
             <Route path="addDoctor" element={<AcceptDoctor />} />
             <Route path="viewDoctor" element={<ListDoctor />} />
+            <Route path="ProfileDoctor/:userId" element={<EditDoctor />} />
             <Route path="viewDoctor/:id" element={<DoctorDetail />} />
 
             {/* <Route path="promotion" element={<AddPackages />} /> */}

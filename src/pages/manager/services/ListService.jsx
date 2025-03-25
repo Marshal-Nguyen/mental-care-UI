@@ -1,123 +1,367 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AiFillEdit, AiFillDelete, AiFillEye } from "react-icons/ai";
+import { AiFillEye, AiFillEdit } from "react-icons/ai";
+import { FaUsers } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
+import { MdFilterList } from "react-icons/md";
 import { motion } from "framer-motion";
 import Loader from "../../../components/Web/Loader";
+import { useNavigate } from "react-router-dom";
 
-const API_URL =
-    "https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors?PageIndex=1&PageSize=10&SortBy=Rating&SortOrder=asc";
+const BASE_API_URL = "https://psychologysupport-subscription.azurewebsites.net/service-packages";
 
-const UpgradePackages = () => {
-    const [doctors, setDoctors] = useState([]);
+const ServicePackageList = () => {
+    const [packages, setPackages] = useState([]);
+    const [filteredPackages, setFilteredPackages] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [initialLoad, setInitialLoad] = useState(true);
     const [error, setError] = useState(null);
+    const [pageIndex, setPageIndex] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all"); // "all", "active", "inactive"
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
+    const [selectedPackage, setSelectedPackage] = useState(null);
+    const [updateForm, setUpdateForm] = useState({
+        name: "",
+        description: "",
+        price: "",
+        durationDays: "",
+        isActive: false
+    });
+    const navigate = useNavigate();
+
+    const fetchPackages = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                PageIndex: pageIndex,
+                PageSize: pageSize,
+            };
+
+            // Chỉ thêm Status vào params nếu statusFilter không phải "all"
+            if (statusFilter !== "all") {
+                params.Status = statusFilter === "active" ? true : false;
+            }
+
+            const response = await axios.get(BASE_API_URL, { params });
+
+            const packagesWithImages = response.data.servicePackages.data.map(pkg => ({
+                ...pkg,
+                imageUrl: "https://via.placeholder.com/150?text=No+Image"
+            }));
+
+            setPackages(packagesWithImages);
+            applySearchFilter(packagesWithImages);
+        } catch (error) {
+            setError("Failed to load service packages. Please try again.");
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+            setInitialLoad(false);
+        }
+    };
+
+    // Hàm áp dụng bộ lọc tìm kiếm theo tên
+    const applySearchFilter = (data) => {
+        if (searchQuery.trim() === "") {
+            setFilteredPackages(data);
+        } else {
+            const filtered = data.filter((pkg) =>
+                pkg.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredPackages(filtered);
+        }
+    };
 
     useEffect(() => {
-        const fetchDoctors = async () => {
-            try {
-                const response = await axios.get(API_URL);
-                console.log("API Response:", response.data);
-                setDoctors(response.data.doctorProfiles.data || []);
-            } catch (error) {
-                setError("Failed to load doctors. Please try again.");
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDoctors();
-    }, []);
+        fetchPackages();
+    }, [pageIndex, pageSize, statusFilter]); // Thêm statusFilter vào dependency
 
-    if (loading) return <Loader />;
+    useEffect(() => {
+        applySearchFilter(packages);
+    }, [searchQuery]);
 
-    if (error) {
-        return <p className="text-center text-red-500 text-xl">{error}</p>;
-    }
+    const countActivePackages = () => {
+        return packages.filter(pkg => pkg.isActive).length;
+    };
+
+    const handleUpdateClick = (pkg) => {
+        setSelectedPackage(pkg);
+        setUpdateForm({
+            name: pkg.name,
+            description: pkg.description,
+            price: pkg.price,
+            durationDays: pkg.durationDays,
+            isActive: pkg.isActive
+        });
+        setShowUpdateModal(true);
+    };
+
+    const handleUpdateSubmit = async (e) => {
+        e.preventDefault();
+        const activeCount = countActivePackages();
+        if (!updateForm.isActive && selectedPackage.isActive) {
+            // Cho phép chuyển từ Active sang Inactive
+        } else if (updateForm.isActive && !selectedPackage.isActive && activeCount >= 3) {
+            alert("Cannot activate more than 3 packages!");
+            return;
+        }
+
+        try {
+            const response = await axios.put(
+                `${BASE_API_URL}/${selectedPackage.id}`,
+                {
+                    name: updateForm.name,
+                    description: updateForm.description,
+                    price: parseFloat(updateForm.price),
+                    durationDays: parseInt(updateForm.durationDays),
+                    isActive: updateForm.isActive
+                }
+            );
+            const updatedPackages = packages.map(p =>
+                p.id === selectedPackage.id ? { ...p, ...updateForm } : p
+            );
+            setPackages(updatedPackages);
+            applySearchFilter(updatedPackages);
+            setShowUpdateModal(false);
+        } catch (error) {
+            console.error("Error updating package:", error);
+            alert("Failed to update package. Please try again.");
+        }
+    };
+
+    if (initialLoad) return <Loader />;
+    if (error) return <p className="text-center text-red-500 text-xl font-semibold">{error}</p>;
+
+    const startIndex = (pageIndex - 1) * pageSize;
 
     return (
-        <div className="container mx-auto p-8 bg-gradient-to-br from-white to-gray-100 shadow-2xl rounded-3xl text-gray-900 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-blue-100 via-purple-100 to-pink-200 opacity-40 blur-2xl"></div>
-            {/* <h2 className="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 drop-shadow-md">
-                🌟 Psychologist List 🌟
-            </h2> */}
-            <h2 className="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-pink-500">
-                Psychologist List
-            </h2>
-            <motion.table
-                className="w-full border-collapse shadow-xl rounded-xl overflow-hidden bg-white relative z-10"
-                initial={{ opacity: 0, y: 50 }}
+        <div className="container mx-auto p-6 mt-2 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+            <motion.div
+                className="flex items-center justify-center mb-2"
+                initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <FaUsers className="text-indigo-700 mr-3" size={36} />
+                <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
+                    Service Packages Dashboard
+                </h2>
+            </motion.div>
+
+            <motion.div
+                className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
             >
-                <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg">
-                    <tr>
-                        <th className="px-6 py-4">#</th>
-                        <th className="px-6 py-4">Avatar</th>
-                        <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">Specialization</th>
-                        <th className="px-6 py-4">Email</th>
-                        <th className="px-6 py-4">Rating</th>
-                        <th className="px-6 py-4 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {doctors.map((doctor, index) => (
-                        <motion.tr
-                            key={doctor.id}
-                            className="hover:bg-blue-50 transition-all duration-300 border-b border-gray-300 group"
-                            whileHover={{ scale: 1.02 }}
-                        >
-                            <td className="px-6 py-4 text-center font-bold text-blue-600">{index + 1}</td>
+                <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                        <div className="relative w-full sm:w-1/3">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search by name..."
+                                className="w-full p-3 pl-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            />
+                            <FiSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" size={20} />
+                        </div>
+                        <div className="flex gap-4 items-center">
+                            <MdFilterList className="text-indigo-600" size={24} />
+                            <select
+                                value={pageSize}
+                                onChange={(e) => setPageSize(Number(e.target.value))}
+                                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            >
+                                <option value={5}>5 per page</option>
+                                <option value={10}>10 per page</option>
+                                <option value={20}>20 per page</option>
+                            </select>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-                            {/* Avatar */}
-                            <td className="px-6 py-4 text-center">
-                                <img
-                                    src={doctor.profileImage || "https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100"}
-                                    alt={doctor.fullName}
-                                    className="w-12 h-12 rounded-full object-cover mx-auto border border-gray-300 shadow-sm"
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                        <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                            <tr>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">#</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Name</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Description</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Price (VND)</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Duration (Days)</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Status</th>
+                                <th className="px-6 py-4 text-center font-semibold text-sm">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredPackages.map((pkg, index) => (
+                                <motion.tr
+                                    key={pkg.id}
+                                    className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
+                                    whileHover={{ scale: 1.005 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <td className="px-6 py-4 text-gray-700 font-medium">
+                                        {startIndex + index + 1}
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-800 font-semibold">{pkg.name}</td>
+                                    <td className="px-6 py-4 text-gray-600 font-medium">{pkg.description}</td>
+                                    <td className="px-6 py-4 text-green-600 font-medium">
+                                        {pkg.price.toLocaleString()}
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-600 font-medium">{pkg.durationDays}</td>
+                                    <td className="px-6 py-4 font-medium">
+                                        <span
+                                            className={
+                                                pkg.isActive ? "text-green-600" : "text-red-600"
+                                            }
+                                        >
+                                            {pkg.isActive ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="flex justify-center gap-4">
+                                            <motion.button
+                                                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                                                title="Update Package"
+                                                onClick={() => handleUpdateClick(pkg)}
+                                                whileHover={{ scale: 1.15 }}
+                                            >
+                                                <AiFillEdit size={20} />
+                                            </motion.button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </motion.div>
+
+            {showUpdateModal && (
+                <motion.div
+                    className="fixed inset-0 bg-gray bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-999"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                >
+                    <motion.div
+                        className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md"
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                    >
+                        <h3 className="text-2xl font-bold mb-4 text-indigo-600">Update Service Package</h3>
+                        <form onSubmit={handleUpdateSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 mb-2">Name</label>
+                                <input
+                                    type="text"
+                                    value={updateForm.name}
+                                    onChange={(e) => setUpdateForm({ ...updateForm, name: e.target.value })}
+                                    className="w-full p-2 border rounded-lg"
+                                    required
                                 />
-                            </td>
-
-                            {/* Tên bác sĩ */}
-                            <td className="px-4 py-4 font-semibold text-gray-800">{doctor.fullName}</td>
-
-                            {/* Chuyên môn */}
-                            <td className="px-2 py-4 text-pink-500 font-medium">
-                                {doctor.specialties.map(s => s.name).join(", ")}
-                            </td>
-
-                            {/* Email */}
-                            <td className="px-4 py-4 text-green-500 font-medium">{doctor.contactInfo.email}</td>
-
-                            {/* Rating */}
-                            <td className="px-6 py-4 text-yellow-500 font-semibold text-center">
-                                ⭐ {doctor.rating?.toFixed(1) || "N/A"}
-                            </td>
-
-                            {/* Hành động */}
-                            <td className="px-6 py-4 text-center">
-                                <div className="flex items-center justify-center gap-4">
-                                    <motion.button
-                                        className="p-3 bg-blue-400 text-white rounded-full shadow-lg hover:bg-blue-500 hover:shadow-2xl transform transition-transform duration-200 group-hover:scale-110"
-                                        title="Edit"
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 mb-2">Description</label>
+                                <textarea
+                                    value={updateForm.description}
+                                    onChange={(e) => setUpdateForm({ ...updateForm, description: e.target.value })}
+                                    className="w-full p-2 border rounded-lg"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 mb-2">Price (VND)</label>
+                                <input
+                                    type="number"
+                                    value={updateForm.price}
+                                    onChange={(e) => setUpdateForm({ ...updateForm, price: e.target.value })}
+                                    className="w-full p-2 border rounded-lg"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 mb-2">Duration (Days)</label>
+                                <input
+                                    type="number"
+                                    value={updateForm.durationDays}
+                                    onChange={(e) => setUpdateForm({ ...updateForm, durationDays: e.target.value })}
+                                    className="w-full p-2 border rounded-lg"
+                                    required
+                                />
+                            </div>
+                            {(countActivePackages() < 3 || selectedPackage.isActive) && (
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 mb-2">Status</label>
+                                    <select
+                                        value={updateForm.isActive}
+                                        onChange={(e) => setUpdateForm({ ...updateForm, isActive: e.target.value === 'true' })}
+                                        className="w-full p-2 border rounded-lg"
                                     >
-                                        <AiFillEdit size={24} />
-                                    </motion.button>
-                                    <motion.button
-                                        className="p-3 bg-green-400 text-white rounded-full shadow-lg hover:bg-green-500 hover:shadow-2xl transform transition-transform duration-200 group-hover:scale-110"
-                                        title="View Detail"
-                                    >
-                                        <AiFillEye size={24} />
-                                    </motion.button>
+                                        <option value={true}>Active</option>
+                                        <option value={false}>Inactive</option>
+                                    </select>
                                 </div>
-                            </td>
-                        </motion.tr>
-                    ))}
-                </tbody>
-            </motion.table>
+                            )}
+                            {countActivePackages() >= 3 && !selectedPackage.isActive && (
+                                <div className="mb-4 text-gray-600">
+                                    Status: Inactive (Maximum 3 active packages allowed)
+                                </div>
+                            )}
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUpdateModal(false)}
+                                    className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                >
+                                    Update
+                                </button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </motion.div>
+            )}
+
+            <div className="mt-8 flex justify-center gap-6">
+                <motion.button
+                    onClick={() => setPageIndex((prev) => Math.max(1, prev - 1))}
+                    disabled={pageIndex === 1}
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+                    whileHover={{ scale: pageIndex === 1 ? 1 : 1.05 }}
+                >
+                    Previous
+                </motion.button>
+                <span className="py-2 text-gray-800 font-semibold text-lg">Page {pageIndex}</span>
+                <motion.button
+                    onClick={() => setPageIndex((prev) => prev + 1)}
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+                    whileHover={{ scale: 1.05 }}
+                >
+                    Next
+                </motion.button>
+            </div>
         </div>
     );
 };
 
-export default UpgradePackages;
+export default ServicePackageList;

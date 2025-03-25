@@ -1,130 +1,232 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AiFillEdit, AiFillDelete, AiFillEye } from "react-icons/ai";
+import { AiFillEdit, AiFillEye } from "react-icons/ai";
+import { FaUsers } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
+import { MdFilterList } from "react-icons/md";
 import { motion } from "framer-motion";
 import Loader from "../../../components/Web/Loader";
 import { useNavigate } from "react-router-dom";
 
-const API_URL =
-    "https://psychologysupportprofile-fddah4eef4a7apac.eastasia-01.azurewebsites.net/doctors?PageIndex=1&PageSize=10&SortBy=Rating&SortOrder=asc";
+const BASE_API_URL = "https://psychologysupport-profile.azurewebsites.net/doctors";
+const IMAGE_API_URL = "https://psychologysupport-image.azurewebsites.net/image/get";
 
 const PsychologistList = () => {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [initialLoad, setInitialLoad] = useState(true);
     const [error, setError] = useState(null);
+    const [pageIndex, setPageIndex] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [sortBy, setSortBy] = useState("Rating");
+    const [sortOrder, setSortOrder] = useState("asc");
+    const [searchQuery, setSearchQuery] = useState("");
     const navigate = useNavigate();
 
+    const fetchDoctors = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(BASE_API_URL, {
+                params: {
+                    PageIndex: pageIndex,
+                    PageSize: pageSize,
+                    Search: searchQuery,
+                    SortBy: sortBy,
+                    SortOrder: sortOrder,
+                },
+            });
+
+            const doctorsWithImages = await Promise.all(
+                response.data.doctorProfiles.data.map(async (doctor) => {
+                    try {
+                        const imageResponse = await axios.get(IMAGE_API_URL, {
+                            params: { ownerType: "User", ownerId: doctor.userId },
+                        });
+                        return {
+                            ...doctor,
+                            profileImage:
+                                imageResponse.data.url ||
+                                "https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100",
+                        };
+                    } catch (imgError) {
+                        console.error("Error fetching image for doctor:", doctor.id, imgError);
+                        return {
+                            ...doctor,
+                            profileImage:
+                                "https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100",
+                        };
+                    }
+                })
+            );
+            setDoctors(doctorsWithImages);
+        } catch (error) {
+            setError("Failed to load doctors. Please try again.");
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+            setInitialLoad(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchDoctors = async () => {
-            try {
-                const response = await axios.get(API_URL);
-                console.log("API Response:", response.data);
-                setDoctors(response.data.doctorProfiles.data || []);
-            } catch (error) {
-                setError("Failed to load doctors. Please try again.");
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDoctors();
-    }, []);
+    }, [pageIndex, pageSize, sortBy, sortOrder, searchQuery]);
 
-    if (loading) return <Loader />;
-
-    if (error) {
-        return <p className="text-center text-red-500 text-xl">{error}</p>;
-    }
+    if (initialLoad) return <Loader />;
+    if (error) return <p className="text-center text-red-500 text-xl font-semibold">{error}</p>;
 
     return (
-        <div className="container mx-auto p-8 bg-gradient-to-br from-white to-gray-100 shadow-2xl rounded-3xl text-gray-900 min-h-screen relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-blue-100 via-purple-100 to-pink-200 opacity-40 blur-2xl"></div>
-            {/* <h2 className="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600 drop-shadow-md">
-                🌟 Psychologist List 🌟
-            </h2> */}
-            <h2 className="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-pink-500">
-                Psychologist List
-            </h2>
-            <motion.table
-                className="w-full border-collapse shadow-xl rounded-xl overflow-hidden bg-white relative z-10"
-                initial={{ opacity: 0, y: 50 }}
+        <div className="container mx-auto p-6 mt-2 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+            {/* Header */}
+            <motion.div
+                className="flex items-center justify-center mb-2"
+                initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <FaUsers className="text-indigo-700 mr-3" size={36} />
+                <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
+                    Psychologists Dashboard
+                </h2>
+            </motion.div>
+
+            {/* Filter and Table Wrapper */}
+            <motion.div
+                className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
             >
-                <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg">
-                    <tr>
-                        <th className="px-6 py-4">#</th>
-                        <th className="px-6 py-4">Avatar</th>
-                        <th className="px-6 py-4">Name</th>
-                        <th className="px-6 py-4">Specialization</th>
-                        <th className="px-6 py-4">Email</th>
-                        <th className="px-6 py-4">Rating</th>
-                        <th className="px-6 py-4 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {doctors.map((doctor, index) => (
-                        <motion.tr
-                            key={doctor.id}
-                            className="hover:bg-blue-50 transition-all duration-300 border-b border-gray-300 group"
-                            whileHover={{ scale: 1.02 }}
-                        >
-                            <td className="px-6 py-4 text-center font-bold text-blue-600">{index + 1}</td>
+                {/* Filter and Search Controls */}
+                <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                        <div className="relative w-full sm:w-1/3">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search by name..."
+                                className="w-full p-3 pl-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            />
+                            <FiSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" size={20} />
+                        </div>
+                        <div className="flex gap-4 items-center">
+                            <MdFilterList className="text-indigo-600" size={24} />
+                            <select
+                                value={pageSize}
+                                onChange={(e) => setPageSize(Number(e.target.value))}
+                                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            >
+                                <option value={5}>5 per page</option>
+                                <option value={10}>10 per page</option>
+                                <option value={20}>20 per page</option>
+                            </select>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            >
+                                <option value="fullName">Sort by Name</option>
+                                <option value="Rating">Sort by Rating</option>
+                            </select>
+                            <select
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
+                            >
+                                <option value="asc">Ascending</option>
+                                <option value="desc">Descending</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
-                            {/* Avatar */}
-                            <td className="px-6 py-4 text-center">
-                                <img
-                                    src={doctor.profileImage || "https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100"}
-                                    alt={doctor.fullName}
-                                    className="w-12 h-12 rounded-full object-cover mx-auto border border-gray-300 shadow-sm"
-                                />
-                            </td>
+                {/* Table */}
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                        <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                            <tr>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">#</th>
+                                <th className="px-6 py-4 text-center font-semibold text-sm">Avatar</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Name</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Specialization</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Email</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Rating</th>
+                                <th className="px-6 py-4 text-center font-semibold text-sm">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {doctors.map((doctor, index) => (
+                                <motion.tr
+                                    key={doctor.id}
+                                    className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
+                                    whileHover={{ scale: 1.005 }}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <td className="px-6 py-4 text-gray-700 font-medium">{index + 1}</td>
+                                    <td className="py-4">
+                                        <img
+                                            src={doctor.profileImage}
+                                            alt={doctor.fullName}
+                                            className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-indigo-300 shadow-md transition-transform duration-300 hover:scale-110"
+                                        />
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-800 font-semibold">{doctor.fullName}</td>
+                                    <td className="px-6 py-4 text-gray-600 font-medium">
+                                        {doctor.specialties.map((s) => s.name).join(", ")}
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-600 font-medium">{doctor.contactInfo.email}</td>
+                                    <td className="px-6 py-4 text-yellow-500 font-semibold">
+                                        ⭐ {doctor.rating?.toFixed(1) || "N/A"}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="flex justify-center gap-4">
+                                            <motion.button
+                                                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                                                title="Edit"
+                                                onClick={() => navigate(`/manager/ProfileDoctor/${doctor.id}`)}
+                                                whileHover={{ scale: 1.15 }}
+                                            >
+                                                <AiFillEdit size={20} />
+                                            </motion.button>
+                                            <motion.button
+                                                className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
+                                                title="View Detail"
+                                                onClick={() => navigate(`${doctor.id}`)}
+                                                whileHover={{ scale: 1.15 }}
+                                            >
+                                                <AiFillEye size={20} />
+                                            </motion.button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </motion.div>
 
-                            {/* Tên bác sĩ */}
-                            <td className="px-4 py-4 font-semibold text-gray-800">{doctor.fullName}</td>
-
-                            {/* Chuyên môn */}
-                            <td className="px-2 py-4 text-pink-500 font-medium">
-                                {doctor.specialties.map(s => s.name).join(", ")}
-                            </td>
-
-                            {/* Email */}
-                            <td className="px-4 py-4 text-green-500 font-medium">{doctor.contactInfo.email}</td>
-
-                            {/* Rating */}
-                            <td className="px-6 py-4 text-yellow-500 font-semibold text-center">
-                                ⭐ {doctor.rating?.toFixed(1) || "N/A"}
-                            </td>
-
-                            {/* Hành động */}
-                            <td className="px-6 py-4 text-center">
-                                <div className="flex items-center justify-center gap-4">
-                                    <motion.button
-                                        className="p-3 bg-blue-400 text-white rounded-full shadow-lg hover:bg-blue-500 hover:shadow-2xl transform transition-transform duration-200 group-hover:scale-110"
-                                        title="Edit"
-                                    >
-                                        <AiFillEdit size={24} />
-                                    </motion.button>
-                                    {/* <motion.button
-                                        className="p-3 bg-green-400 text-white rounded-full shadow-lg hover:bg-green-500 hover:shadow-2xl transform transition-transform duration-200 group-hover:scale-110"
-                                        title="View Detail"
-                                    >
-                                        <AiFillEye size={24} />
-                                    </motion.button> */}
-                                    <motion.button
-                                        className="p-3 bg-green-400 text-white rounded-full shadow-lg hover:bg-green-500 hover:shadow-2xl transform transition-transform duration-200 group-hover:scale-110"
-                                        title="View Detail"
-                                        onClick={() => navigate(`${doctor.id}`)}
-                                    >
-                                        <AiFillEye size={24} />
-                                    </motion.button>
-                                </div>
-                            </td>
-                        </motion.tr>
-                    ))}
-                </tbody>
-            </motion.table>
+            {/* Pagination */}
+            <div className="mt-8 flex justify-center gap-6">
+                <motion.button
+                    onClick={() => setPageIndex((prev) => Math.max(1, prev - 1))}
+                    disabled={pageIndex === 1}
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+                    whileHover={{ scale: pageIndex === 1 ? 1 : 1.05 }}
+                >
+                    Previous
+                </motion.button>
+                <span className="py-2 text-gray-800 font-semibold text-lg">Page {pageIndex}</span>
+                <motion.button
+                    onClick={() => setPageIndex((prev) => prev + 1)}
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+                    whileHover={{ scale: 1.05 }}
+                >
+                    Next
+                </motion.button>
+            </div>
         </div>
     );
 };
