@@ -104,13 +104,13 @@ const LogIn = () => {
       // Lấy role từ claim
       const userRole =
         decodedToken[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ];
       const profileId = decodedToken.profileId;
       const userId = decodedToken.userId;
       const username =
         decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ];
 
       // Lưu thông tin và cập nhật state
@@ -125,7 +125,9 @@ const LogIn = () => {
       setIsLoggedIn(true);
       setUserRole(userRole);
       setUserImage("https://i.pravatar.cc/150?img=3");
-
+      // if (userRole === "Manager") {
+      //   navigate("/Manager");
+      // }
       // Dispatch to Redux và đóng modal
       dispatch(setCredentials({ token, userRole, profileId, userId }));
       dispatch(closeLoginModal());
@@ -205,30 +207,38 @@ const LogIn = () => {
         navigate("/DashboardDoctor");
       } else if (currentRole === "Staff") {
         navigate("/staff");
+      } else if (currentRole === "Manager") {
+        navigate("/manager");
+
       }
+
     }
     setDropdownOpen(false);
   };
   return (
     <div className="relative">
-      {/* Avatar Button */}
-      <button
-        onClick={handleDropdownClick}
-        className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-300 hover:shadow-purple-400 transition-all overflow-hidden">
-        {isLoggedIn && avatarUrl ? (
-          <img
-            src={avatarUrl || "https://i.pravatar.cc/150?img=3"} // Thêm fallback image
-            alt="Avatar"
-            className="w-full h-full object-cover rounded-full"
-            onError={(e) => {
-              e.target.onerror = null; // Prevent infinite loop
-              e.target.src = "https://i.pravatar.cc/150?img=3"; // Fallback image
-            }}
-          />
-        ) : (
-          <FaUser className="text-white text-2xl" />
-        )}
-      </button>
+      <div className="flex items-center gap-4">
+        <span className="text-lg font-medium text-purple-400">{userRole}</span>
+        {/* Avatar Button */}
+        <button
+          onClick={handleDropdownClick}
+          className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all overflow-hidden border-2 border-purple-500">
+          {isLoggedIn && avatarUrl ? (
+            <img
+              src={avatarUrl || "https://i.pravatar.cc/150?img=3"}
+              alt="Avatar"
+              className="w-full h-full object-cover rounded-full"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "https://i.pravatar.cc/150?img=3";
+              }}
+            />
+          ) : (
+            <FaUser className="text-white text-2xl" />
+          )}
+        </button>
+      </div>
+
 
       {/* Dropdown Menu */}
       {dropdownOpen && (

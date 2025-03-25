@@ -196,10 +196,11 @@ const SildebarLeft = ({ onMenuClick }) => {
             </div>
 
             <div>
-                <NavLink to="/Emo" onClick={handleLogOut}>
+                {/* <NavLink to="/Emo" onClick={handleLogOut}> */}
+                <NavLink to="/Emo" >
                     <div className="flex items-center w-full p-2 my-3 bg-[#faf3e0] hover:bg-gray-100 rounded">
                         <BiLogOut size={24} className="mr-2 text-red-500" />
-                        <span className="ml-4 text-lg text-gray-800">Logout</span>
+                        <span className="ml-4 text-lg text-gray-800">Back</span>
                     </div>
                 </NavLink>
             </div>

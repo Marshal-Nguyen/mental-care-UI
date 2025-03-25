@@ -9,7 +9,7 @@ const App = () => {
     const handleLogout = () => {
         toast.success('Logout successful. See you next time!');
         localStorage.clear(); // Xóa toàn bộ localStorage
-        navigate("/HomeUser"); // Chuyển về trang HomeUser
+        navigate("/emo"); // Chuyển về trang HomeUser
 
     };
     const links = [

@@ -12,7 +12,7 @@ const CustomerDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
-    const [activeTab, setActiveTab] = useState("profile"); // Trạng thái để điều khiển tab
+    const [activeTab, setActiveTab] = useState("profile");
 
     useEffect(() => {
         const fetchCustomer = async () => {
@@ -43,7 +43,6 @@ const CustomerDetail = () => {
     if (error) return <div className="min-h-screen flex items-center justify-center text-red-600 text-2xl font-bold bg-red-100">Error: {error}</div>;
     if (!customer) return <div className="min-h-screen flex items-center justify-center text-gray-600 text-2xl font-bold bg-gray-100">Customer not found</div>;
 
-    // Determine gender styling
     const genderStyles = {
         Male: { bg: "bg-blue-500", border: "border-blue-600", text: "text-blue-600", gradient: "from-blue-500 to-cyan-500" },
         Female: { bg: "bg-pink-500", border: "border-pink-600", text: "text-pink-600", gradient: "from-pink-500 to-purple-500" },
@@ -60,7 +59,6 @@ const CustomerDetail = () => {
         >
             <div className="max-w-6xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
-                    {/* Profile Card with Tabs */}
                     <motion.div
                         className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-purple-200"
                         whileHover={{ scale: 1.03, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
@@ -97,9 +95,9 @@ const CustomerDetail = () => {
                             </motion.div>
                             <div className="mt-6 space-y-5">
                                 {[
-                                    { icon: FaPhone, color: "text-purple-500", text: customer.contactInfo.phoneNumber },
-                                    { icon: FaEnvelope, color: "text-cyan-500", text: customer.contactInfo.email },
-                                    { icon: FaMapMarkerAlt, color: "text-pink-500", text: customer.contactInfo.address }
+                                    { icon: FaPhone, color: "text-purple-500", text: customer.contactInfo?.phoneNumber || "N/A" },
+                                    { icon: FaEnvelope, color: "text-cyan-500", text: customer.contactInfo?.email || "N/A" },
+                                    { icon: FaMapMarkerAlt, color: "text-pink-500", text: customer.contactInfo?.address || "N/A" }
                                 ].map((item, index) => (
                                     <motion.div
                                         key={index}
@@ -113,7 +111,6 @@ const CustomerDetail = () => {
                                     </motion.div>
                                 ))}
                             </div>
-                            {/* Tab Buttons */}
                             <div className="mt-6 flex justify-center gap-4">
                                 <motion.button
                                     onClick={() => setActiveTab("profile")}
@@ -135,11 +132,9 @@ const CustomerDetail = () => {
                         </div>
                     </motion.div>
 
-                    {/* Dynamic Content in Second Column */}
                     <div className="lg:col-span-3 space-y-2">
                         {activeTab === "profile" ? (
                             <>
-                                {/* Medical History */}
                                 <motion.div
                                     className="bg-white rounded-2xl shadow-xl p-4 border-2 border-cyan-200"
                                     whileHover={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
@@ -147,51 +142,64 @@ const CustomerDetail = () => {
                                     <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2 mb-6">
                                         <FaHeartbeat className="text-cyan-500" /> Medical History
                                     </h3>
-                                    <div className="space-y-1">
-                                        <p className="flex items-center gap-2 text-gray-800 bg-cyan-50 p-3 rounded-lg">
-                                            <FaCalendarAlt className="text-purple-500" />
-                                            <span className="font-medium">Diagnosed: {new Date(customer.medicalHistory.diagnosedAt).toLocaleDateString()}</span>
-                                        </p>
-                                        <div className="grid gap-1">
-                                            <div className="bg-purple-50 p-4 rounded-lg">
-                                                <p className="font-semibold text-purple-700 mb-2">Mental Disorders:</p>
-                                                {customer.medicalHistory.specificMentalDisorders.map(disorder => (
-                                                    <motion.div
-                                                        key={disorder.id}
-                                                        className="flex items-start gap-2 mb-2"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        transition={{ duration: 0.3 }}
-                                                    >
-                                                        <FaBrain className="text-purple-500 mt-1" />
-                                                        <span className="text-gray-800"><strong>{disorder.name}:</strong> {disorder.description}</span>
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                            <div className="bg-pink-50 p-4 rounded-lg">
-                                                <p className="font-semibold text-pink-700 mb-2">Physical Symptoms:</p>
-                                                {customer.medicalHistory.physicalSymptoms.map(symptom => (
-                                                    <motion.div
-                                                        key={symptom.id}
-                                                        className="flex items-start gap-2 mb-2"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        transition={{ duration: 0.3 }}
-                                                    >
-                                                        <FaHeartbeat className="text-pink-500 mt-1" />
-                                                        <span className="text-gray-800"><strong>{symptom.name}:</strong> {symptom.description}</span>
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                            <p className="flex items-center gap-2 text-gray-800 bg-green-50 p-3 rounded-lg">
-                                                <FaAllergies className="text-green-500" />
-                                                <span className="font-medium">Allergies: <span className="text-green-700">{customer.allergies}</span></span>
+                                    {customer.medicalHistory ? (
+                                        <div className="space-y-1">
+                                            <p className="flex items-center gap-2 text-gray-800 bg-cyan-50 p-3 rounded-lg">
+                                                <FaCalendarAlt className="text-purple-500" />
+                                                <span className="font-medium">
+                                                    Diagnosed: {new Date(customer.medicalHistory.diagnosedAt).toLocaleDateString()}
+                                                </span>
                                             </p>
+                                            <div className="grid gap-1">
+                                                <div className="bg-purple-50 p-4 rounded-lg">
+                                                    <p className="font-semibold text-purple-700 mb-2">Mental Disorders:</p>
+                                                    {customer.medicalHistory.specificMentalDisorders?.length > 0 ? (
+                                                        customer.medicalHistory.specificMentalDisorders.map(disorder => (
+                                                            <motion.div
+                                                                key={disorder.id}
+                                                                className="flex items-start gap-2 mb-2"
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: 1 }}
+                                                                transition={{ duration: 0.3 }}
+                                                            >
+                                                                <FaBrain className="text-purple-500 mt-1" />
+                                                                <span className="text-gray-800"><strong>{disorder.name}:</strong> {disorder.description}</span>
+                                                            </motion.div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="text-gray-600">No mental disorders recorded.</p>
+                                                    )}
+                                                </div>
+                                                <div className="bg-pink-50 p-4 rounded-lg">
+                                                    <p className="font-semibold text-pink-700 mb-2">Physical Symptoms:</p>
+                                                    {customer.medicalHistory.physicalSymptoms?.length > 0 ? (
+                                                        customer.medicalHistory.physicalSymptoms.map(symptom => (
+                                                            <motion.div
+                                                                key={symptom.id}
+                                                                className="flex items-start gap-2 mb-2"
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: 1 }}
+                                                                transition={{ duration: 0.3 }}
+                                                            >
+                                                                <FaHeartbeat className="text-pink-500 mt-1" />
+                                                                <span className="text-gray-800"><strong>{symptom.name}:</strong> {symptom.description}</span>
+                                                            </motion.div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="text-gray-600">No physical symptoms recorded.</p>
+                                                    )}
+                                                </div>
+                                                <p className="flex items-center gap-2 text-gray-800 bg-green-50 p-3 rounded-lg">
+                                                    <FaAllergies className="text-green-500" />
+                                                    <span className="font-medium">Allergies: <span className="text-green-700">{customer.allergies || "N/A"}</span></span>
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <p className="text-gray-600">No medical history available.</p>
+                                    )}
                                 </motion.div>
 
-                                {/* Medical Records */}
                                 <motion.div
                                     className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-200"
                                     whileHover={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
@@ -200,47 +208,50 @@ const CustomerDetail = () => {
                                         <FaHistory className="text-purple-500" /> Medical Records
                                     </h3>
                                     <div className="space-y-6">
-                                        {customer.medicalRecords.map(record => (
-                                            <motion.div
-                                                key={record.id}
-                                                className="bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100"
-                                                initial={{ y: 20, opacity: 0 }}
-                                                animate={{ y: 0, opacity: 1 }}
-                                                transition={{ duration: 0.4 }}
-                                            >
-                                                <p className="flex items-center gap-2 text-gray-800 mb-2">
-                                                    <FaNotesMedical className="text-cyan-500" />
-                                                    <span className="font-medium"><strong>Notes:</strong> {record.notes}</span>
-                                                </p>
-                                                <p className="flex items-center gap-2 text-gray-800 mb-2">
-                                                    <FaHeartbeat className={`text-${record.status === "Processing" ? "yellow" : "green"}-500`} />
-                                                    <span className="font-medium">
-                                                        <strong>Status:</strong>
-                                                        <span className={`text-${record.status === "Processing" ? "yellow" : "green"}-600`}>{record.status}</span>
-                                                    </span>
-                                                </p>
-                                                <p className="flex items-center gap-2 text-gray-800">
-                                                    <FaCalendarAlt className="text-purple-500" />
-                                                    <span className="font-medium">Created: {new Date(record.createdAt).toLocaleDateString()}</span>
-                                                </p>
-                                                {record.specificMentalDisorders?.length > 0 && (
-                                                    <div className="mt-4 bg-cyan-50 p-4 rounded-lg">
-                                                        <p className="font-semibold text-cyan-700 mb-2">Disorders:</p>
-                                                        {record.specificMentalDisorders.map(disorder => (
-                                                            <div key={disorder.id} className="flex items-start gap-2 mb-2">
-                                                                <FaBrain className="text-cyan-500 mt-1" />
-                                                                <span className="text-gray-800"><strong>{disorder.name}:</strong> {disorder.description}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </motion.div>
-                                        ))}
+                                        {customer.medicalRecords?.length > 0 ? (
+                                            customer.medicalRecords.map(record => (
+                                                <motion.div
+                                                    key={record.id}
+                                                    className="bg-gradient-to-r from-gray-50 to-white p-4 rounded-xl border border-gray-100"
+                                                    initial={{ y: 20, opacity: 0 }}
+                                                    animate={{ y: 0, opacity: 1 }}
+                                                    transition={{ duration: 0.4 }}
+                                                >
+                                                    <p className="flex items-center gap-2 text-gray-800 mb-2">
+                                                        <FaNotesMedical className="text-cyan-500" />
+                                                        <span className="font-medium"><strong>Notes:</strong> {record.notes}</span>
+                                                    </p>
+                                                    <p className="flex items-center gap-2 text-gray-800 mb-2">
+                                                        <FaHeartbeat className={`text-${record.status === "Processing" ? "yellow" : "green"}-500`} />
+                                                        <span className="font-medium">
+                                                            <strong>Status:</strong>
+                                                            <span className={`text-${record.status === "Processing" ? "yellow" : "green"}-600`}>{record.status}</span>
+                                                        </span>
+                                                    </p>
+                                                    <p className="flex items-center gap-2 text-gray-800">
+                                                        <FaCalendarAlt className="text-purple-500" />
+                                                        <span className="font-medium">Created: {new Date(record.createdAt).toLocaleDateString()}</span>
+                                                    </p>
+                                                    {record.specificMentalDisorders?.length > 0 && (
+                                                        <div className="mt-4 bg-cyan-50 p-4 rounded-lg">
+                                                            <p className="font-semibold text-cyan-700 mb-2">Disorders:</p>
+                                                            {record.specificMentalDisorders.map(disorder => (
+                                                                <div key={disorder.id} className="flex items-start gap-2 mb-2">
+                                                                    <FaBrain className="text-cyan-500 mt-1" />
+                                                                    <span className="text-gray-800"><strong>{disorder.name}:</strong> {disorder.description}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-600">No medical records available.</p>
+                                        )}
                                     </div>
                                 </motion.div>
                             </>
                         ) : (
-                            /* Patient History */
                             <motion.div
                                 className="bg-white rounded-2xl shadow-xl p-6 border-2 border-blue-200"
                                 whileHover={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
@@ -254,7 +265,6 @@ const CustomerDetail = () => {
                     </div>
                 </div>
 
-                {/* Back Button */}
                 <motion.button
                     onClick={() => navigate("/manager/viewCustomer")}
                     className="mt-8 w-full max-w-md mx-auto block bg-gradient-to-r from-purple-600 to-cyan-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:from-purple-700 hover:to-cyan-700 transition-all"
