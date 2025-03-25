@@ -89,7 +89,7 @@ const PsychologistList = () => {
         transition={{ duration: 0.6 }}>
         <FaUsers className="text-indigo-700 mr-3" size={36} />
         <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
-          Users Dashboard
+          Users List
         </h2>
       </motion.div>
 
@@ -203,11 +203,10 @@ const PsychologistList = () => {
                     {customer.contactInfo?.phoneNumber || "N/A"}
                   </td>
                   <td
-                    className={`px-6 py-4 italic ${
-                      customer.personalityTraits === "Introversion"
+                    className={`px-6 py-4 italic ${customer.personalityTraits === "Introversion"
                         ? "text-blue-600"
                         : "text-red-600"
-                    }`}>
+                      }`}>
                     {customer.personalityTraits}
                   </td>
 

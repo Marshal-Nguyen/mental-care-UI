@@ -146,8 +146,7 @@ const ServicePackageList = () => {
             >
                 <FaUsers className="text-indigo-700 mr-3" size={36} />
                 <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
-                    Service Packages Dashboard
-                </h2>
+                    Service Packages                </h2>
             </motion.div>
 
             <motion.div

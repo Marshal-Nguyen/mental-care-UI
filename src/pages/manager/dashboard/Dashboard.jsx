@@ -470,7 +470,7 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
                     <div className="lg:col-span-2">
-                        <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.salesOverview}>
+                        {/* <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.salesOverview}>
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart data={state.dailySales}>
                                     <XAxis
@@ -501,6 +501,40 @@ export default function Dashboard() {
                                         </linearGradient>
                                     </defs>
                                 </LineChart>
+                            </ResponsiveContainer>
+                        </ChartCard> */}
+                        <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.salesOverview}>
+                            <ResponsiveContainer width="100%" height={310}>
+                                <AreaChart data={state.dailySales}>
+                                    <XAxis
+                                        dataKey="name"
+                                        stroke={COLORS.textSecondary}
+                                        tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                        tickFormatter={(value) => new Date(value).getDate()}
+                                    />
+                                    <YAxis
+                                        stroke={COLORS.textSecondary}
+                                        tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke={COLORS.accent}
+                                        fill={`url(#areaGradient)`}
+                                        fillOpacity={0.3}
+                                        animationDuration={1000}
+                                        name="Revenue"
+                                    />
+                                    <defs>
+                                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor={COLORS.success} />
+                                            <stop offset="100%" stopColor={`${COLORS.success}80`} />
+                                        </linearGradient>
+                                    </defs>
+                                </AreaChart>
                             </ResponsiveContainer>
                         </ChartCard>
                     </div>
@@ -566,7 +600,7 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <ChartCard title="Subscription Status Overview" config={ICON_CONFIG.revenueGrowth}>
-                        <ResponsiveContainer width="100%" height={250}>
+                        <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={revenueGrowthData}>
                                 <XAxis
                                     dataKey="name"
@@ -597,7 +631,7 @@ export default function Dashboard() {
                     </ChartCard>
 
                     <ChartCard title="User Distribution" config={ICON_CONFIG.userDistribution}>
-                        <ResponsiveContainer width="100%" height={250}>
+                        <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
                                     data={userDistributionData}
@@ -639,7 +673,9 @@ export default function Dashboard() {
                     <ChartCard title="Top Doctors Performance" config={ICON_CONFIG.performance}>
                         <ResponsiveContainer width="100%" height={300}>
                             <RadarChart data={state.topDoctors.details.map(item => ({
-                                subject: item.fullName.split(' ').slice(-1)[0], // Last name for brevity
+                                subject: item.fullName && typeof item.fullName === 'string'
+                                    ? item.fullName.split(' ').slice(-1)[0]
+                                    : 'Unknown',
                                 bookings: parseInt(item.bookings.replace(/,/g, '') || 0),
                                 fullName: item.fullName
                             }))}>
@@ -734,6 +770,41 @@ export default function Dashboard() {
                             </BarChart>
                         </ResponsiveContainer>
                     </ChartCard>
+                    {/* New Chart 3: Daily Revenue Trend (Area Chart) */}
+                    {/* <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.revenueGrowth}>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <AreaChart data={state.dailySales}>
+                                <XAxis
+                                    dataKey="name"
+                                    stroke={COLORS.textSecondary}
+                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                    tickFormatter={(value) => new Date(value).getDate()}
+                                />
+                                <YAxis
+                                    stroke={COLORS.textSecondary}
+                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                                />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke={COLORS.success}
+                                    fill={`url(#areaGradient)`}
+                                    fillOpacity={0.3}
+                                    animationDuration={1000}
+                                    name="Revenue"
+                                />
+                                <defs>
+                                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={COLORS.success} />
+                                        <stop offset="100%" stopColor={`${COLORS.success}80`} />
+                                    </linearGradient>
+                                </defs>
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartCard> */}
                 </div>
 
                 {error && (

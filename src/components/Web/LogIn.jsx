@@ -41,10 +41,10 @@ const LogIn = () => {
   };
   const [avatarUrl, setAvatarUrl] = useState(null);
   // Xử lý đăng nhập
-  const fetchAvatar = async () => {
+  const fetchAvatar = async (id) => {
     try {
       const avatarResponse = await axios.get(
-        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
+        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${id}`
       );
 
       console.log("Avatar URL Home:", avatarResponse.data);
@@ -77,7 +77,7 @@ const LogIn = () => {
               userId: storedUserId,
             })
           );
-          fetchAvatar();
+          fetchAvatar(userId);
         } else {
           // Token hết hạn, logout
           handleLogout();
@@ -131,7 +131,7 @@ const LogIn = () => {
       // Dispatch to Redux và đóng modal
       dispatch(setCredentials({ token, userRole, profileId, userId }));
       dispatch(closeLoginModal());
-      fetchAvatar();
+      fetchAvatar(userId);
       // Thông báo thành công
 
       const currentRole = localStorage.getItem("userRole");
