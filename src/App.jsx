@@ -156,7 +156,7 @@ function App() {
               <Route path="chat" element={<Chatbox />} />
               <Route path="regit" element={<Regist />} />
               <Route path="customer" element={<ListCustomerStaff />} />
-              <Route path="doctor" element={<ListDoctorStaff />} />
+              <Route path="doctor" element={<Counselor />} />
               <Route path="message" element={<MessengerUI />} />
               <Route path="profile" element={<StaffProfile />} />
               <Route path="blog" element={<BlogStaff />} />

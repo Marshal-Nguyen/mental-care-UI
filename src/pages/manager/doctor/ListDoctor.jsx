@@ -21,6 +21,7 @@ const PsychologistList = () => {
     const [sortBy, setSortBy] = useState("Rating");
     const [sortOrder, setSortOrder] = useState("asc");
     const [searchQuery, setSearchQuery] = useState("");
+    const [hasMoreData, setHasMoreData] = useState(true); // Thêm state kiểm tra còn dữ liệu
     const navigate = useNavigate();
 
     const fetchDoctors = async () => {
@@ -59,6 +60,8 @@ const PsychologistList = () => {
                 })
             );
             setDoctors(doctorsWithImages);
+            // Kiểm tra nếu số lượng bản ghi nhỏ hơn pageSize, nghĩa là không còn dữ liệu
+            setHasMoreData(doctorsWithImages.length === pageSize);
         } catch (error) {
             setError("Failed to load doctors. Please try again.");
             console.error("Error fetching data:", error);
@@ -156,53 +159,63 @@ const PsychologistList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {doctors.map((doctor, index) => (
-                                <motion.tr
-                                    key={doctor.id}
-                                    className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
-                                    whileHover={{ scale: 1.005 }}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <td className="px-6 py-4 text-gray-700 font-medium">{index + 1}</td>
-                                    <td className="py-4">
-                                        <img
-                                            src={doctor.profileImage}
-                                            alt={doctor.fullName}
-                                            className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-indigo-300 shadow-md transition-transform duration-300 hover:scale-110"
-                                        />
+                            {doctors.length > 0 ? (
+                                doctors.map((doctor, index) => (
+                                    <motion.tr
+                                        key={doctor.id}
+                                        className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
+                                        whileHover={{ scale: 1.005 }}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <td className="px-6 py-4 text-gray-700 font-medium">
+                                            {(pageIndex - 1) * pageSize + index + 1}
+                                        </td>
+                                        <td className="py-4">
+                                            <img
+                                                src={doctor.profileImage}
+                                                alt={doctor.fullName}
+                                                className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-indigo-300 shadow-md transition-transform duration-300 hover:scale-110"
+                                            />
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-800 font-semibold">{doctor.fullName}</td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">
+                                            {doctor.specialties.map((s) => s.name).join(", ")}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">{doctor.contactInfo.email}</td>
+                                        <td className="px-6 py-4 text-yellow-500 font-semibold">
+                                            ⭐ {doctor.rating?.toFixed(1) || "N/A"}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex justify-center gap-4">
+                                                <motion.button
+                                                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                                                    title="Edit"
+                                                    onClick={() => navigate(`/manager/ProfileDoctor/${doctor.id}`)}
+                                                    whileHover={{ scale: 1.15 }}
+                                                >
+                                                    <AiFillEdit size={20} />
+                                                </motion.button>
+                                                <motion.button
+                                                    className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
+                                                    title="View Detail"
+                                                    onClick={() => navigate(`${doctor.id}`)}
+                                                    whileHover={{ scale: 1.15 }}
+                                                >
+                                                    <AiFillEye size={20} />
+                                                </motion.button>
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                                        No data available
                                     </td>
-                                    <td className="px-6 py-4 text-gray-800 font-semibold">{doctor.fullName}</td>
-                                    <td className="px-6 py-4 text-gray-600 font-medium">
-                                        {doctor.specialties.map((s) => s.name).join(", ")}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-600 font-medium">{doctor.contactInfo.email}</td>
-                                    <td className="px-6 py-4 text-yellow-500 font-semibold">
-                                        ⭐ {doctor.rating?.toFixed(1) || "N/A"}
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex justify-center gap-4">
-                                            <motion.button
-                                                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
-                                                title="Edit"
-                                                onClick={() => navigate(`/manager/ProfileDoctor/${doctor.id}`)}
-                                                whileHover={{ scale: 1.15 }}
-                                            >
-                                                <AiFillEdit size={20} />
-                                            </motion.button>
-                                            <motion.button
-                                                className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
-                                                title="View Detail"
-                                                onClick={() => navigate(`${doctor.id}`)}
-                                                whileHover={{ scale: 1.15 }}
-                                            >
-                                                <AiFillEye size={20} />
-                                            </motion.button>
-                                        </div>
-                                    </td>
-                                </motion.tr>
-                            ))}
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -221,8 +234,9 @@ const PsychologistList = () => {
                 <span className="py-2 text-gray-800 font-semibold text-lg">Page {pageIndex}</span>
                 <motion.button
                     onClick={() => setPageIndex((prev) => prev + 1)}
-                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
-                    whileHover={{ scale: 1.05 }}
+                    disabled={!hasMoreData} // Vô hiệu hóa nút Next nếu không còn dữ liệu
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+                    whileHover={{ scale: !hasMoreData ? 1 : 1.05 }}
                 >
                     Next
                 </motion.button>

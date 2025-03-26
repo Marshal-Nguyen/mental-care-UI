@@ -171,6 +171,7 @@ const StyledWrapper = styled.div`
 
 export default function Dashboard() {
     const [state, setState] = useState({
+        totalUsers: "N/A", // New field for total users from the new API
         users: { male: "N/A", female: "N/A", else: "N/A" },
         totalDoctors: "N/A",
         productsSold: { total: "N/A", details: [] },
@@ -197,7 +198,11 @@ export default function Dashboard() {
             try {
                 setLoading(true);
 
-                const [usersData, doctorsData, productsData, subscriptionsData, bookingsData, topDoctorsData, dailyRevenueData] = await Promise.all([
+                const [totalUsersData, usersData, doctorsData, productsData, subscriptionsData, bookingsData, topDoctorsData, dailyRevenueData] = await Promise.all([
+                    fetch("https://psychologysupport-profile.azurewebsites.net/patients?PageIndex=1&PageSize=10")
+                        .then(res => res.json())
+                        .then(data => data.paginatedResult.totalCount.toLocaleString()),
+
                     Promise.all(["Male", "Female", "Else"].map(gender =>
                         fetch(`https://psychologysupport-profile.azurewebsites.net/patients/total?startDate=${dates.start}&endDate=${dates.end}&gender=${gender}`)
                             .then(res => res.json())
@@ -247,6 +252,7 @@ export default function Dashboard() {
                 }
 
                 setState({
+                    totalUsers: totalUsersData, // Set total users from the new API
                     users: usersData,
                     totalDoctors: doctorsData.doctorProfiles.totalCount.toLocaleString(),
                     productsSold: {
@@ -303,7 +309,7 @@ export default function Dashboard() {
         }
     };
 
-    const getTotalUsers = () => {
+    const getGenderTotalUsers = () => {
         const total = Object.values(state.users)
             .reduce((sum, val) => sum + parseInt(val.replace(/,/g, '') || 0), 0);
         return total ? total.toLocaleString() : "N/A";
@@ -318,7 +324,7 @@ export default function Dashboard() {
             ['Generated on', new Date().toLocaleString('en-US')],
             [],
             ['Category', 'Value', 'Details'],
-            ['Total Users', getTotalUsers(), `Male: ${state.users.male}, Female: ${state.users.female}, Other: ${state.users.else}`],
+            ['Total Users', state.totalUsers, `Gender Breakdown - Male: ${state.users.male}, Female: ${state.users.female}, Other: ${state.users.else} (Total: ${getGenderTotalUsers()})`],
             ['Total Doctors', state.totalDoctors, ''],
             ['Service Packages Sold', state.productsSold.total, state.productsSold.details.map(item => `${item.name}: ${item.totalSubscriptions}`).join('; ')],
             ['Subscriptions', state.subscriptions.total, Object.entries(state.subscriptions.details).map(([k, v]) => `${k}: ${v}`).join('; ')],
@@ -387,12 +393,11 @@ export default function Dashboard() {
                     COLORS.secondary,
     }));
 
-    // New Data for Stacked Bar Chart (Assuming a simple split for demo purposes)
     const servicePackagesData = state.productsSold.details.map(item => ({
         name: item.name,
         total: parseInt(item.totalSubscriptions.replace(/,/g, '') || 0),
-        newSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.7), // 70% new
-        renewedSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.3), // 30% renewed
+        newSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.7),
+        renewedSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.3),
     }));
 
     const CustomTooltip = ({ active, payload, label }) => {
@@ -470,39 +475,6 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
                     <div className="lg:col-span-2">
-                        {/* <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.salesOverview}>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <LineChart data={state.dailySales}>
-                                    <XAxis
-                                        dataKey="name"
-                                        stroke={COLORS.textSecondary}
-                                        tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
-                                        tickFormatter={(value) => new Date(value).getDate()}
-                                    />
-                                    <YAxis
-                                        stroke={COLORS.textSecondary}
-                                        tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
-                                        tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                                    />
-                                    <Tooltip content={<CustomTooltip />} />
-                                    <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke={`url(#lineGradient)`}
-                                        strokeWidth={3}
-                                        dot={{ fill: COLORS.accent, r: 5, stroke: COLORS.accent, strokeWidth: 2 }}
-                                        name="Daily Revenue"
-                                    />
-                                    <defs>
-                                        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0%" stopColor={COLORS.accent} />
-                                            <stop offset="100%" stopColor={COLORS.primary} />
-                                        </linearGradient>
-                                    </defs>
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </ChartCard> */}
                         <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.salesOverview}>
                             <ResponsiveContainer width="100%" height={310}>
                                 <AreaChart data={state.dailySales}>
@@ -542,7 +514,7 @@ export default function Dashboard() {
                         <StatCard
                             config={ICON_CONFIG.users}
                             label="New Users"
-                            value={getTotalUsers()}
+                            value={state.totalUsers} // Display total users from the new API
                             details={
                                 <div>
                                     <strong style={{ color: '#60A5FA' }}>Male</strong>: <span>{state.users.male}</span> |
@@ -552,6 +524,8 @@ export default function Dashboard() {
                                         WebkitBackgroundClip: 'text',
                                         color: 'transparent'
                                     }}> Other</strong>: <span>{state.users.else}</span>
+                                    <br />
+                                    <span> <span className="text-green-800">Total User:</span> {getGenderTotalUsers()}</span>
                                 </div>
                             }
                         />
@@ -611,7 +585,23 @@ export default function Dashboard() {
                                     stroke={COLORS.textSecondary}
                                     tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
                                 />
-                                <Tooltip content={<CustomTooltip />} />
+                                <Tooltip
+                                    content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                            return (
+                                                <div
+                                                    className="p-3 rounded-lg shadow-md"
+                                                    style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+                                                >
+                                                    <p className="text-sm font-medium" style={{ color: COLORS.textPrimary }}>
+                                                        {`${label}: ${payload[0].value.toLocaleString()}`}
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    }}
+                                />
                                 <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
                                 <Bar dataKey="value" radius={[8, 8, 0, 0]} name="Subscriptions">
                                     {revenueGrowthData.map((entry, index) => (
@@ -669,7 +659,6 @@ export default function Dashboard() {
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    {/* New Chart 1: Top Doctors Performance (Radar Chart) */}
                     <ChartCard title="Top Doctors Performance" config={ICON_CONFIG.performance}>
                         <ResponsiveContainer width="100%" height={300}>
                             <RadarChart data={state.topDoctors.details.map(item => ({
@@ -724,7 +713,6 @@ export default function Dashboard() {
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    {/* New Chart 2: Service Packages Sold (Stacked Bar Chart) */}
                     <ChartCard title="Service Packages Breakdown" config={ICON_CONFIG.sales}>
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={servicePackagesData}>
@@ -770,41 +758,6 @@ export default function Dashboard() {
                             </BarChart>
                         </ResponsiveContainer>
                     </ChartCard>
-                    {/* New Chart 3: Daily Revenue Trend (Area Chart) */}
-                    {/* <ChartCard title="Daily Revenue Trend" config={ICON_CONFIG.revenueGrowth}>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <AreaChart data={state.dailySales}>
-                                <XAxis
-                                    dataKey="name"
-                                    stroke={COLORS.textSecondary}
-                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
-                                    tickFormatter={(value) => new Date(value).getDate()}
-                                />
-                                <YAxis
-                                    stroke={COLORS.textSecondary}
-                                    tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
-                                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
-                                <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke={COLORS.success}
-                                    fill={`url(#areaGradient)`}
-                                    fillOpacity={0.3}
-                                    animationDuration={1000}
-                                    name="Revenue"
-                                />
-                                <defs>
-                                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={COLORS.success} />
-                                        <stop offset="100%" stopColor={`${COLORS.success}80`} />
-                                    </linearGradient>
-                                </defs>
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </ChartCard> */}
                 </div>
 
                 {error && (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AiFillEdit, AiFillEye } from "react-icons/ai";
+import { AiFillEye } from "react-icons/ai";
 import { FaMars, FaVenus, FaUsers } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Loader from "../../../components/Web/Loader";
@@ -23,6 +23,7 @@ const PsychologistList = () => {
   const [sortBy, setSortBy] = useState("fullname");
   const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasMoreData, setHasMoreData] = useState(true); // Thêm state để kiểm tra còn dữ liệu không
   const navigate = useNavigate();
 
   const fetchCustomers = async () => {
@@ -60,6 +61,8 @@ const PsychologistList = () => {
         })
       );
       setCustomers(customersWithImages);
+      // Kiểm tra nếu số lượng bản ghi nhỏ hơn pageSize, nghĩa là không còn dữ liệu
+      setHasMoreData(customersWithImages.length === pageSize);
     } catch (error) {
       setError("Failed to load customers. Please try again.");
       console.error("Error fetching data:", error);
@@ -170,59 +173,66 @@ const PsychologistList = () => {
               </tr>
             </thead>
             <tbody>
-              {customers.map((customer, index) => (
-                <motion.tr
-                  key={customer.id}
-                  className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
-                  whileHover={{ scale: 1.005 }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}>
-                  <td className="px-6 py-4 text-gray-700 font-medium">
-                    {index + 1}
-                  </td>
-                  <td className="py-4">
-                    <img
-                      src={customer.profileImage}
-                      alt={customer.fullName}
-                      className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-indigo-300 shadow-md transition-transform duration-300 hover:scale-110"
-                    />
-                  </td>
-                  <td className="px-6 py-4 text-gray-800 font-semibold">
-                    {customer.fullName}
-                  </td>
-                  <td className="px-6 py-4 flex items-center gap-2 text-gray-600">
-                    {customer.gender === "Male" ? (
-                      <FaMars className="text-blue-600" size={18} />
-                    ) : (
-                      <FaVenus className="text-pink-600" size={18} />
-                    )}
-                    <span className="font-medium">{customer.gender}</span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 font-medium">
-                    {customer.contactInfo?.phoneNumber || "N/A"}
-                  </td>
-                  <td
-                    className={`px-6 py-4 italic ${customer.personalityTraits === "Introversion"
+              {customers.length > 0 ? (
+                customers.map((customer, index) => (
+                  <motion.tr
+                    key={customer.id}
+                    className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
+                    whileHover={{ scale: 1.005 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}>
+                    <td className="px-6 py-4 text-gray-700 font-medium">
+                      {(pageIndex - 1) * pageSize + index + 1}
+                    </td>
+                    <td className="py-4">
+                      <img
+                        src={customer.profileImage}
+                        alt={customer.fullName}
+                        className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-indigo-300 shadow-md transition-transform duration-300 hover:scale-110"
+                      />
+                    </td>
+                    <td className="px-6 py-4 text-gray-800 font-semibold">
+                      {customer.fullName}
+                    </td>
+                    <td className="px-6 py-4 flex items-center gap-2 text-gray-600">
+                      {customer.gender === "Male" ? (
+                        <FaMars className="text-blue-600" size={18} />
+                      ) : (
+                        <FaVenus className="text-pink-600" size={18} />
+                      )}
+                      <span className="font-medium">{customer.gender}</span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 font-medium">
+                      {customer.contactInfo?.phoneNumber || "N/A"}
+                    </td>
+                    <td
+                      className={`px-6 py-4 italic ${customer.personalityTraits === "Introversion"
                         ? "text-blue-600"
                         : "text-red-600"
-                      }`}>
-                    {customer.personalityTraits}
+                        }`}>
+                      {customer.personalityTraits}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex justify-center gap-4">
+                        <motion.button
+                          className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
+                          title="View Detail"
+                          onClick={() => navigate(`${customer.id}`)}
+                          whileHover={{ scale: 1.15 }}>
+                          <AiFillEye size={20} />
+                        </motion.button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                    No data available
                   </td>
-
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex justify-center gap-4">
-                      <motion.button
-                        className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
-                        title="View Detail"
-                        onClick={() => navigate(`${customer.id}`)}
-                        whileHover={{ scale: 1.15 }}>
-                        <AiFillEye size={20} />
-                      </motion.button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -242,8 +252,9 @@ const PsychologistList = () => {
         </span>
         <motion.button
           onClick={() => setPageIndex((prev) => prev + 1)}
-          className="px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
-          whileHover={{ scale: 1.05 }}>
+          disabled={!hasMoreData} // Vô hiệu hóa nút Next nếu không còn dữ liệu
+          className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+          whileHover={{ scale: !hasMoreData ? 1 : 1.05 }}>
           Next
         </motion.button>
       </div>
