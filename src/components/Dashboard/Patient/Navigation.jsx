@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
-
 const Navigation = () => {
   const dispatch = useDispatch();
   const profileId = useSelector((state) => state.auth.profileId);
@@ -27,11 +26,10 @@ const Navigation = () => {
     return (
       <Link
         to={to}
-        className={`flex items-center gap-3 cursor-pointer transition duration-300 font-medium ${
-          isActive
+        className={`flex items-center gap-3 cursor-pointer transition duration-300 font-medium ${isActive
             ? "text-white text-[15px] font-serif bg-gradient-to-r from-[#9284e0] to-[#5849b1] px-4 py-2.5 rounded-[11px] shadow-sm"
             : "text-[#554d4ddc] font-serif text-[15px] hover:text-[#5241b1] hover:bg-white/10 px-4 py-2.5 rounded-xl"
-        }`}>
+          }`}>
         {icon}
         <span className="tracking-wide">{text}</span>
       </Link>
@@ -77,6 +75,7 @@ const Navigation = () => {
             type="button"
             onClick={() => {
               dispatch(clearCredentials());
+
             }}
             className="cursor-pointer font-medium tracking-wide text-[#554d4ddc] hover:text-[#5D4DB8] font-serif">
             Log Out

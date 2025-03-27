@@ -11,6 +11,7 @@ import { saveAs } from 'file-saver';
 import styled from 'styled-components';
 import Loader from "../../../components/Web/Loader";
 import * as XLSX from 'xlsx';
+import { useNavigate } from "react-router-dom";
 
 const COLORS = {
     primary: "#4F46E5",
@@ -171,16 +172,18 @@ const StyledWrapper = styled.div`
 
 export default function Dashboard() {
     const [state, setState] = useState({
-        totalUsers: "N/A", // New field for total users from the new API
+        totalUsers: "N/A",
         users: { male: "N/A", female: "N/A", else: "N/A" },
         totalDoctors: "N/A",
         productsSold: { total: "N/A", details: [] },
         subscriptions: { total: "N/A", details: { AwaitPayment: "N/A", Active: "N/A", Expired: "N/A", Cancelled: "N/A" } },
-        bookings: { total: "N/A", details: [] },
+        bookings: { total: "N/A", details: { Completed: "N/A", AwaitMeeting: "N/A", Cancelled: "N/A" } },
         topDoctors: { total: "N/A", details: [] },
         totalRevenue: "N/A",
         dailySales: []
     });
+    const navigate = useNavigate();
+
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [dates, setDates] = useState({
@@ -221,13 +224,11 @@ export default function Dashboard() {
                             .then(data => [status, data.totalCount.toLocaleString()])
                     )).then(Object.fromEntries),
 
-                    fetch("https://psychologysupport-profile.azurewebsites.net/doctors?PageIndex=1&PageSize=10")
-                        .then(res => res.json())
-                        .then(doctorsData => Promise.all(doctorsData.doctorProfiles.data.map(doctor =>
-                            fetch(`https://psychologysupport-scheduling.azurewebsites.net/bookings/count?StartDate=${dates.start}&EndDate=${dates.end}&DoctorId=${doctor.id}`)
-                                .then(res => res.json())
-                                .then(data => ({ fullName: doctor.fullName, bookings: data.totalBookings.toLocaleString() }))
-                        ))),
+                    Promise.all(["Completed", "AwaitMeeting", "Cancelled"].map(status =>
+                        fetch(`https://psychologysupport-scheduling.azurewebsites.net/bookings/count?StartDate=${dates.start}&EndDate=${dates.end}&BookingStatus=${status}`)
+                            .then(res => res.json())
+                            .then(data => [status, data.totalBookings.toLocaleString()])
+                    )).then(Object.fromEntries),
 
                     fetch(`https://psychologysupport-scheduling.azurewebsites.net/bookings/top-doctors?StartDate=${dates.start}&EndDate=${dates.end}`)
                         .then(res => res.json()),
@@ -240,19 +241,25 @@ export default function Dashboard() {
 
                 const startDate = new Date(dates.start);
                 const endDate = new Date(dates.end);
-                const dailyRevenueMap = new Map(dailyRevenueData.revenues.map(item => [item.date, item.totalRevenue]));
+                const currentDate = new Date();
+                const dailyRevenueMap = new Map(dailyRevenueData.revenues.map(item => [item.date, {
+                    totalRevenue: item.totalRevenue,
+                    totalPayment: item.totalPayment
+                }]));
                 const dailySalesData = [];
-
                 for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                    const dateStr = d.toISOString().split('T')[0];
+                    d.setHours(0, 0, 0, 0);
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    const data = (d <= currentDate) ? (dailyRevenueMap.get(dateStr) || { totalRevenue: 0, totalPayment: 0 }) : { totalRevenue: null, totalPayment: null };
                     dailySalesData.push({
                         name: dateStr,
-                        value: dailyRevenueMap.get(dateStr) || 0
+                        revenue: data.totalRevenue,
+                        payment: data.totalPayment
                     });
                 }
 
                 setState({
-                    totalUsers: totalUsersData, // Set total users from the new API
+                    totalUsers: totalUsersData,
                     users: usersData,
                     totalDoctors: doctorsData.doctorProfiles.totalCount.toLocaleString(),
                     productsSold: {
@@ -264,7 +271,7 @@ export default function Dashboard() {
                         details: subscriptionsData
                     },
                     bookings: {
-                        total: bookingsData.reduce((sum, item) => sum + parseInt(item.bookings.replace(/,/g, '')), 0).toLocaleString(),
+                        total: Object.values(bookingsData).reduce((sum, val) => sum + parseInt(val.replace(/,/g, '') || 0), 0).toLocaleString(),
                         details: bookingsData
                     },
                     topDoctors: {
@@ -274,7 +281,7 @@ export default function Dashboard() {
                             bookings: doctor.totalBookings.toLocaleString()
                         }))
                     },
-                    totalRevenue: `${dailySalesData.reduce((sum, item) => sum + item.value, 0).toLocaleString('vi-VN')} ₫`,
+                    totalRevenue: `${dailySalesData.reduce((sum, item) => sum + (item.revenue || 0), 0).toLocaleString('vi-VN')} ₫`,
                     dailySales: dailySalesData
                 });
             } catch (err) {
@@ -328,7 +335,7 @@ export default function Dashboard() {
             ['Total Doctors', state.totalDoctors, ''],
             ['Service Packages Sold', state.productsSold.total, state.productsSold.details.map(item => `${item.name}: ${item.totalSubscriptions}`).join('; ')],
             ['Subscriptions', state.subscriptions.total, Object.entries(state.subscriptions.details).map(([k, v]) => `${k}: ${v}`).join('; ')],
-            ['Total Bookings', state.bookings.total, state.bookings.details.map(item => `${item.fullName}: ${item.bookings}`).join('; ')],
+            ['Total Bookings', state.bookings.total, Object.entries(state.bookings.details).map(([k, v]) => `${k}: ${v}`).join('; ')],
             ['Top Doctors', state.topDoctors.total, state.topDoctors.details.map(item => `${item.fullName}: ${item.bookings}`).join('; ')],
             ['Total Revenue', state.totalRevenue, '']
         ];
@@ -338,7 +345,7 @@ export default function Dashboard() {
         const dailySalesData = [
             ['Daily Sales'],
             ['Date', 'Revenue'],
-            ...state.dailySales.map(item => [item.name, `${item.value.toLocaleString('vi-VN')} ₫`])
+            ...state.dailySales.map(item => [item.name, item.revenue !== null ? `${item.revenue.toLocaleString('vi-VN')} ₫` : 'N/A'])
         ];
         const ws2 = XLSX.utils.aoa_to_sheet(dailySalesData);
         XLSX.utils.book_append_sheet(wb, ws2, 'Daily Sales');
@@ -359,6 +366,14 @@ export default function Dashboard() {
         const ws4 = XLSX.utils.aoa_to_sheet(subscriptionsData);
         XLSX.utils.book_append_sheet(wb, ws4, 'Subscriptions');
 
+        const bookingsData = [
+            ['Bookings Details'],
+            ['Status', 'Count'],
+            ...Object.entries(state.bookings.details).map(([status, count]) => [status, count])
+        ];
+        const ws6 = XLSX.utils.aoa_to_sheet(bookingsData);
+        XLSX.utils.book_append_sheet(wb, ws6, 'Bookings');
+
         const topDoctorsData = [
             ['Top Performing Doctors'],
             ['Name', 'Bookings'],
@@ -366,14 +381,6 @@ export default function Dashboard() {
         ];
         const ws5 = XLSX.utils.aoa_to_sheet(topDoctorsData);
         XLSX.utils.book_append_sheet(wb, ws5, 'Top Doctors');
-
-        const bookingsData = [
-            ['Bookings'],
-            ['Doctor Name', 'Bookings'],
-            ...state.bookings.details.map(item => [item.fullName, item.bookings])
-        ];
-        const ws6 = XLSX.utils.aoa_to_sheet(bookingsData);
-        XLSX.utils.book_append_sheet(wb, ws6, 'Bookings');
 
         XLSX.writeFile(wb, `monthly_statistics_${monthName}_${dates.year}.xlsx`);
     };
@@ -396,8 +403,6 @@ export default function Dashboard() {
     const servicePackagesData = state.productsSold.details.map(item => ({
         name: item.name,
         total: parseInt(item.totalSubscriptions.replace(/,/g, '') || 0),
-        newSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.7),
-        renewedSubscriptions: Math.round(parseInt(item.totalSubscriptions.replace(/,/g, '') || 0) * 0.3),
     }));
 
     const CustomTooltip = ({ active, payload, label }) => {
@@ -407,7 +412,15 @@ export default function Dashboard() {
                     className="p-3 rounded-lg shadow-md"
                     style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
                 >
-                    <p className="text-sm font-medium" style={{ color: COLORS.textPrimary }}>{`${label}: ${payload[0].value.toLocaleString('vi-VN')} ₫`}</p>
+                    <p className="text-sm font-medium" style={{ color: COLORS.textPrimary }}>
+                        {label}
+                    </p>
+                    <p className="text-sm" style={{ color: COLORS.success }}>
+                        {`Revenue: ${payload[0].payload.revenue !== null ? payload[0].payload.revenue.toLocaleString('vi-VN') + ' ₫' : 'N/A'}`}
+                    </p>
+                    <p className="text-sm" style={{ color: COLORS.warning }}>
+                        {`Payment: ${payload[0].payload.payment !== null ? payload[0].payload.payment.toLocaleString('vi-VN') : 'N/A'}`}
+                    </p>
                 </div>
             );
         }
@@ -493,17 +506,32 @@ export default function Dashboard() {
                                     <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
                                     <Area
                                         type="monotone"
-                                        dataKey="value"
+                                        dataKey="revenue"
                                         stroke={COLORS.accent}
                                         fill={`url(#areaGradient)`}
                                         fillOpacity={0.3}
                                         animationDuration={1000}
                                         name="Revenue"
+                                        connectNulls={false}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="payment"
+                                        stroke={COLORS.warning}
+                                        fill={`url(#areaGradientPayment)`}
+                                        fillOpacity={0.3}
+                                        animationDuration={1000}
+                                        name="Payment"
+                                        connectNulls={false}
                                     />
                                     <defs>
                                         <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="0%" stopColor={COLORS.success} />
                                             <stop offset="100%" stopColor={`${COLORS.success}80`} />
+                                        </linearGradient>
+                                        <linearGradient id="areaGradientPayment" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor={COLORS.warning} />
+                                            <stop offset="100%" stopColor={`${COLORS.warning}80`} />
                                         </linearGradient>
                                     </defs>
                                 </AreaChart>
@@ -511,25 +539,29 @@ export default function Dashboard() {
                         </ChartCard>
                     </div>
                     <div className="space-y-2">
-                        <StatCard
-                            config={ICON_CONFIG.users}
-                            label="New Users"
-                            value={state.totalUsers} // Display total users from the new API
-                            details={
-                                <div>
-                                    <strong style={{ color: '#60A5FA' }}>Male</strong>: <span>{state.users.male}</span> |
-                                    <strong style={{ color: '#ff96ff' }}> Female</strong>: <span>{state.users.female}</span> |
-                                    <strong style={{
-                                        background: 'linear-gradient(90deg, #60A5FA, #ff96ff)',
-                                        WebkitBackgroundClip: 'text',
-                                        color: 'transparent'
-                                    }}> Other</strong>: <span>{state.users.else}</span>
-                                    <br />
-                                    <span> <span className="text-green-800">Total User:</span> {getGenderTotalUsers()}</span>
-                                </div>
-                            }
-                        />
-                        <StatCard config={ICON_CONFIG.revenue} label="Total Revenue" value={state.totalRevenue} />
+                        <div onClick={() => navigate("/manager/viewCustomer")} className="cursor-pointer">
+                            <StatCard
+                                config={ICON_CONFIG.users}
+                                label="New Users"
+                                value={state.totalUsers}
+                                details={
+                                    <div>
+                                        <strong style={{ color: '#60A5FA' }}>Male</strong>: <span>{state.users.male}</span> |
+                                        <strong style={{ color: '#ff96ff' }}> Female</strong>: <span>{state.users.female}</span> |
+                                        <strong style={{
+                                            background: 'linear-gradient(90deg, #60A5FA, #ff96ff)',
+                                            WebkitBackgroundClip: 'text',
+                                            color: 'transparent'
+                                        }}> Other</strong>: <span>{state.users.else}</span>
+                                        <br />
+                                        <span> <span className="text-green-800">Total User:</span> {getGenderTotalUsers()}</span>
+                                    </div>
+                                }
+                            />
+                        </div>
+                        <div onClick={() => navigate("/manager/transaction")} className="cursor-pointer">
+                            <StatCard config={ICON_CONFIG.revenue} label="Total Revenue" value={state.totalRevenue} />
+                        </div>
                         <StatCard
                             config={ICON_CONFIG.sales}
                             label="Service Packages Sold"
@@ -547,12 +579,28 @@ export default function Dashboard() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <StatCard
-                            config={ICON_CONFIG.bookings}
-                            label="New Bookings"
-                            value={state.bookings.total}
-                        />
-                        <StatCard config={ICON_CONFIG.doctors} label="Total Doctors" value={state.totalDoctors} />
+
+                        <div onClick={() => navigate("/manager/booking")} className="cursor-pointer">
+                            <StatCard
+                                config={ICON_CONFIG.bookings}
+                                label="Total Bookings"
+                                value={state.bookings.total}
+                                details={Object.entries(state.bookings.details).map(([status, count], i) => (
+                                    <p
+                                        key={i}
+                                        className="my-1 flex justify-between"
+                                        style={{ color: ['green', 'orange', 'red'][i % 3] }}
+                                    >
+                                        <span>{status}</span>
+                                        <strong>{count}</strong>
+                                    </p>
+                                ))}
+                            />
+                        </div>
+                        <div onClick={() => navigate("/manager/viewDoctor")} className="cursor-pointer">
+                            <StatCard config={ICON_CONFIG.doctors} label="Total Doctors" value={state.totalDoctors} />
+
+                        </div>
                         <StatCard
                             config={ICON_CONFIG.topDoctors}
                             label="Top Performing Doctors"
@@ -733,26 +781,24 @@ export default function Dashboard() {
                                                 style={{ background: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
                                             >
                                                 <p style={{ color: COLORS.textPrimary }}>{label}</p>
-                                                {payload.map((entry, index) => (
-                                                    <p key={index} style={{ color: entry.color }}>
-                                                        {`${entry.name}: ${entry.value}`}
-                                                    </p>
-                                                ))}
+                                                <p style={{ color: COLORS.accent }}>
+                                                    {`Total Subscriptions: ${payload[0].value.toLocaleString()}`}
+                                                </p>
                                             </div>
                                         ) : null
                                     }
                                 />
                                 <Legend wrapperStyle={{ color: COLORS.textPrimary }} />
-                                <Bar dataKey="newSubscriptions" stackId="a" fill={`url(#stackGradientNew)`} name="New" radius={[8, 8, 0, 0]} />
-                                <Bar dataKey="renewedSubscriptions" stackId="a" fill={`url(#stackGradientRenewed)`} name="Renewed" radius={[8, 8, 0, 0]} />
+                                <Bar
+                                    dataKey="total"
+                                    fill={`url(#barGradient)`}
+                                    name="Total Subscriptions"
+                                    radius={[8, 8, 0, 0]}
+                                />
                                 <defs>
-                                    <linearGradient id="stackGradientNew" x1="0" y1="0" x2="0" y2="1">
+                                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stopColor={COLORS.accent} />
                                         <stop offset="100%" stopColor={`${COLORS.accent}80`} />
-                                    </linearGradient>
-                                    <linearGradient id="stackGradientRenewed" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={COLORS.secondary} />
-                                        <stop offset="100%" stopColor={`${COLORS.secondary}80`} />
                                     </linearGradient>
                                 </defs>
                             </BarChart>

@@ -204,6 +204,7 @@ const LogIn = () => {
       localStorage.removeItem("profileId");
       localStorage.removeItem("userId");
       localStorage.removeItem("username");
+      localStorage.clear();
       setIsLoggedIn(false);
       setUserRole(null);
       setUserImage(null);

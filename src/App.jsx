@@ -42,6 +42,9 @@ import ListPackages from "./pages/manager/services/ListService";
 import ListPendingReplies from "./pages/manager/pending_replies/ListPendingReplies";
 import ProfileManager from "./pages/manager/profile/Profile";
 import HistoryPatient1 from "./components/manager/customer/HistoryPatient";
+import BookingList from "./pages/manager/booking/Booking";
+import BookingDetail from "./pages/manager/booking/BookingDetail";
+import Transactions from "./pages/manager/transaction/Transactions"
 //staff
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
@@ -131,8 +134,11 @@ function App() {
             <Route path="addCustomer" element={<AddCustomerManager />} />
             <Route path="viewCustomer" element={<ListCustomerManager />} />
             <Route path="viewCustomer/:id" element={<CustomerDetail />} />
-            {/* <Route path="viewCustomer/:id" element={<HistoryPatient1 />} /> */}
-            {/* <Route path="staff" element={<AddStaff />} /> */}
+            <Route path="booking" element={<BookingList />} />
+            <Route path="booking/:id" element={<BookingDetail />} />
+            <Route path="transaction" element={<Transactions />} />
+            <Route path="transaction/:id" element={<Transactions />} />
+
             <Route path="addStaff" element={<AddStaff />} />
             <Route path="viewStaff" element={<ListStaff />} />
             {/* <Route path="doctor" element={<AcceptDoctor />} /> */}
