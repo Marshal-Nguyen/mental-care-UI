@@ -14,25 +14,22 @@ import {
   closeLoginModal,
   openLoginModal,
 } from "../../store/authSlice";
-
 const LogIn = () => {
   const userId = localStorage.getItem("userId");
   const dispatch = useDispatch();
   const isModalOpen = useSelector((state) => state.auth.isLoginModalOpen);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userImage, setUserImage] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
+
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    loginInput: "", // Đại diện cho email hoặc số điện thoại
+    email: "",
     password: "",
   });
 
   const [error, setError] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState(null);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -40,11 +37,12 @@ const LogIn = () => {
       [name]: value,
     }));
   };
-
-  const fetchAvatar = async (id) => {
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  // Xử lý đăng nhập
+  const fetchAvatar = async () => {
     try {
       const avatarResponse = await axios.get(
-        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${id}`
+        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
       );
       setAvatarUrl(
         avatarResponse.data.url || "https://i.pravatar.cc/150?img=3"
@@ -54,7 +52,6 @@ const LogIn = () => {
       setAvatarUrl("https://i.pravatar.cc/150?img=3"); // Giá trị mặc định
     }
   };
-
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserRole = localStorage.getItem("userRole");
@@ -65,6 +62,7 @@ const LogIn = () => {
     if (storedToken && storedUserRole) {
       try {
         const decodedToken = jwtDecode(storedToken);
+        // Kiểm tra token hết hạn
         if (decodedToken.exp * 1000 > Date.now()) {
           setIsLoggedIn(true);
 
@@ -76,7 +74,7 @@ const LogIn = () => {
               userId: storedUserId,
             })
           );
-          fetchAvatar(storedUserId);
+          fetchAvatar();
         } else {
           handleLogout();
           toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
@@ -89,44 +87,19 @@ const LogIn = () => {
     }
   }, [dispatch]);
 
-  const isEmail = (input) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(input);
-  };
-
-  const isPhoneNumber = (input) => {
-    const phoneRegex = /^[0-9]{10,15}$/; // Điều chỉnh regex nếu cần
-    return phoneRegex.test(input);
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
     try {
-      const { loginInput, password } = formData;
-
-      let payload;
-      if (isEmail(loginInput)) {
-        payload = { email: loginInput, password };
-      } else if (isPhoneNumber(loginInput)) {
-        payload = { phoneNumber: loginInput, password };
-      } else {
-        setError("Vui lòng nhập email hoặc số điện thoại hợp lệ!");
-        setLoading(false);
-        return;
-      }
-
       const response = await axios.post(
         "https://psychologysupport-auth.azurewebsites.net/Auth/login",
-        payload,
+        formData,
         { headers: { "Content-Type": "application/json" } }
       );
 
       const token = response.data.token;
       const decodedToken = jwtDecode(token);
 
+      // Lấy role từ claim
       const userRole =
         decodedToken[
           "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
@@ -138,6 +111,7 @@ const LogIn = () => {
           "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ];
 
+      // Lưu thông tin và cập nhật state
       localStorage.setItem("token", token);
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", userRole);
@@ -148,11 +122,12 @@ const LogIn = () => {
 
       setIsLoggedIn(true);
 
-      setUserRole(userRole);
-      setUserImage("https://i.pravatar.cc/150?img=3");
+      // Dispatch to Redux và đóng modal
       dispatch(setCredentials({ token, userRole, profileId, userId }));
       dispatch(closeLoginModal());
-      fetchAvatar(userId);
+      fetchAvatar();
+      // Thông báo thành công
+      toast.success("Đăng nhập thành công!", { position: "top-right" });
 
       const currentRole = localStorage.getItem("userRole");
       if (currentRole === "Staff") {
@@ -161,12 +136,10 @@ const LogIn = () => {
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Lỗi đăng nhập, vui lòng thử lại!");
-      setError("Lỗi đăng nhập, vui lòng kiểm tra lại thông tin!");
-    } finally {
-      setLoading(false);
     }
   };
 
+  // Sửa lại handleGoogleLogin để cũng navigate ngay
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -218,19 +191,11 @@ const LogIn = () => {
       return false; // Trả về false nếu có lỗi
     }
   };
-
+  // Xử lý đăng xuất
   const handleLogout = async () => {
     try {
       await auth.signOut();
       dispatch(clearCredentials());
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("userImage");
-      localStorage.removeItem("token");
-      localStorage.removeItem("profileId");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("username");
-      localStorage.clear();
       setIsLoggedIn(false);
 
       setAvatarUrl(null); // Reset avatarUrl
@@ -243,7 +208,6 @@ const LogIn = () => {
       });
     }
   };
-
   const handleDropdownClick = () => {
     setDropdownOpen(!dropdownOpen);
     if (!isLoggedIn && !isModalOpen) {
@@ -279,11 +243,11 @@ const LogIn = () => {
     }
     setDropdownOpen(false);
   };
-
   return (
     <div className="relative">
       <div className="flex items-center gap-4">
-        <span className="text-lg font-medium text-purple-400">{userRole}</span>
+        {/* <span className="text-lg font-medium text-purple-400">{userRole}</span> */}
+        {/* Avatar Button */}
         <button
           onClick={handleDropdownClick}
           className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all overflow-hidden border-2 border-purple-500">
@@ -302,13 +266,18 @@ const LogIn = () => {
           )}
         </button>
       </div>
+
+      {/* Dropdown Menu */}
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-30 bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
+        <div className="absolute right-0 mt-2 w-30  bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
+          {/* Login Button */}
           <button
             onClick={handleDashboardClick}
             className="w-full bg-purple-300 py-1 text-[#4d4d4d] font-mono rounded-2xl mb-2 hover:bg-purple-400">
             {isLoggedIn ? "Dashboard" : "LogIn"}
           </button>
+
+          {/* Logout Button */}
           <button
             onClick={handleLogout}
             className="w-full bg-purple-300 py-2 flex items-center justify-center text-gray-700 font-semibold rounded-2xl hover:bg-purple-400">
@@ -319,10 +288,10 @@ const LogIn = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-[#4e4d4dbb] bg-opacity-50 z-51">
-          <div className="relative py-3 sm:max-w-xl sm:mx-auto">
-            <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-              <div className="max-w-md mx-auto">
-                <div className="flex items-center space-x-5 justify-center">
+          <div class="relative py-3 sm:max-w-xl sm:mx-auto">
+            <div class="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
+              <div class="max-w-md mx-auto">
+                <div class="flex items-center space-x-5 justify-center">
                   <button
                     onClick={() => dispatch(closeLoginModal())}
                     className="absolute top-3 right-0 text-gray-600 hover:text-black text-xl">
@@ -331,20 +300,19 @@ const LogIn = () => {
                   <h1 className="text-[#4e0986] text-2xl font-serif">Login</h1>
                 </div>
                 {error && <p className="text-red-500 text-center">{error}</p>}
-                <div className="mt-5">
+                <div class="mt-5">
                   <label
-                    className="font-semibold text-sm text-gray-600 pb-1 block"
-                    htmlFor="loginInput">
+                    class="font-semibold text-sm text-gray-600 pb-1 block"
+                    htmlFor="login">
                     E-mail or Phone Number
                   </label>
                   <input
-                    type="text"
-                    name="loginInput"
+                    type="email"
+                    name="email"
                     className="w-full p-2 border rounded mt-1 focus:ring focus:ring-blue-300"
-                    value={formData.loginInput}
+                    value={formData.email}
                     onChange={handleChange}
                     required
-                    placeholder="Enter email or phone number"
                   />
                   <label
                     className="font-semibold text-sm text-gray-600 pb-1 block"
@@ -368,18 +336,18 @@ const LogIn = () => {
                     </button>
                   </div>
                 </div>
-                <div className="text-right mb-4">
+                <div class="text-right mb-4">
                   <a
-                    className="text-xs font-display font-semibold text-gray-500 hover:text-gray-600 cursor-pointer"
+                    class="text-xs font-display font-semibold text-gray-500 hover:text-gray-600 cursor-pointer"
                     href="#">
                     Forgot Password?
                   </a>
                 </div>
-                <div className="flex justify-center w-full items-center">
+                <div class="flex justify-center w-full items-center">
                   <div>
                     <button
                       onClick={handleGoogleLogin}
-                      className="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                      class="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
                       <svg
                         viewBox="0 0 24 24"
                         height="25"
@@ -436,36 +404,36 @@ const LogIn = () => {
                           d="M15.7885132,5.890686C14.6939087,5.1806641,13.4018555,4.75,12,4.75c-3.8659668,0-7,3.1339722-7,7 c0,0.0421753,0.0005674,0.0751343,0.0012999,0.1171875C5.0687437,8.0595093,8.1762085,5,12,5 c1.4018555,0,2.6939087,0.4306641,3.7885132,1.140686c0.1675415,0.1088867,0.3403931,0.2111206,0.4978027,0.333374 l3.637146-3.4699707l-3.637146,3.2199707C16.1289062,6.1018066,15.9560547,5.9995728,15.7885132,5.890686z"></path>
                         <path
                           opacity=".2"
-                          d="M12,0.25c2.9750366,0,5.6826224,1.0983887,7.7792969,2.8916016l0.144165-0.1375122 l-0.110014-0.0958166C17.7089558,1.0843592,15.00354,0,12,0C5.3725586,0,0,5.3725586,0,12 c0,0.0421753,0.0058594,0.0828857,0.0062866,0.125C0.0740356,5.5558472,5.4147339,0.25,12,0.25z"
+                          d="M12,0.25c2.9750366,0,5.6829224,1.0983887,7.7792969,2.8916016l0.144165-0.1375122 l-0.110014-0.0958166C17.7089558,1.0843592,15.00354,0,12,0C5.3725586,0,0,5.3725586,0,12 c0,0.0421753,0.0058594,0.0828857,0.0062866,0.125C0.0740356,5.5558472,5.4147339,0.25,12,0.25z"
                           fill="#FFF"></path>
                       </svg>
-                      <span className="ml-2">Sign in with Google</span>
+                      <span class="ml-2">Sign in with Google</span>
                     </button>
                   </div>
                 </div>
-                <div className="mt-5">
+                <div class="mt-5">
                   <button
-                    className="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-                    onClick={handleLogin}
-                    disabled={loading}>
-                    {loading ? "Logging in..." : "Log in"}
+                    class="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+                    onClick={handleLogin}>
+                    Log in
                   </button>
                 </div>
-                <div className="flex items-center justify-between mt-4">
-                  <span className="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
+                <div class="flex items-center justify-between mt-4">
+                  <span class="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
                   <a
                     className="text-xs text-blue-500 underline hover:text-blue-700 cursor-pointer"
                     onClick={() => {
-                      navigate("/regist", { replace: true });
+                      navigate("/regist", { replace: true }); // Chỉ giữ lại "/regist"
                       dispatch(closeLoginModal());
                     }}>
                     or sign up
                   </a>
-                  <span className="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
+                  <span class="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
                 </div>
               </div>
             </div>
           </div>
+          {/*  */}
         </div>
       )}
     </div>
