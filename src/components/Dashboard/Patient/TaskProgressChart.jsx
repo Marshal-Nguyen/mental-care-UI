@@ -68,13 +68,13 @@ const TaskProgressChart = () => {
             }),
             metrics: [
               {
-                label: "Hoàn thành",
+                label: "Completed",
                 value: getCompletionCount(week1Sessions),
                 percentage: getCompletionPercentage(week1Sessions),
               },
-              { label: "Tổng số phiên", value: week1Sessions.length },
+              { label: "Total Sessions", value: week1Sessions.length },
               {
-                label: "Tiến độ trung bình",
+                label: "Average Progress",
                 value: `${getAveragePercentage(week1Sessions)}%`,
               },
             ],
@@ -91,14 +91,14 @@ const TaskProgressChart = () => {
             }),
             metrics: [
               {
-                label: "Hoàn thành",
-                value: getCompletionCount(week2Sessions),
-                percentage: getCompletionPercentage(week2Sessions),
+                label: "Completed",
+                value: getCompletionCount(week1Sessions),
+                percentage: getCompletionPercentage(week1Sessions),
               },
-              { label: "Tổng số phiên", value: week2Sessions.length },
+              { label: "Total Sessions", value: week1Sessions.length },
               {
-                label: "Tiến độ trung bình",
-                value: `${getAveragePercentage(week2Sessions)}%`,
+                label: "Average Progress",
+                value: `${getAveragePercentage(week1Sessions)}%`,
               },
             ],
           },
@@ -205,7 +205,7 @@ const TaskProgressChart = () => {
     <div className="bg-white rounded-2xl shadow-md p-6 w-full mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-xl font-semibold text-gray-800">
-          Tiến độ phiên hỗ trợ
+          Roadmap Tracking
         </h1>
         <div className="relative inline-block">
           <button

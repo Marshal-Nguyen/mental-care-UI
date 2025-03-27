@@ -108,11 +108,13 @@ export default function MedicalRecordsList({ profileId }) {
         {/* Phần 1: Danh sách hồ sơ y tế */}
         <div className="border-r border-gray-200">
           <h2 className="px-4 py-2 text-lg font-medium border-b border-gray-200">
-            Hồ sơ đang điều trị
+            Ongoing Treatment Records
           </h2>
 
           {medicalRecords.length === 0 ? (
-            <div className="p-4">Không có hồ sơ y tế nào đang xử lý.</div>
+            <div className="p-4">
+              No medical records are currently being processed.
+            </div>
           ) : (
             <div className="overflow-y-auto max-h-[460px]">
               {medicalRecords.map((record) => (
@@ -153,7 +155,7 @@ export default function MedicalRecordsList({ profileId }) {
             <MedicalProfile patientId={selectedPatientId} />
           ) : (
             <div className="text-center text-gray-500 p-8">
-              Vui lòng chọn một bệnh nhân để xem thông tin chi tiết.
+              Please select a patient to view details.
             </div>
           )}
         </div>

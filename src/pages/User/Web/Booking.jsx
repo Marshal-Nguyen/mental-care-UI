@@ -49,21 +49,17 @@ export default function Booking() {
       ...Array.from({ length: totalDays }, (_, i) => i + 1),
     ];
   };
-
   const daysInMonth = getDaysInMonth(currentYear, currentMonthIndex);
-
   // Xử lý khi chọn ngày
   const handleDateClick = (day) => {
     const newDate = new Date(currentYear, currentMonthIndex, day);
     setSelectedDate(newDate);
     setSelectedTimeSlot(null); // Reset time slot khi chọn ngày mới
   };
-
   // Xử lý khi chọn time slot
   const handleTimeSlotClick = (slot) => {
     setSelectedTimeSlot(slot);
   };
-
   // Xử lý khi thay đổi tháng
   const changeMonth = (step) => {
     let newMonth = currentMonthIndex + step;
@@ -86,7 +82,6 @@ export default function Booking() {
       })
     );
   };
-
   // Lấy lịch trống khi thay đổi ngày
   useEffect(() => {
     if (!selectedDate) return;
@@ -108,7 +103,16 @@ export default function Booking() {
 
     fetchSchedule();
   }, [selectedDate, doctorId]);
+  // Tính toán thời gian trong phút
+  const calculateDurationInMinutes = (startTime, endTime) => {
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
 
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+
+    return endTotalMinutes - startTotalMinutes;
+  };
   // Lấy thông tin bác sĩ
   useEffect(() => {
     const fetchDoctorInfo = async () => {
@@ -129,25 +133,27 @@ export default function Booking() {
   }, [doctorId]);
 
   // Xử lý khi ấn nút tiếp tục đặt lịch
-  // Update the handleBookingContinue function (around line 132)
   const handleBookingContinue = async () => {
     // Check if user is logged in by verifying token existence in localStorage
     const token = localStorage.getItem("token");
     if (!token) {
       // Show toast notification for unauthenticated user
-      toast.error("Vui lòng đăng nhập để đặt lịch tư vấn");
+      toast.error("Please log in to book a consultation");
       return;
     }
 
     if (!selectedTimeSlot) {
-      alert("Vui lòng chọn thời gian cho buổi tư vấn");
+      alert("Please select a time for the consultation");
       return;
     }
 
     try {
       // Extract the start time from the selected time slot
       const startTime = selectedTimeSlot.startTime || selectedTimeSlot;
-
+      const duration = calculateDurationInMinutes(
+        selectedTimeSlot.startTime,
+        selectedTimeSlot.endTime
+      );
       // Create the booking data object according to the required format
       const bookingData = {
         bookingDto: {
@@ -155,13 +161,13 @@ export default function Booking() {
           patientId: profileId, // Using the value from the image
           date: selectedDate.toLocaleDateString("en-CA").split("T")[0], // Format: YYYY-MM-DD
           startTime: startTime,
-          duration: selectedTimeSlot.duration || 60, // Default to 60 if not available
+          duration: duration, // Default to 60 if not available
           price: 200000,
           promoCode: promoCode.trim() || null,
           giftCodeId: null, // As specified, set to null
           paymentMethod: "VNPay", // Using the payment method from the image
         },
-        returnUrl: "http://localhost:5173/payments/callback",
+        returnUrl: "/payments/callback",
         // returnUrl: "https://emo-rouge.vercel.app/payments/callback",
       };
 
@@ -185,7 +191,7 @@ export default function Booking() {
       console.error("Lỗi khi đặt lịch:", error);
       toast.error(
         error.response?.data?.message ||
-          "Đã xảy ra lỗi khi đặt lịch. Vui lòng thử lại sau."
+        "Đã xảy ra lỗi khi đặt lịch. Vui lòng thử lại sau."
       );
     }
   };
@@ -470,20 +476,17 @@ export default function Booking() {
                     <div
                       key={idx}
                       className={`flex justify-center items-center h-10 rounded-full
-                        ${
-                          isPastDate
-                            ? "text-gray-400 cursor-not-allowed"
-                            : "cursor-pointer hover:bg-purple-100 transition-colors duration-200"
+                        ${isPastDate
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "cursor-pointer hover:bg-purple-100 transition-colors duration-200"
                         }
-                        ${
-                          isSelectedDate
-                            ? "bg-purple-600 text-white font-medium"
-                            : ""
+                        ${isSelectedDate
+                          ? "bg-purple-600 text-white font-medium"
+                          : ""
                         }
-                        ${
-                          isTodayDate && !isSelectedDate
-                            ? "border border-purple-500 font-medium"
-                            : ""
+                        ${isTodayDate && !isSelectedDate
+                          ? "border border-purple-500 font-medium"
+                          : ""
                         }
                       `}
                       onClick={() => !isPastDate && handleDateClick(day)}>
@@ -506,12 +509,11 @@ export default function Booking() {
                       <button
                         key={i}
                         className={`p-3 border rounded-xl text-sm font-medium transition-all duration-200
-                          ${
-                            slot.status === "Available"
-                              ? selectedTimeSlot === slot
-                                ? "bg-purple-600 text-white border-purple-600 shadow-md"
-                                : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100"
-                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ${slot.status === "Available"
+                            ? selectedTimeSlot === slot
+                              ? "bg-purple-600 text-white border-purple-600 shadow-md"
+                              : "bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100"
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
                           }`}
                         disabled={slot.status !== "Available"}
                         onClick={() =>
@@ -565,10 +567,9 @@ export default function Booking() {
               </div>
               <button
                 className={`w-full py-4 rounded-xl mt-6 font-bold text-white shadow-md transition-all duration-300 
-                  ${
-                    selectedTimeSlot
-                      ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
-                      : "bg-gray-400"
+                  ${selectedTimeSlot
+                    ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 hover:shadow-lg"
+                    : "bg-gray-400"
                   }`}
                 onClick={handleBookingContinue}
                 disabled={!selectedTimeSlot}>
@@ -578,6 +579,7 @@ export default function Booking() {
           </div>
         </div>
       </div>
+      {/* Feedback */}
       <div className="max-w-6xl mt-5 w-full bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
         <p className="font-medium text-gray-700 mb-4">Featured Reviews</p>
 

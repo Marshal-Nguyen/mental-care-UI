@@ -3,6 +3,7 @@ import arrowDownAnimation from "../../../util/icon/arrowDown.json";
 import alertIcon from "../../../util/icon/alertOctagon.json";
 import Lottie from "lottie-react";
 import { useSelector, useDispatch } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 // Color mapping based on the API response values
 const colorMap = {
   "Did not apply to me at all": "bg-green-500 border-green-700",
@@ -14,29 +15,16 @@ const colorMap = {
 // Text color mapping for better contrast
 const textColorMap = {
   "Did not apply to me at all": "text-white",
-  "Applied to me to some degree": "text-gray-800",
+  "Applied to me to some degree": "text-white",
   "Applied to me to a considerable degree": "text-white",
   "Applied to me very much": "text-white",
 };
 
-// Value mapping for scoring
-const valueMap = {
-  "Did not apply to me at all": 0,
-  "Applied to me to some degree": 1,
-  "Applied to me to a considerable degree": 2,
-  "Applied to me very much": 3,
-};
-
 const TestEmotion = () => {
-  const [questionList, setQuestionList] = useState([]);
-  const [currentQuestionData, setCurrentQuestionData] = useState(null);
+  const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [optionIdsMap, setOptionIdsMap] = useState({});
-  const [questionIdToIndexMap, setQuestionIdToIndexMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [questionLoading, setQuestionLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [recommend, setRecommend] = useState(null);
   const [scores, setScores] = useState({
@@ -55,31 +43,24 @@ const TestEmotion = () => {
     async function fetchQuestionList() {
       try {
         setLoading(true);
-        const questionRes = await fetch(
+        const response = await fetch(
           `${API_BASE}/test-questions/${testId}?pageSize=21`
         );
 
-        if (!questionRes.ok) {
+        if (!response.ok) {
           throw new Error("Failed to fetch questions");
         }
 
-        const questionData = await questionRes.json();
-        const questionIds = questionData.testQuestions.data.map((q) => ({
-          id: q.id,
-          content: q.content,
-        }));
-
-        const idToIndexMap = {};
-        questionIds.forEach((q, index) => {
-          idToIndexMap[q.id] = index;
-        });
-
-        setQuestionIdToIndexMap(idToIndexMap);
-        setQuestionList(questionIds);
-        setTotalQuestions(questionIds.length);
+        const data = await response.json();
+        // Sort questions by order
+        const sortedQuestions = data.testQuestions.data.sort(
+          (a, b) => a.order - b.order
+        );
+        setQuestions(sortedQuestions);
+        setTotalQuestions(sortedQuestions.length);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching question list:", error);
+        console.error("Error fetching questions:", error);
         setError(error.message);
         setLoading(false);
       }
@@ -89,87 +70,47 @@ const TestEmotion = () => {
   }, []);
 
   // Fetch current question with options
-  const fetchCurrentQuestion = useCallback(
-    async (index) => {
-      if (!questionList[index]) return;
-
-      try {
-        setQuestionLoading(true);
-        const questionId = questionList[index].id;
-        const questionContent = questionList[index].content;
-
-        const optionsRes = await fetch(
-          `${API_BASE}/question-options/${questionId}`
-        );
-
-        if (!optionsRes.ok) {
-          throw new Error("Failed to fetch options for question");
-        }
-
-        const optionsData = await optionsRes.json();
-        const options = optionsData.questionOptions.data;
-
-        const questionWithOptions = {
-          id: questionId,
-          question: questionContent,
-          options: options.map((opt) => opt.content),
-        };
-
-        const optionIdMapping = {};
-        options.forEach((opt) => {
-          optionIdMapping[opt.content] = opt.id;
-        });
-
-        setOptionIdsMap((prev) => ({
-          ...prev,
-          [questionId]: optionIdMapping,
-        }));
-
-        setCurrentQuestionData(questionWithOptions);
-        setQuestionLoading(false);
-      } catch (error) {
-        console.error("Error fetching question:", error);
-        setError(error.message);
-        setQuestionLoading(false);
-      }
-    },
-    [questionList]
-  );
-
-  // Load the first question
-  useEffect(() => {
-    if (questionList.length > 0 && currentQuestionIndex === 0) {
-      fetchCurrentQuestion(0);
-    }
-  }, [questionList, fetchCurrentQuestion]);
 
   // Handle option selection and move to next question
   const handleOptionChange = useCallback(
-    (option) => {
+    (optionContent) => {
       setAnswers((prev) => ({
         ...prev,
-        [currentQuestionIndex]: option,
+        [currentQuestionIndex]: optionContent,
       }));
 
-      setTimeout(() => {
-        if (currentQuestionIndex + 1 < totalQuestions) {
-          const nextIndex = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIndex);
-          fetchCurrentQuestion(nextIndex);
-        }
-      }, 300);
+      if (currentQuestionIndex + 1 < totalQuestions) {
+        // Tăng thời gian delay để animation hoàn thành
+        setTimeout(() => {
+          setCurrentQuestionIndex((prev) => prev + 1);
+        }, 400); // Tăng delay lên 400ms
+      }
     },
-    [currentQuestionIndex, totalQuestions, fetchCurrentQuestion]
+    [currentQuestionIndex, totalQuestions]
   );
-
+  const handleTestAgain = () => {
+    setCurrentQuestionIndex(0);
+    setAnswers({});
+    setSubmitted(false);
+    setScores({
+      depression: 0,
+      anxiety: 0,
+      stress: 0,
+    });
+    setRecommend(null);
+  };
+  const currentQuestion = questions[currentQuestionIndex];
   // Submit answers and fetch results from API
   const handleSubmit = useCallback(() => {
     setSubmitted(true);
 
     const selectedOptionIds = Object.entries(answers).map(
-      ([questionIndex, selectedOption]) => {
-        const questionId = questionList[parseInt(questionIndex)].id;
-        return optionIdsMap[questionId][selectedOption];
+      ([index, selectedOption]) => {
+        const question = questions[parseInt(index)];
+        const selectedOptionObj = question.options.find(
+          (opt) => opt.content === selectedOption
+        );
+        return selectedOptionObj.id;
       }
     );
 
@@ -210,17 +151,7 @@ const TestEmotion = () => {
         console.error("Error submitting answers or fetching result:", error);
         setError(error.message);
       });
-  }, [answers, optionIdsMap, questionList, patientId, testId]);
-
-  // Reset test
-  const handleTestAgain = useCallback(() => {
-    setAnswers({});
-    setScores({ depression: 0, anxiety: 0, stress: 0 });
-    setSubmitted(false);
-    setCurrentQuestionIndex(0);
-    setRecommend(null);
-    fetchCurrentQuestion(0);
-  }, [fetchCurrentQuestion]);
+  }, [answers, questions, patientId, testId]);
 
   if (loading)
     return (
@@ -229,7 +160,6 @@ const TestEmotion = () => {
         <p className="mt-2 text-gray-600">Loading...</p>
       </div>
     );
-  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
@@ -238,38 +168,87 @@ const TestEmotion = () => {
       <div className="col-span-4 row-span-5 pl-5 p-5 h-full">
         <div className="h-full flex flex-col">
           {/* Current question */}
-          {questionLoading ? (
-            <div className="flex flex-col items-center justify-center jbh-full">
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-96 mb-6"></div>
-                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
-                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
-                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
-                <div className="h-6 bg-gray-200 rounded w-80 mb-3"></div>
-              </div>
-            </div>
-          ) : currentQuestionData ? (
-            <div className="flex flex-col items-center p-6 rounded-lg text-xl w-full">
-              <p className="text-2xl font-semibold mb-8 p-5 text-center italic">
-                {currentQuestionIndex + 1}. {currentQuestionData.question}
-              </p>
-              <div className="flex flex-col w-full space-y-4 px-6">
-                {currentQuestionData.options.map((option, optIndex) => (
-                  <button
-                    key={optIndex}
-                    onClick={() => handleOptionChange(option)}
-                    className={`p-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm ${
-                      answers[currentQuestionIndex] === option
-                        ? `${colorMap[option]} ${textColorMap[option]} scale-105 shadow-md`
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                    }`}>
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="text-center">No question available</p>
+          {currentQuestion && (
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={currentQuestionIndex}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    duration: 0.5,
+                  },
+                }}
+                exit={{
+                  opacity: 0,
+                  x: -50,
+                  transition: {
+                    duration: 0.3,
+                  },
+                }}
+                className="flex flex-col items-center p-6 rounded-lg text-xl w-full">
+                <motion.p
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{
+                    y: 0,
+                    opacity: 1,
+                    transition: {
+                      delay: 0.2,
+                      duration: 0.4,
+                      ease: "easeOut",
+                    },
+                  }}
+                  className="text-2xl font-semibold mb-8 p-5 text-center italic">
+                  {currentQuestionIndex + 1}. {currentQuestion.content}
+                </motion.p>
+                <motion.div
+                  className="flex flex-col w-full space-y-4 px-6"
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
+                      delayChildren: 0.3,
+                    },
+                  }}>
+                  {currentQuestion.options.map((option, optIndex) => (
+                    <motion.button
+                      key={option.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        transition: {
+                          duration: 0.4,
+                          ease: "easeOut",
+                        },
+                      }}
+                      whileHover={{
+                        scale: 1.02,
+                        transition: { duration: 0.2 },
+                      }}
+                      whileTap={{
+                        scale: 0.98,
+                        transition: { duration: 0.1 },
+                      }}
+                      onClick={() => handleOptionChange(option.content)}
+                      className={`p-4 rounded-lg transition-all duration-300 ${
+                        answers[currentQuestionIndex] === option.content
+                          ? `${colorMap[option.content]} ${
+                              textColorMap[option.content]
+                            } scale-105 shadow-md`
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                      }`}>
+                      {option.content}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
           )}
 
           <div className="mt-auto flex justify-center mb-6">

@@ -1,164 +1,170 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
 import styles from "../../styles/Web/IntroFPT.module.css";
+import { toast } from "react-toastify";
+import { useSelector, useDispatch } from "react-redux";
+import { openLoginModal } from "../../store/authSlice";
 
 export default function Pricing() {
-  const [promoCodes, setPromoCodes] = useState({
-    1: "", // Basic/Student plan
-    2: "", // Plus/Basic plan
-    3: "", // Pro/Premium plan
-  });
-  const [loadingStates, setLoadingStates] = useState({
-    1: false,
-    2: false,
-    3: false,
-  });
+  const dispatch = useDispatch();
+  const token = useSelector((state) => state.auth.token);
   const profileId = useSelector((state) => state.auth.profileId);
 
-  const [packages, setPackages] = useState([
-    {
-      id: 1,
-      name: "Student Plan",
-      price: "40000",
-      description: "Discounted mental health support for students",
-      durationDays: "30",
-      features: [
-        "Access to the DAS21 psychological test for evaluating anxiety, stress, and tension levels",
-        "Insights into mental well-being through blog articles",
-        "Shopping for mental health-related products",
-        "Viewing a list of trusted psychological consultants",
-        "Booking appointments with licensed therapists",
-      ],
-      buttonText: "Kế hoạch hiện tại của bạn",
-      buttonDisabled: true,
-      color: "from-purple-100 to-purple-200",
-      borderColor: "border-purple-300",
-    },
-    {
-      id: 2,
-      name: "Basic Plan",
-      price: "100000",
-      description: "Access to basic mental health resources",
-      durationDays: "30",
-      features: [
-        "Access to the DAS21 psychological test for evaluating anxiety, stress, and tension levels",
-        "Insights into mental well-being through blog articles",
-        "Viewing full detailed test results",
-        "Personalized 2-week mental health improvement plan based on preferences, food, and activities",
-        "Shopping for mental health-related products",
-        "Viewing a list of trusted psychological consultants",
-        "Booking appointments with licensed therapists",
-      ],
-      buttonText: "Upgrade to Plus",
-      buttonDisabled: false,
-      color: "from-violet-100 to-purple-300",
-      borderColor: "border-purple-500",
-      isPopular: true,
-    },
-    {
-      id: 3,
-      name: "Premium Plan",
-      price: "500000",
-      description: "Advanced support with personal therapist sessions",
-      durationDays: "30",
-      features: [
-        "Personalized 1-month mental health improvement plan based on preferences, food, and activities",
-        "Regular reminders to follow the personalized improvement plan",
-        "AI chatbox for daily emotional support and conversations",
-        "Discounts on therapist bookings",
-        "Unlimited access to the psychological test",
-        "Sharing personal stories on the blog",
-      ],
-      buttonText: "Upgrade to Pro",
-      buttonDisabled: false,
-      color: "from-purple-200 to-purple-500",
-      borderColor: "border-purple-600",
-    },
-  ]);
+  const [promoCodes, setPromoCodes] = useState({});
+  const [loadingStates, setLoadingStates] = useState({});
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [selectedUpgradePackage, setSelectedUpgradePackage] = useState(null);
 
-  // When fetching the packages from the API, keep track of the actual IDs
+  const [packages, setPackages] = useState([]);
+  const packageServices = [
+    {
+      packageName: "Student Plan",
+      services: [
+        "1 consultation session per month",
+        "Basic mental health assessment",
+        "Email support (1-2 business days response)",
+        "Access to self-help resources",
+        "Weekly mental wellness newsletter",
+      ],
+    },
+    {
+      packageName: "Basic Plan",
+      services: [
+        "2 consultation sessions per month",
+        "Comprehensive mental health assessment",
+        "Priority email support (24-hour response)",
+        "Access to self-help resources and online workshops",
+        "Monthly progress tracking",
+        "Personalized coping strategy guide",
+        "Crisis support chat",
+      ],
+    },
+    {
+      packageName: "Premium Plan",
+      services: [
+        "4 consultation sessions per month",
+        "In-depth mental health comprehensive assessment",
+        "Immediate email and chat support",
+        "Unlimited access to online workshops and webinars",
+        "Personalized mental wellness plan",
+        "Bi-weekly progress review",
+        "Priority scheduling",
+        "24/7 crisis support",
+        "Optional family/relationship counseling session",
+        "Digital mental health journal and tracking tool",
+      ],
+    },
+  ];
+  const fetchData = async () => {
+    try {
+      const baseUrl =
+        "https://psychologysupport-subscription.azurewebsites.net/service-packages";
+      const url = profileId
+        ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
+        : `${baseUrl}?PageIndex=1&PageSize=10`;
+
+      const response = await axios.get(url);
+
+      // Filter and sort active packages
+      const activePackages = response.data?.servicePackages?.data
+        ?.filter((pkg) => pkg.isActive)
+        .sort((a, b) => a.price - b.price);
+
+      // Create loading states and promo codes for active packages
+      const initialLoadingStates = {};
+      const initialPromoCodes = {};
+
+      activePackages.forEach((pkg) => {
+        initialLoadingStates[pkg.id] = false;
+        initialPromoCodes[pkg.id] = "";
+      });
+
+      setLoadingStates(initialLoadingStates);
+      setPromoCodes(initialPromoCodes);
+      setPackages(activePackages);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Không thể tải danh sách gói dịch vụ");
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Xác định URL dựa trên profileId
-        const baseUrl =
-          "https://psychologysupport-subscription.azurewebsites.net/service-packages";
-        const url = profileId
-          ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
-          : `${baseUrl}?PageIndex=1&PageSize=10`;
+    if (token && profileId) {
+      fetchData();
+    }
+  }, [token, profileId]);
 
-        const response = await axios.get(url);
-
-        const activePackages =
-          response.data?.servicePackages?.data?.filter((pkg) => pkg.isActive) ||
-          [];
-        const sortedPackages = activePackages.sort((a, b) => a.price - b.price);
-
-        setPackages((prevPackages) =>
-          prevPackages.map((pkg, index) => {
-            const updatedPkg = sortedPackages[index];
-            return updatedPkg
-              ? {
-                  ...pkg,
-                  name: updatedPkg.name,
-                  price: updatedPkg.price,
-                  description: updatedPkg.description,
-                  durationDays: updatedPkg.durationDays,
-                  serviceId: updatedPkg.id,
-                }
-              : pkg;
-          })
-        );
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
+  useEffect(() => {
     fetchData();
-  }, []);
+  }, [token]);
 
-  // Then update your handleBuyService function
-  const handleBuyService = async (packageIndexId) => {
-    // Don't proceed if button is disabled
-    if (packages.find((pkg) => pkg.id === packageIndexId)?.buttonDisabled) {
+  const handleBuyService = async (packageId) => {
+    if (!token) {
+      dispatch(openLoginModal());
       return;
     }
 
-    const selectedPackage = packages.find((pkg) => pkg.id === packageIndexId);
-    if (!selectedPackage || !selectedPackage.serviceId) {
-      console.error("Package not found or missing service ID");
+    const selectedPackage = packages.find((pkg) => pkg.id === packageId);
+
+    // Check if the package is already purchased
+    if (selectedPackage.isPurchased) {
+      toast.info("Bạn đã sở hữu gói này.");
       return;
     }
 
-    // Update loading state for this specific package
+    // Find the currently purchased package
+    const purchasedPackage = packages.find((pkg) => pkg.isPurchased);
+
+    if (purchasedPackage) {
+      // If the new package is more expensive, show upgrade modal
+      if (selectedPackage.price > purchasedPackage.price) {
+        setSelectedUpgradePackage(selectedPackage);
+        setUpgradeModalOpen(true);
+        return;
+      }
+
+      // If the new package is cheaper or equal, prevent purchase
+      if (selectedPackage.price <= purchasedPackage.price) {
+        toast.error("You cannot switch to a plan with a lower or equal price.");
+        return;
+      }
+    }
+
+    // Proceed with package purchase if no issues
+    await proceedWithPurchase(selectedPackage);
+  };
+
+  const proceedWithPurchase = async (selectedPackage) => {
+    if (!selectedPackage) {
+      console.error("Package not found");
+      return;
+    }
+
     setLoadingStates((prev) => ({
       ...prev,
-      [packageIndexId]: true,
+      [selectedPackage.id]: true,
     }));
 
     try {
       const currentDate = new Date();
-      const startDate = currentDate.toISOString(); // Ngày bắt đầu là hiện tại
+      const startDate = currentDate.toISOString();
       const endDate = new Date(currentDate);
-      endDate.setDate(endDate.getDate() + 14);
+      endDate.setDate(endDate.getDate() + selectedPackage.durationDays);
       const endDateISO = endDate.toISOString();
 
       const payloadData = {
         userSubscription: {
           patientId: profileId,
-          servicePackageId: selectedPackage.serviceId, // Use the actual API ID here
-          promoCode: promoCodes[packageIndexId] || null,
+          servicePackageId: selectedPackage.id,
+          promoCode: promoCodes[selectedPackage.id] || null,
           giftId: null,
           startDate: startDate,
-          endDate: endDateISO, // Ngày kết thúc lớn hơn ngày bắt đầu
+          endDate: endDateISO,
           paymentMethodName: "VNPay",
         },
         returnUrl: "http://localhost:5173/payments/callback",
-        // returnUrl: "https://emo-rouge.vercel.app/payments/callback",
       };
 
-      console.log("payloadData", JSON.stringify(payloadData, null, 2));
       const response = await axios.post(
         "https://psychologysupport-subscription.azurewebsites.net/user-subscriptions",
         payloadData
@@ -168,12 +174,19 @@ export default function Pricing() {
         window.location.href = response.data.paymentUrl;
       }
     } catch (error) {
-      console.error("Error purchasing subscription:", error);
+      toast.error("Đã xảy ra lỗi khi xử lý yêu cầu.");
     } finally {
       setLoadingStates((prev) => ({
         ...prev,
-        [packageIndexId]: false,
+        [selectedPackage.id]: false,
       }));
+    }
+  };
+
+  const handleUpgradeConfirm = () => {
+    if (selectedUpgradePackage) {
+      proceedWithPurchase(selectedUpgradePackage);
+      setUpgradeModalOpen(false);
     }
   };
 
@@ -202,73 +215,137 @@ export default function Pricing() {
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl px-4">
-        {packages.map((plan, index) => (
-          <div
-            key={plan.id}
-            className={`bg-gradient-to-b ${
-              plan.color
-            } rounded-3xl shadow-xl p-8 text-center border-2 ${
-              plan.isPopular
-                ? `${plan.borderColor} scale-105 transform -translate-y-2`
-                : plan.borderColor
-            } transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden`}>
-            {plan.isPopular && (
-              <div className="absolute top-0 right-0">
-                <div className="bg-purple-600 text-white text-xs font-bold px-6 py-1 transform rotate-45 translate-x-5 translate-y-3">
-                  POPULAR
+        {packages.map((plan) => {
+          // Tìm services tương ứng với package
+          const currentPackageServices =
+            packageServices.find((pkg) => pkg.packageName === plan.name)
+              ?.services || [];
+
+          return (
+            <div
+              key={plan.id}
+              className={`bg-gradient-to-b ${
+                plan.isPurchased
+                  ? "from-green-100 to-green-200"
+                  : "from-violet-100 to-purple-300"
+              } rounded-3xl shadow-xl p-8 text-center border-2 ${
+                plan.isPurchased ? "border-green-300" : "border-purple-500"
+              } transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden`}>
+              {plan.isPurchased && (
+                <div className="absolute top-0 right-0">
+                  <div className="bg-green-600 text-white text-xs font-bold px-6 py-1 transform rotate-45 translate-x-5 translate-y-3">
+                    CURRENT PLAN
+                  </div>
                 </div>
+              )}
+              <div>
+                <h2 className="text-2xl font-bold text-purple-800 mb-2">
+                  {plan.name}
+                </h2>
+                <p className="text-purple-600 mb-6 h-12">{plan.description}</p>
+                <p className="text-5xl font-bold text-purple-900 mb-2">
+                  {plan.price.toLocaleString()}
+                  <span className="text-lg font-medium text-gray-600">VNĐ</span>
+                </p>
+                <p className="text-sm text-gray-500">
+                  per {plan.durationDays} days
+                </p>
               </div>
-            )}
-            <div>
-              <h2 className="text-2xl font-bold text-purple-800 mb-2">
-                {plan.name}
-              </h2>
-              <p className="text-purple-600 mb-6 h-12">{plan.description}</p>
-              <p className="text-5xl font-bold text-purple-900 mb-2">
-                {parseInt(plan.price).toLocaleString()}
-                <span className="text-lg font-medium text-gray-600">VNĐ</span>
-              </p>
-              <p className="text-sm text-gray-500 mb-6">per month</p>
-            </div>
+              {/* Thêm phần hiển thị services */}
+              <div className=" mb-4 text-left">
+                <h3 className="text-lg font-semibold text-purple-800 mb-3">
+                  What's Included:
+                </h3>
+                <ul className="space-y-2 mb-4">
+                  {currentPackageServices.slice(0, 4).map((service, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center text-sm text-gray-700">
+                      <svg
+                        className="w-4 h-4 mr-2 text-purple-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      {service}
+                    </li>
+                  ))}
+                  {currentPackageServices.length > 4 && (
+                    <li className="text-xs text-gray-500 italic">
+                      + {currentPackageServices.length - 4} more services
+                    </li>
+                  )}
+                </ul>
 
-            <div className="mb-6 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-purple-100 px-2">
-              <ul className={`${styles.sourceSerif} space-y-3 text-left`}>
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start text-gray-800">
-                    <span className="text-green-500 mr-2 mt-1">✓</span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+                <input
+                  type="text"
+                  placeholder="Enter promo code"
+                  className="w-full p-3 mb-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={promoCodes[plan.id] || ""}
+                  onChange={(e) =>
+                    handlePromoCodeChange(plan.id, e.target.value)
+                  }
+                />
+                <button
+                  className={`w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all duration-300 ${
+                    plan.isPurchased
+                      ? "bg-green-500 text-white cursor-not-allowed"
+                      : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
+                  }`}
+                  disabled={plan.isPurchased || loadingStates[plan.id]}
+                  onClick={() => handleBuyService(plan.id)}>
+                  {plan.isPurchased
+                    ? "Current Plan"
+                    : loadingStates[plan.id]
+                    ? "Processing..."
+                    : "Subscribe Now"}
+                </button>
+              </div>
             </div>
+          );
+        })}
+      </div>
 
-            <div className="mt-4 mb-4">
-              <input
-                type="text"
-                placeholder="Nhập mã khuyến mãi"
-                className="w-full p-3 mb-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                value={promoCodes[plan.id]}
-                onChange={(e) => handlePromoCodeChange(plan.id, e.target.value)}
-              />
+      {/* Upgrade Confirmation Modal */}
+      {upgradeModalOpen && (
+        <div className="fixed inset-0 bg-[#332f2f2f] flex items-center justify-center z-50 backdrop-blur-[5px]">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full transform transition-all duration-300 scale-100 hover:scale-[1.02]">
+            <h2 className="text-3xl font-semibold mb-5 text-purple-800 tracking-tight">
+              Upgrade Your Plan
+            </h2>
+            <p className="text-gray-700 mb-7 leading-relaxed">
+              Would you like to upgrade from your current plan to the{" "}
+              <span className="font-medium text-indigo-600">
+                {selectedUpgradePackage?.name}
+              </span>{" "}
+              plan for{" "}
+              <span className="font-medium text-indigo-600">
+                {selectedUpgradePackage?.price.toLocaleString()} VND
+              </span>
+              ?
+            </p>
+            <div className="flex justify-end space-x-4">
               <button
-                className={`w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all duration-300 ${
-                  plan.buttonDisabled || loadingStates[plan.id]
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : plan.id === 2
-                    ? "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
-                    : plan.id === 3
-                    ? "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
-                    : "bg-gray-400 text-gray-200 cursor-not-allowed"
-                }`}
-                disabled={plan.buttonDisabled || loadingStates[plan.id]}
-                onClick={() => handleBuyService(plan.id)}>
-                {loadingStates[plan.id] ? "Đang xử lý..." : plan.buttonText}
+                onClick={() => setUpgradeModalOpen(false)}
+                className="px-5 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium">
+                Cancel
+              </button>
+              <button
+                onClick={handleUpgradeConfirm}
+                className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium shadow-md">
+                Confirm
               </button>
             </div>
           </div>
-        ))}
-      </div>
-
+        </div>
+      )}
       <div className="mt-16 text-center max-w-2xl">
         <h3
           className={`${styles.sourceSerif} text-2xl font-semibold text-purple-800 mb-4`}>

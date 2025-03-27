@@ -11,9 +11,18 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const DoctorList = () => {
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
   const navigate = useNavigate();
+
   const isFetched = useRef(false);
   const [doctors, setDoctors] = useState([]);
   const [specialties, setSpecialties] = useState([]);
@@ -30,8 +39,12 @@ const DoctorList = () => {
   const specialtyScrollRef = useRef(null);
 
   const fetchDoctors = async (params = {}) => {
-    try {
+    // Don't set loading true immediately to prevent flashing on quick responses
+    const loadingTimeout = setTimeout(() => {
       setLoading(true);
+    }, 500); // Only show loading if request takes more than 500ms
+
+    try {
       const defaultParams = {
         PageIndex: 1,
         PageSize: 10,
@@ -39,15 +52,11 @@ const DoctorList = () => {
         SortOrder: "desc",
       };
 
-      // Merge default params with provided params
       const mergedParams = { ...defaultParams, ...params };
 
-      // Format StartDate and EndDate to match the exact format
       if (startDate && startTime && endDate && endTime) {
-        // Create date strings in the format "YYYY-MM-DD HH:mm"
         const formattedStartDate = `${startDate} ${startTime}`;
         const formattedEndDate = `${endDate} ${endTime}`;
-
         mergedParams.StartDate = formattedStartDate;
         mergedParams.EndDate = formattedEndDate;
       }
@@ -61,6 +70,7 @@ const DoctorList = () => {
     } catch (error) {
       console.error("Error fetching doctors:", error);
     } finally {
+      clearTimeout(loadingTimeout);
       setLoading(false);
     }
   };
@@ -107,7 +117,22 @@ const DoctorList = () => {
       params.Specialties = selectedSpecialty;
     }
 
-    fetchDoctors(params);
+    // Add date/time params if they exist
+    if (startDate && startTime && endDate && endTime) {
+      const formattedStartDate = `${startDate} ${startTime}`;
+      const formattedEndDate = `${endDate} ${endTime}`;
+      params.StartDate = formattedStartDate;
+      params.EndDate = formattedEndDate;
+    }
+
+    // Fetch with params
+    fetchDoctors(params).then(() => {
+      // Reset date/time values after successful fetch
+      setStartDate("");
+      setStartTime("");
+      setEndDate("");
+      setEndTime("");
+    });
   };
 
   const handleFilterChange = (filter) => {
@@ -189,7 +214,7 @@ const DoctorList = () => {
         </div>
       </div>
 
-      <div className="pt-16 pb-6 px-6 flex-1 flex flex-col">
+      <div className="pt-10 pb-6 px-6 flex-1 flex flex-col">
         <div className="flex justify-center items-center mb-2">
           <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full">
             <Star
@@ -317,135 +342,168 @@ const DoctorList = () => {
       </div>
     );
 
+  const FilterSection = () => (
+    <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden border border-gray-100">
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleFilterChange("rating")}
+              className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                selectedFilter === "rating"
+                  ? "bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}>
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                <span>Top Rated</span>
+              </div>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleFilterChange("specialties")}
+              className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                selectedFilter === "specialties"
+                  ? "bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-lg"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}>
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5" />
+                <span>Specialty</span>
+              </div>
+            </motion.button>
+          </div>
+        </div>
+
+        {selectedFilter === "specialties" && <SpecialtyFilter />}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <DateTimeInput
+            label="Start Date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <DateTimeInput
+            label="Start Time"
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+          />
+          <DateTimeInput
+            label="End Date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+          <DateTimeInput
+            label="End Time"
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
+        </div>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleDateTimeFilter}
+          className="w-[200px] bg-gradient-to-r from-violet-600 to-purple-600 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+          Apply Filters
+        </motion.button>
+      </div>
+    </div>
+  );
+
+  const DateTimeInput = ({ label, type, value, onChange }) => (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+      />
+    </div>
+  );
+
+  // Add this new component
+  const LoadingCards = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {[...Array(8)].map((_, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 animate-pulse">
+          <div className="relative">
+            <div className="h-32 bg-gray-200"></div>
+            <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
+              <div className="w-24 h-24 rounded-full bg-gray-200 border-4 border-white"></div>
+            </div>
+          </div>
+          <div className="pt-16 pb-6 px-6">
+            <div className="flex justify-center mb-2">
+              <div className="h-6 w-20 bg-gray-200 rounded-full"></div>
+            </div>
+            <div className="h-6 w-3/4 mx-auto bg-gray-200 rounded mb-4"></div>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                <div className="h-4 w-2/3 bg-gray-200 rounded"></div>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
+              </div>
+              <div className="flex items-start">
+                <div className="w-4 h-4 bg-gray-200 rounded mr-2 mt-1"></div>
+                <div className="h-8 w-full bg-gray-200 rounded"></div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <div className="h-12 w-full bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Update the main return statement
   return (
-    <div className="bg-gradient-to-b from-blue-50 to-white min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Professional team of doctors
-          </h1>
-          <p className="text-gray-600">
-            Choose the doctor that suits your needs
-          </p>
-        </div>
+    <div className="min-h-screen w-full bg-gradient-to-b from-violet-50 via-white to-white py-12 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-12 px-4 bg-gradient-to-r from-[#4A2580] to-[#804ac2]  rounded-2xl py-15 flex flex-col justify-center items-center text-white">
+        <h1 className="text-5xl font-extrabold text-white mb-4 leading-tight">
+          Psychology Experts by Your Side
+        </h1>
+        <p className="opacity-80 max-w-2xl mx-auto text-[#ffffff]">
+          We listen, understand, and accompany you on your journey to mental
+          health care. <br />
+          Every story matters, and every emotion is respected.
+        </p>
+      </motion.div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md mb-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleFilterChange("rating")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  selectedFilter === "rating"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}>
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 mr-1" />
-                  Top Rated
-                </div>
-              </button>
+      <FilterSection />
 
-              <button
-                onClick={() => handleFilterChange("specialties")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  selectedFilter === "specialties"
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}>
-                <div className="flex items-center">
-                  <Award className="w-4 h-4 mr-1" />
-                  Specialty
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {selectedFilter === "specialties" && <SpecialtyFilter />}
-
-          {/* Date and Time Filtering Section */}
-          <div className="mt-4 grid grid-cols-4 gap-4 items-end">
-            <div className="flex flex-col">
-              <label
-                htmlFor="start-date"
-                className="text-sm font-medium text-gray-700 mb-1.5">
-                Start Date
-              </label>
-              <input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label
-                htmlFor="start-time"
-                className="text-sm font-medium text-gray-700 mb-1.5">
-                Start Time
-              </label>
-              <input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label
-                htmlFor="end-date"
-                className="text-sm font-medium text-gray-700 mb-1.5">
-                End Date
-              </label>
-              <input
-                id="end-date"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label
-                htmlFor="end-time"
-                className="text-sm font-medium text-gray-700 mb-1.5">
-                End Time
-              </label>
-              <input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                required
-              />
-            </div>
-
-            <div className="flex items-end">
-              <button
-                onClick={handleDateTimeFilter}
-                className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-md 
-      hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 
-      transition-all duration-300 ease-in-out transform active:scale-95 shadow-md">
-                Apply Filter
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {viewMode === "grid" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div>
+        {loading ? (
+          <LoadingCards />
+        ) : (
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {doctors.map((doctor, index) => (
               <DoctorCard key={doctor.id || index} doctor={doctor} />
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

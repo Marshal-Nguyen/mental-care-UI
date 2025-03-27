@@ -6,7 +6,7 @@ const RoadMapCreate = () => {
   const [activeTab, setActiveTab] = useState("Treatment");
   const profileId = useSelector((state) => state.auth.profileId);
   return (
-    <div className=" h-screen rounded-xl px-8 pt-4 flex flex-col">
+    <div className=" h-screen rounded-xl pt-4 flex flex-col">
       {/* Tabs Navigation */}
       <div className="flex space-x-1 p-1 bg-gray-100 rounded-lg w-fit mb-2">
         <button

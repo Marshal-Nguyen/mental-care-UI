@@ -13,15 +13,18 @@ const CustomerDetail = () => {
     const [error, setError] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
     const [activeTab, setActiveTab] = useState("profile");
+    const [purchasedPackageName, setPurchasedPackageName] = useState(null);
 
     useEffect(() => {
         const fetchCustomer = async () => {
             try {
+                // Fetch patient profile
                 const response = await fetch(`https://psychologysupport-profile.azurewebsites.net/patients/${id}`);
                 if (!response.ok) throw new Error("Failed to fetch patient data");
                 const data = await response.json();
                 setCustomer(data.patientProfileDto);
 
+                // Fetch profile image
                 const imageResponse = await fetch(
                     `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${data.patientProfileDto.userId}`
                 );
@@ -30,6 +33,15 @@ const CustomerDetail = () => {
                         ? (await imageResponse.json()).url
                         : "https://cdn-healthcare.hellohealthgroup.com/2023/05/1684813854_646c381ea5d030.57844254.jpg?w=1920&q=100"
                 );
+
+                // Fetch purchased package
+                const subscriptionResponse = await fetch(
+                    `https://psychologysupport-subscription.azurewebsites.net/service-packages?PageIndex=1&PageSize=10&patientId=${id}`
+                );
+                if (!subscriptionResponse.ok) throw new Error("Failed to fetch subscription data");
+                const subscriptionData = await subscriptionResponse.json();
+                const purchasedPackage = subscriptionData.servicePackages.data.find(pkg => pkg.isPurchased);
+                setPurchasedPackageName(purchasedPackage ? purchasedPackage.name : null);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -84,6 +96,9 @@ const CustomerDetail = () => {
                             <h2 className="text-3xl font-bold text-gray-800 bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
                                 {customer.fullName}
                             </h2>
+                            <p className="text-sm text-gray-600 mt-1">
+                                <strong>Package:</strong> {purchasedPackageName || "N/A"}
+                            </p>
                             <motion.div
                                 className={`inline-block mt-3 px-4 py-2 rounded-full ${genderStyle.bg} text-white font-bold text-lg shadow-md border ${genderStyle.border}`}
                                 initial={{ scale: 0.8, opacity: 0 }}

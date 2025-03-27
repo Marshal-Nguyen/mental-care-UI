@@ -217,24 +217,22 @@ const MedicalProfile = ({ patientId }) => {
             <h3 className="font-bold text-gray-800 text-sm pb-1">
               Specific Mental Disorders
             </h3>
-            {patient.medicalRecords &&
-            patient.medicalRecords.length > 0 &&
-            patient.medicalRecords[0].specificMentalDisorders &&
-            patient.medicalRecords[0].specificMentalDisorders.length > 0 ? (
-              <ol className="list-disc px-6 space-y-1 text-xs">
-                {patient.medicalRecords[0].specificMentalDisorders.map(
-                  (disorder) => (
-                    <li key={disorder.id} className="text-gray-600">
-                      {disorder.name}
+
+            <ol className="list-disc px-6 space-y-1 text-xs">
+              {patient.medicalHistory.specificMentalDisorders.length > 0 ? (
+                patient.medicalHistory.specificMentalDisorders.map(
+                  (symptom) => (
+                    <li key={symptom.id} className="text-gray-600">
+                      {symptom.name}
                     </li>
                   )
-                )}
-              </ol>
-            ) : (
-              <p className="text-xs text-gray-500 px-2">
-                No mental disorders recorded
-              </p>
-            )}
+                )
+              ) : (
+                <p className="text-xs text-gray-500 px-2">
+                  No mental disorders recorded
+                </p>
+              )}
+            </ol>
           </div>
 
           {/* Contact Info */}

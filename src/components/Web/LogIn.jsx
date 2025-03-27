@@ -14,24 +14,25 @@ import {
   closeLoginModal,
   openLoginModal,
 } from "../../store/authSlice";
+
 const LogIn = () => {
   const userId = localStorage.getItem("userId");
   const dispatch = useDispatch();
   const isModalOpen = useSelector((state) => state.auth.isLoginModalOpen);
-  const [userRole, setUserRole] = useState(null);
-  const [open, setOpen] = useState(false);
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  // const [isModalOpen, setIsModalOpen] = useState(StateModalOpen);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
-  const [userImage, setUserImage] = useState(null); // Lưu ảnh đại diện
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userImage, setUserImage] = useState(null);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    loginInput: "", // Đại diện cho email hoặc số điện thoại
     password: "",
   });
-  const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState(null);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -39,36 +40,34 @@ const LogIn = () => {
       [name]: value,
     }));
   };
-  const [avatarUrl, setAvatarUrl] = useState(null);
-  // Xử lý đăng nhập
-  const fetchAvatar = async () => {
+
+  const fetchAvatar = async (id) => {
     try {
       const avatarResponse = await axios.get(
-        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
+        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${id}`
       );
-
-      console.log("Avatar URL Home:", avatarResponse.data);
-      setAvatarUrl(avatarResponse.data.url);
+      setAvatarUrl(
+        avatarResponse.data.url || "https://i.pravatar.cc/150?img=3"
+      );
     } catch (err) {
       console.log("No avatar found or error fetching avatar:", err);
-      // Not setting an error as avatar might not exist yet
+      setAvatarUrl("https://i.pravatar.cc/150?img=3"); // Giá trị mặc định
     }
   };
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserRole = localStorage.getItem("userRole");
     const storedProfileId = localStorage.getItem("profileId");
-    const storedUserImage = localStorage.getItem("userImage");
+
     const storedUserId = localStorage.getItem("userId");
 
     if (storedToken && storedUserRole) {
       try {
         const decodedToken = jwtDecode(storedToken);
-        // Kiểm tra token hết hạn
         if (decodedToken.exp * 1000 > Date.now()) {
           setIsLoggedIn(true);
-          setUserRole(storedUserRole);
-          setUserImage(storedUserImage || "https://i.pravatar.cc/150?img=3");
+
           dispatch(
             setCredentials({
               token: storedToken,
@@ -77,43 +76,68 @@ const LogIn = () => {
               userId: storedUserId,
             })
           );
-          fetchAvatar();
+          fetchAvatar(storedUserId);
         } else {
-          // Token hết hạn, logout
           handleLogout();
+          toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
         }
       } catch (error) {
         console.error("Token decode error:", error);
         handleLogout();
+        toast.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!");
       }
     }
   }, [dispatch]);
 
+  const isEmail = (input) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(input);
+  };
+
+  const isPhoneNumber = (input) => {
+    const phoneRegex = /^[0-9]{10,15}$/; // Điều chỉnh regex nếu cần
+    return phoneRegex.test(input);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
+      const { loginInput, password } = formData;
+
+      let payload;
+      if (isEmail(loginInput)) {
+        payload = { email: loginInput, password };
+      } else if (isPhoneNumber(loginInput)) {
+        payload = { phoneNumber: loginInput, password };
+      } else {
+        setError("Vui lòng nhập email hoặc số điện thoại hợp lệ!");
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.post(
         "https://psychologysupport-auth.azurewebsites.net/Auth/login",
-        formData,
+        payload,
         { headers: { "Content-Type": "application/json" } }
       );
 
       const token = response.data.token;
       const decodedToken = jwtDecode(token);
 
-      // Lấy role từ claim
       const userRole =
         decodedToken[
-        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ];
       const profileId = decodedToken.profileId;
       const userId = decodedToken.userId;
       const username =
         decodedToken[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ];
 
-      // Lưu thông tin và cập nhật state
       localStorage.setItem("token", token);
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", userRole);
@@ -123,30 +147,26 @@ const LogIn = () => {
       localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
 
       setIsLoggedIn(true);
+
       setUserRole(userRole);
       setUserImage("https://i.pravatar.cc/150?img=3");
-      // if (userRole === "Manager") {
-      //   navigate("/Manager");
-      // }
-      // Dispatch to Redux và đóng modal
       dispatch(setCredentials({ token, userRole, profileId, userId }));
       dispatch(closeLoginModal());
-      fetchAvatar();
-      // Thông báo thành công
+      fetchAvatar(userId);
 
       const currentRole = localStorage.getItem("userRole");
       if (currentRole === "Staff") {
         navigate("/staff");
       }
-
-      toast.success("Đăng nhập thành công!", { position: "top-right" });
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Lỗi đăng nhập, vui lòng thử lại!");
+      setError("Lỗi đăng nhập, vui lòng kiểm tra lại thông tin!");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Sửa lại handleGoogleLogin để cũng navigate ngay
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -158,24 +178,47 @@ const LogIn = () => {
         return;
       }
 
-      // Lưu thông tin
+      const token = await user.getIdToken();
+      const decodedToken = jwtDecode(token); // Giải mã token Firebase
+      const userId = user.uid; // Sử dụng uid từ Firebase làm userId
+
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", "User");
       localStorage.setItem("userImage", user.photoURL);
+      localStorage.setItem("firebaseToken", token);
+      localStorage.setItem("userId", userId); // Lưu userId
 
       setIsLoggedIn(true);
-      setUserRole("User");
-      setUserImage(user.photoURL);
 
+      dispatch(setCredentials({ token, userRole: "User", userId }));
       dispatch(closeLoginModal());
       toast.success("Đăng nhập thành công!");
+      fetchAvatar(); // Gọi fetchAvatar sau khi có userId
+      console.log("token for firebase", token);
     } catch (error) {
       console.error("Google login error:", error);
       toast.error("Lỗi đăng nhập! Vui lòng thử lại.");
     }
   };
+  const checkPurchasedPackage = async (profileId) => {
+    try {
+      const baseUrl =
+        "https://psychologysupport-subscription.azurewebsites.net/service-packages";
+      const url = profileId
+        ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
+        : `${baseUrl}?PageIndex=1&PageSize=10`;
 
-  // Xử lý đăng xuất
+      const response = await axios.get(url);
+      const packages = response.data.servicePackages.data;
+
+      // Kiểm tra xem có gói nào đã được mua không
+      return packages.some((pkg) => pkg.isPurchased === true);
+    } catch (error) {
+      console.error("Error checking purchased packages:", error);
+      return false; // Trả về false nếu có lỗi
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -187,45 +230,60 @@ const LogIn = () => {
       localStorage.removeItem("profileId");
       localStorage.removeItem("userId");
       localStorage.removeItem("username");
+      localStorage.clear();
       setIsLoggedIn(false);
-      setUserRole(null);
-      setUserImage(null);
-      setOpen(false);
+
+      setAvatarUrl(null); // Reset avatarUrl
+
       navigate("learnAboutEmo");
-      toast.success("Đã đăng xuất thành công!", { position: "top-right" });
+      toast.warn("Đã đăng xuất thành công!");
     } catch (error) {
       toast.error("Lỗi đăng xuất! Vui lòng thử lại.", {
         position: "top-right",
       });
     }
   };
+
   const handleDropdownClick = () => {
     setDropdownOpen(!dropdownOpen);
+    if (!isLoggedIn && !isModalOpen) {
+      dispatch(openLoginModal()); // Mở modal nếu chưa đăng nhập
+    }
   };
-  const handleDashboardClick = () => {
+  const handleDashboardClick = async () => {
     if (!isLoggedIn) {
       dispatch(openLoginModal());
-    } else {
-      const currentRole = localStorage.getItem("userRole");
-      if (currentRole === "User") {
+      return;
+    }
+
+    const currentRole = localStorage.getItem("userRole");
+    const profileId = localStorage.getItem("profileId");
+
+    // Chỉ kiểm tra gói đã mua nếu role là "User"
+    if (currentRole === "User") {
+      const hasPurchased = await checkPurchasedPackage(profileId);
+      if (hasPurchased) {
         navigate("/DashboardPartient");
-      } else if (currentRole === "Doctor") {
+      } else {
+        toast.error("Bạn cần đăng ký một gói dịch vụ để truy cập Dashboard!");
+      }
+    } else {
+      // Các role khác không cần kiểm tra isPurchased
+      if (currentRole === "Doctor") {
         navigate("/DashboardDoctor");
       } else if (currentRole === "Staff") {
         navigate("/staff");
       } else if (currentRole === "Manager") {
         navigate("/manager");
-
       }
-
     }
     setDropdownOpen(false);
   };
+
   return (
     <div className="relative">
       <div className="flex items-center gap-4">
         <span className="text-lg font-medium text-purple-400">{userRole}</span>
-        {/* Avatar Button */}
         <button
           onClick={handleDropdownClick}
           className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all overflow-hidden border-2 border-purple-500">
@@ -244,19 +302,13 @@ const LogIn = () => {
           )}
         </button>
       </div>
-
-
-      {/* Dropdown Menu */}
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-30  bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
-          {/* Login Button */}
+        <div className="absolute right-0 mt-2 w-30 bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
           <button
             onClick={handleDashboardClick}
             className="w-full bg-purple-300 py-1 text-[#4d4d4d] font-mono rounded-2xl mb-2 hover:bg-purple-400">
             {isLoggedIn ? "Dashboard" : "LogIn"}
           </button>
-
-          {/* Logout Button */}
           <button
             onClick={handleLogout}
             className="w-full bg-purple-300 py-2 flex items-center justify-center text-gray-700 font-semibold rounded-2xl hover:bg-purple-400">
@@ -267,10 +319,10 @@ const LogIn = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-[#4e4d4dbb] bg-opacity-50 z-51">
-          <div class="relative py-3 sm:max-w-xl sm:mx-auto">
-            <div class="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-              <div class="max-w-md mx-auto">
-                <div class="flex items-center space-x-5 justify-center">
+          <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+            <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
+              <div className="max-w-md mx-auto">
+                <div className="flex items-center space-x-5 justify-center">
                   <button
                     onClick={() => dispatch(closeLoginModal())}
                     className="absolute top-3 right-0 text-gray-600 hover:text-black text-xl">
@@ -279,19 +331,20 @@ const LogIn = () => {
                   <h1 className="text-[#4e0986] text-2xl font-serif">Login</h1>
                 </div>
                 {error && <p className="text-red-500 text-center">{error}</p>}
-                <div class="mt-5">
+                <div className="mt-5">
                   <label
-                    class="font-semibold text-sm text-gray-600 pb-1 block"
-                    htmlFor="login">
+                    className="font-semibold text-sm text-gray-600 pb-1 block"
+                    htmlFor="loginInput">
                     E-mail or Phone Number
                   </label>
                   <input
-                    type="email"
-                    name="email"
+                    type="text"
+                    name="loginInput"
                     className="w-full p-2 border rounded mt-1 focus:ring focus:ring-blue-300"
-                    value={formData.email}
+                    value={formData.loginInput}
                     onChange={handleChange}
                     required
+                    placeholder="Enter email or phone number"
                   />
                   <label
                     className="font-semibold text-sm text-gray-600 pb-1 block"
@@ -315,18 +368,18 @@ const LogIn = () => {
                     </button>
                   </div>
                 </div>
-                <div class="text-right mb-4">
+                <div className="text-right mb-4">
                   <a
-                    class="text-xs font-display font-semibold text-gray-500 hover:text-gray-600 cursor-pointer"
+                    className="text-xs font-display font-semibold text-gray-500 hover:text-gray-600 cursor-pointer"
                     href="#">
                     Forgot Password?
                   </a>
                 </div>
-                <div class="flex justify-center w-full items-center">
+                <div className="flex justify-center w-full items-center">
                   <div>
                     <button
                       onClick={handleGoogleLogin}
-                      class="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                      className="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
                       <svg
                         viewBox="0 0 24 24"
                         height="25"
@@ -383,37 +436,36 @@ const LogIn = () => {
                           d="M15.7885132,5.890686C14.6939087,5.1806641,13.4018555,4.75,12,4.75c-3.8659668,0-7,3.1339722-7,7 c0,0.0421753,0.0005674,0.0751343,0.0012999,0.1171875C5.0687437,8.0595093,8.1762085,5,12,5 c1.4018555,0,2.6939087,0.4306641,3.7885132,1.140686c0.1675415,0.1088867,0.3403931,0.2111206,0.4978027,0.333374 l3.637146-3.4699707l-3.637146,3.2199707C16.1289062,6.1018066,15.9560547,5.9995728,15.7885132,5.890686z"></path>
                         <path
                           opacity=".2"
-                          d="M12,0.25c2.9750366,0,5.6829224,1.0983887,7.7792969,2.8916016l0.144165-0.1375122 l-0.110014-0.0958166C17.7089558,1.0843592,15.00354,0,12,0C5.3725586,0,0,5.3725586,0,12 c0,0.0421753,0.0058594,0.0828857,0.0062866,0.125C0.0740356,5.5558472,5.4147339,0.25,12,0.25z"
+                          d="M12,0.25c2.9750366,0,5.6826224,1.0983887,7.7792969,2.8916016l0.144165-0.1375122 l-0.110014-0.0958166C17.7089558,1.0843592,15.00354,0,12,0C5.3725586,0,0,5.3725586,0,12 c0,0.0421753,0.0058594,0.0828857,0.0062866,0.125C0.0740356,5.5558472,5.4147339,0.25,12,0.25z"
                           fill="#FFF"></path>
                       </svg>
-                      <span class="ml-2">Sign in with Google</span>
+                      <span className="ml-2">Sign in with Google</span>
                     </button>
                   </div>
                 </div>
-                <div class="mt-5">
+                <div className="mt-5">
                   <button
-                    class="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+                    className="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
                     onClick={handleLogin}
                     disabled={loading}>
-                    Log in
+                    {loading ? "Logging in..." : "Log in"}
                   </button>
                 </div>
-                <div class="flex items-center justify-between mt-4">
-                  <span class="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
+                <div className="flex items-center justify-between mt-4">
+                  <span className="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
                   <a
                     className="text-xs text-blue-500 underline hover:text-blue-700 cursor-pointer"
                     onClick={() => {
-                      navigate("/regist", { replace: true }); // Chỉ giữ lại "/regist"
+                      navigate("/regist", { replace: true });
                       dispatch(closeLoginModal());
                     }}>
                     or sign up
                   </a>
-                  <span class="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
+                  <span className="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
                 </div>
               </div>
             </div>
           </div>
-          {/*  */}
         </div>
       )}
     </div>

@@ -29,6 +29,7 @@ const ServicePackageList = () => {
         durationDays: "",
         isActive: false
     });
+    const [hasMoreData, setHasMoreData] = useState(true); // Thêm state kiểm tra còn dữ liệu
     const navigate = useNavigate();
 
     const fetchPackages = async () => {
@@ -53,6 +54,8 @@ const ServicePackageList = () => {
 
             setPackages(packagesWithImages);
             applySearchFilter(packagesWithImages);
+            // Kiểm tra nếu số lượng bản ghi nhỏ hơn pageSize, nghĩa là không còn dữ liệu
+            setHasMoreData(packagesWithImages.length === pageSize);
         } catch (error) {
             setError("Failed to load service packages. Please try again.");
             console.error("Error fetching data:", error);
@@ -146,7 +149,7 @@ const ServicePackageList = () => {
             >
                 <FaUsers className="text-indigo-700 mr-3" size={36} />
                 <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
-                    Service Packages Dashboard
+                    Service Packages
                 </h2>
             </motion.div>
 
@@ -206,47 +209,55 @@ const ServicePackageList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredPackages.map((pkg, index) => (
-                                <motion.tr
-                                    key={pkg.id}
-                                    className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
-                                    whileHover={{ scale: 1.005 }}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <td className="px-6 py-4 text-gray-700 font-medium">
-                                        {startIndex + index + 1}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-800 font-semibold">{pkg.name}</td>
-                                    <td className="px-6 py-4 text-gray-600 font-medium">{pkg.description}</td>
-                                    <td className="px-6 py-4 text-green-600 font-medium">
-                                        {pkg.price.toLocaleString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-600 font-medium">{pkg.durationDays}</td>
-                                    <td className="px-6 py-4 font-medium">
-                                        <span
-                                            className={
-                                                pkg.isActive ? "text-green-600" : "text-red-600"
-                                            }
-                                        >
-                                            {pkg.isActive ? "Active" : "Inactive"}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex justify-center gap-4">
-                                            <motion.button
-                                                className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
-                                                title="Update Package"
-                                                onClick={() => handleUpdateClick(pkg)}
-                                                whileHover={{ scale: 1.15 }}
+                            {filteredPackages.length > 0 ? (
+                                filteredPackages.map((pkg, index) => (
+                                    <motion.tr
+                                        key={pkg.id}
+                                        className="border-b border-gray-100 hover:bg-indigo-50 transition-all duration-200"
+                                        whileHover={{ scale: 1.005 }}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <td className="px-6 py-4 text-gray-700 font-medium">
+                                            {startIndex + index + 1}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-800 font-semibold">{pkg.name}</td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">{pkg.description}</td>
+                                        <td className="px-6 py-4 text-green-600 font-medium">
+                                            {pkg.price.toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">{pkg.durationDays}</td>
+                                        <td className="px-6 py-4 font-medium">
+                                            <span
+                                                className={
+                                                    pkg.isActive ? "text-green-600" : "text-red-600"
+                                                }
                                             >
-                                                <AiFillEdit size={20} />
-                                            </motion.button>
-                                        </div>
+                                                {pkg.isActive ? "Active" : "Inactive"}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex justify-center gap-4">
+                                                <motion.button
+                                                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                                                    title="Update Package"
+                                                    onClick={() => handleUpdateClick(pkg)}
+                                                    whileHover={{ scale: 1.15 }}
+                                                >
+                                                    <AiFillEdit size={20} />
+                                                </motion.button>
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                                        No data available
                                     </td>
-                                </motion.tr>
-                            ))}
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -354,8 +365,9 @@ const ServicePackageList = () => {
                 <span className="py-2 text-gray-800 font-semibold text-lg">Page {pageIndex}</span>
                 <motion.button
                     onClick={() => setPageIndex((prev) => prev + 1)}
-                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
-                    whileHover={{ scale: 1.05 }}
+                    disabled={!hasMoreData} // Vô hiệu hóa nút Next nếu không còn dữ liệu
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
+                    whileHover={{ scale: !hasMoreData ? 1 : 1.05 }}
                 >
                     Next
                 </motion.button>

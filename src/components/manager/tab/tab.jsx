@@ -6,7 +6,7 @@ const menuItemsData = [
     { id: 0, text: "Dashboard", path: "dashboard", subMenu: [] },
     { id: 1, text: "Users", path: "viewCustomer", subMenu: [] },
     {
-        id: 3,
+        id: 2,
         text: "Doctor",
         path: "doctor",
         subMenu: [
@@ -14,8 +14,10 @@ const menuItemsData = [
             { path: "addDoctor", text: "Add doctor" },
         ],
     },
+    { id: 3, text: "Bookings", path: "booking", subMenu: [] },
+    { id: 4, text: "Transactions", path: "transaction", subMenu: [] },
     {
-        id: 4,
+        id: 5,
         text: "Service Packages",
         path: "promotion",
         subMenu: [
@@ -23,7 +25,7 @@ const menuItemsData = [
             { path: "addPackages", text: "Add Packages" },
         ],
     },
-    { id: 5, text: "Pending Replies", path: "view-message", subMenu: [] },
+    { id: 6, text: "Pending Replies", path: "view-message", subMenu: [] },
 ];
 
 const Tab = ({ history, setHistory, activeTab, setActiveTab }) => {

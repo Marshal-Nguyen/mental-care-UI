@@ -556,7 +556,7 @@ const WeeklyPlanner = () => {
             <div className="p-6 space-y-5">
               <div className="mb-4">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">
-                  Thời gian
+                  Time
                 </p>
                 <p className="text-md font-medium text-gray-700">
                   {selectedTask.duration}
@@ -564,7 +564,7 @@ const WeeklyPlanner = () => {
               </div>
               <div className="mb-4">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">
-                  Mô tả
+                  Description
                 </p>
                 <p className="text-gray-600 leading-relaxed">
                   {selectedTask.description}
@@ -572,7 +572,7 @@ const WeeklyPlanner = () => {
               </div>
               <div className="mb-4">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">
-                  Lợi ích
+                  Benefits
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-gray-600">
                   {selectedTask.benefits.map((benefit, index) => (
@@ -584,7 +584,7 @@ const WeeklyPlanner = () => {
               </div>
               <div className="mb-4">
                 <p className="text-xs text-gray-400 uppercase tracking-wide">
-                  Trạng thái
+                  Status
                 </p>
                 <div className="flex items-center mt-2">
                   <label
@@ -619,7 +619,7 @@ const WeeklyPlanner = () => {
                       />
                     </svg>
                     <span className="text-sm text-gray-700 ml-2">
-                      Đánh dấu là hoàn thành
+                      Mark as completed
                     </span>
                   </label>
                 </div>
@@ -631,10 +631,10 @@ const WeeklyPlanner = () => {
               <button
                 onClick={closeTaskDetail}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                Đóng
+                Close
               </button>
               <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200">
-                Lưu thay đổi
+                Save Changes
               </button>
             </div>
           </div>

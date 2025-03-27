@@ -27,9 +27,13 @@ const authSlice = createSlice({
       state.profileId = null;
       state.userId = null;
       // 🗑 Xóa khỏi LocalStorage khi logout
-      localStorage.removeItem("token");
+      localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("userRole");
+      localStorage.removeItem("userImage");
+      localStorage.removeItem("token");
       localStorage.removeItem("profileId");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("username");
     },
     openLoginModal: (state) => {
       state.isLoginModalOpen = true;

@@ -154,7 +154,7 @@ export default function TreatmentActivities({ profileId }) {
         </div>
 
         {/* Phần 2: Thông tin chi tiết bệnh nhân */}
-        <div className="col-span-2 bg-white rounded-lg shadow overflow-y-auto">
+        <div className="col-span-2 h-full bg-white rounded-lg shadow overflow-y-auto">
           {selectedPatientId ? (
             <CreateWeeklyPlanner profileId={selectedPatientId} />
           ) : (

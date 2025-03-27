@@ -7,6 +7,7 @@ import {
   Users,
   XCircle,
   CheckCircle,
+  BusIcon,
 } from "lucide-react";
 
 export default function DoctorScheduleViewer({ doctorId }) {
@@ -24,8 +25,71 @@ export default function DoctorScheduleViewer({ doctorId }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateMessage, setUpdateMessage] = useState({ type: "", text: "" });
 
-  const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  const [isBusyLoading, setIsBusyLoading] = useState(false);
+  const [busyMessage, setBusyMessage] = useState({ type: "", text: "" });
 
+  const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  const markDoctorBusy = async () => {
+    if (!selectedDate) {
+      setBusyMessage({
+        type: "warning",
+        text: "Please select a date to mark as busy.",
+      });
+      return;
+    }
+
+    if (!isDateEligibleForUpdate(selectedDate)) {
+      setBusyMessage({
+        type: "error",
+        text: "Only dates at least 3 days in the future can be marked as busy.",
+      });
+      return;
+    }
+
+    setIsBusyLoading(true);
+    setBusyMessage({ type: "", text: "" });
+
+    try {
+      const formattedDate = selectedDate
+        .toLocaleDateString("en-CA")
+        .split("T")[0]; // Format: YYYY-MM-DD
+
+      const response = await axios.post(
+        "https://psychologysupport-scheduling.azurewebsites.net/doctor-busy",
+        {
+          doctorBusyDto: {
+            doctorId: doctorId,
+            date: formattedDate,
+          },
+        }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        setBusyMessage({
+          type: "success",
+          text: `Successfully marked ${selectedDate.toLocaleDateString()} as a busy day.`,
+        });
+
+        // Refresh the schedule for the selected date
+        fetchSchedule(selectedDate);
+      } else {
+        setBusyMessage({
+          type: "error",
+          text: "Failed to mark the day as busy. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error marking day as busy:", error);
+      setBusyMessage({
+        type: "error",
+        text:
+          error.response?.data?.message ||
+          "An error occurred while marking the day as busy.",
+      });
+    } finally {
+      setIsBusyLoading(false);
+    }
+  };
   // Kiểm tra xem ngày đã chọn có sau ngày hiện tại 3 ngày không
   const isDateEligibleForUpdate = (date) => {
     const currentDate = new Date();
@@ -90,7 +154,7 @@ export default function DoctorScheduleViewer({ doctorId }) {
     if (!isDateEligibleForUpdate(selectedDate)) {
       setUpdateMessage({
         type: "error",
-        text: "Only time slots at least 3 days in the future can be modified.",
+        text: "Only time slots at least 7 days in the future can be modified.",
       });
       return;
     }
@@ -123,7 +187,9 @@ export default function DoctorScheduleViewer({ doctorId }) {
     setUpdateMessage({ type: "", text: "" });
 
     try {
-      const formattedDate = selectedDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+      const formattedDate = selectedDate
+        .toLocaleDateString("en-CA")
+        .split("T")[0]; // Format: YYYY-MM-DD
       const startTimes = selectedSlots.map((slot) => slot.startTime);
 
       const response = await axios.post(
@@ -442,6 +508,26 @@ export default function DoctorScheduleViewer({ doctorId }) {
               <span className="font-bold text-purple-600">
                 {selectedSlots.length}
               </span>
+            </div>
+          )}
+          {isDateEligibleForUpdate(selectedDate) && (
+            <div className="mt-4">
+              <button
+                className="w-full py-2 px-4 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                onClick={markDoctorBusy}
+                disabled={isBusyLoading}>
+                {isBusyLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white mr-2"></div>
+                    Marking as Busy...
+                  </>
+                ) : (
+                  <>
+                    <BusIcon size={18} className="mr-2" />
+                    Mark {selectedDate.toLocaleDateString()} as Busy
+                  </>
+                )}
+              </button>
             </div>
           )}
         </div>

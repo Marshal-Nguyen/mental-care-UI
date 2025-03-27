@@ -42,6 +42,9 @@ import ListPackages from "./pages/manager/services/ListService";
 import ListPendingReplies from "./pages/manager/pending_replies/ListPendingReplies";
 import ProfileManager from "./pages/manager/profile/Profile";
 import HistoryPatient1 from "./components/manager/customer/HistoryPatient";
+import BookingList from "./pages/manager/booking/Booking";
+import BookingDetail from "./pages/manager/booking/BookingDetail";
+import Transactions from "./pages/manager/transaction/Transactions"
 //staff
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
@@ -73,11 +76,13 @@ import ProfileDoctor from "./pages/doctor/Dashboard/ProfileDoctor";
 import RoadMapCreate from "./pages/doctor/Dashboard/RoadMapCreate";
 import TestQuestionList from "./pages/Test/TestQuestionList";
 import PrivateRoute from "./components/Web/PrivateRoute";
-import HistoryDoctor from "./pages/doctor/Dashboard/HistoryDoctor";
+
 import PaymentSuccess from "./components/Payment/PaymentSuccess";
 import PaymentFailure from "./components/Payment/PaymentFailure";
 import PaymentCallback from "./components/Payment/PaymentCallback";
 import Chat from "./components/Chatbox/Chat";
+import PatientBooking from "./pages/doctor/Dashboard/PatientBooking";
+import Shopping from "./pages/User/Dashboard/Shopping";
 function App() {
   return (
     <>
@@ -109,6 +114,7 @@ function App() {
               <Route path="ProfilePatient" element={<ProfilePatient />} />
               <Route path="HistoryPatient" element={<HistoryPatient />} />
               <Route path="Chat" element={<Chat />} />
+              <Route path="Shopping" element={<Shopping />} />
             </Route>
           </Route>
           <Route element={<PrivateRoute allowedRoles={["Doctor"]} />}>
@@ -117,8 +123,8 @@ function App() {
               <Route path="StatictisDoctor" element={<StatictisDoctor />} />
               <Route path="RoadmapCreate" element={<RoadMapCreate />} />
               <Route path="ProfileDoctor" element={<ProfileDoctor />} />
-              <Route path="History" element={<HistoryDoctor />} />
               <Route path="Chat" element={<Chat />} />
+              <Route path="PatientBooking" element={<PatientBooking />} />
             </Route>
           </Route>
           {/* Route Manager */}
@@ -131,8 +137,11 @@ function App() {
             <Route path="addCustomer" element={<AddCustomerManager />} />
             <Route path="viewCustomer" element={<ListCustomerManager />} />
             <Route path="viewCustomer/:id" element={<CustomerDetail />} />
-            {/* <Route path="viewCustomer/:id" element={<HistoryPatient1 />} /> */}
-            {/* <Route path="staff" element={<AddStaff />} /> */}
+            <Route path="booking" element={<BookingList />} />
+            <Route path="booking/:id" element={<BookingDetail />} />
+            <Route path="transaction" element={<Transactions />} />
+            <Route path="transaction/:id" element={<Transactions />} />
+
             <Route path="addStaff" element={<AddStaff />} />
             <Route path="viewStaff" element={<ListStaff />} />
             {/* <Route path="doctor" element={<AcceptDoctor />} /> */}
@@ -156,7 +165,7 @@ function App() {
               <Route path="chat" element={<Chatbox />} />
               <Route path="regit" element={<Regist />} />
               <Route path="customer" element={<ListCustomerStaff />} />
-              <Route path="doctor" element={<ListDoctorStaff />} />
+              <Route path="doctor" element={<Counselor />} />
               <Route path="message" element={<MessengerUI />} />
               <Route path="profile" element={<StaffProfile />} />
               <Route path="blog" element={<BlogStaff />} />

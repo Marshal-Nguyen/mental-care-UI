@@ -8,10 +8,10 @@ import {
   FileText,
   User,
   MessageCircleCode,
+  ShoppingCart,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
-
 const Navigation = () => {
   const dispatch = useDispatch();
   const profileId = useSelector((state) => state.auth.profileId);
@@ -27,11 +27,10 @@ const Navigation = () => {
     return (
       <Link
         to={to}
-        className={`flex items-center gap-3 cursor-pointer transition duration-300 font-medium ${
-          isActive
+        className={`flex items-center gap-3 cursor-pointer transition duration-300 font-medium ${isActive
             ? "text-white text-[15px] font-serif bg-gradient-to-r from-[#9284e0] to-[#5849b1] px-4 py-2.5 rounded-[11px] shadow-sm"
             : "text-[#554d4ddc] font-serif text-[15px] hover:text-[#5241b1] hover:bg-white/10 px-4 py-2.5 rounded-xl"
-        }`}>
+          }`}>
         {icon}
         <span className="tracking-wide">{text}</span>
       </Link>
@@ -46,8 +45,8 @@ const Navigation = () => {
             <img src="/LogoUpdate.png" alt="Logo" className="w-[70%]" />
           </div>
         </div>
-        <div className="row-span-5 row-start-3 mt-5 flex justify-center">
-          <nav className="flex flex-col gap-7 text-white font-light">
+        <div className="row-span-5 row-start-3 mt-4 flex justify-center">
+          <nav className="flex flex-col gap-5 text-white font-light">
             <NavItem
               icon={<LayoutDashboard size={20} />}
               text="Dashboard"
@@ -58,6 +57,11 @@ const Navigation = () => {
               icon={<FileText size={20} />}
               text="Records"
               to="HistoryPatient"
+            />
+            <NavItem
+              icon={<ShoppingCart size={20} />}
+              text="Shopping"
+              to="Shopping"
             />
             <NavItem
               icon={<User size={20} />}
@@ -77,6 +81,7 @@ const Navigation = () => {
             type="button"
             onClick={() => {
               dispatch(clearCredentials());
+
             }}
             className="cursor-pointer font-medium tracking-wide text-[#554d4ddc] hover:text-[#5D4DB8] font-serif">
             Log Out

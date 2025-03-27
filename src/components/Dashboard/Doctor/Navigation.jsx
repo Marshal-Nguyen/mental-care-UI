@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
+import { toast } from "react-toastify";
 const Navigation = () => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -28,15 +29,20 @@ const Navigation = () => {
       to: "RoadmapCreate",
     },
     {
+      icon: <ClipboardList size={20} strokeWidth={1.5} />,
+      text: "Booking",
+      to: "PatientBooking",
+    },
+    {
       icon: <MessageCircleCode size={20} strokeWidth={1.5} />,
       text: "Messenger",
       to: "Chat",
     },
-    {
-      icon: <ClipboardList size={20} strokeWidth={1.5} />,
-      text: "Patient History",
-      to: "History",
-    },
+    // {
+    //   icon: <ClipboardList size={20} strokeWidth={1.5} />,
+    //   text: "Patient History",
+    //   to: "History",
+    // },
     {
       icon: <UserCircle size={20} strokeWidth={1.5} />,
       text: "My Profile",
@@ -93,6 +99,7 @@ const Navigation = () => {
             type="button"
             onClick={() => {
               dispatch(clearCredentials());
+              toast.success("Logout successfully");
             }}
             className="cursor-pointer font-medium tracking-wide text-[#554d4ddc] hover:text-[#5D4DB8] font-serif">
             Log Out

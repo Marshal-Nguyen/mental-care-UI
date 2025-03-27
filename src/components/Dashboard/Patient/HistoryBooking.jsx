@@ -280,14 +280,14 @@ const HistoryBooking = () => {
   return (
     <div className="flex flex-col h-full">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Lịch hẹn của bệnh nhân
+        Patient Appointments
       </h2>
 
       {/* Thanh tìm kiếm */}
       <div className="flex mb-6">
         <input
           type="text"
-          placeholder="Tìm kiếm..."
+          placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -295,7 +295,7 @@ const HistoryBooking = () => {
         <button
           onClick={() => setPageIndex(1)}
           className="px-4 py-2 bg-blue-500 text-white font-medium rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          Tìm kiếm
+          Search
         </button>
       </div>
 
@@ -318,8 +318,9 @@ const HistoryBooking = () => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                Xác nhận hủy lịch hẹn
+                Confirm Appointment Cancellation
               </h3>
+
               <button
                 onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-500 focus:outline-none">
@@ -355,8 +356,8 @@ const HistoryBooking = () => {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
-                      Bạn chắc chắn muốn hủy lịch hẹn này? Hành động này không
-                      thể hoàn tác.
+                      Are you sure you want to cancel this appointment? This
+                      action cannot be undone.
                     </p>
                   </div>
                 </div>
@@ -364,27 +365,28 @@ const HistoryBooking = () => {
 
               <div className="mb-4">
                 <p className="text-sm font-medium text-gray-700 mb-1">
-                  Chi tiết lịch hẹn:
+                  Appointment Details:
                 </p>
+
                 <div className="bg-gray-50 rounded p-3">
                   <p className="text-sm">
-                    <span className="font-medium">Mã đặt lịch:</span>{" "}
+                    <span className="font-medium">Booking Code:</span>{" "}
                     {selectedBooking.bookingCode}
                   </p>
                   <p className="text-sm">
-                    <span className="font-medium">Bác sĩ:</span>{" "}
+                    <span className="font-medium">Doctor:</span>{" "}
                     {getDoctorInfo(selectedBooking.doctorId).name}
                   </p>
                   <p className="text-sm">
-                    <span className="font-medium">Ngày giờ:</span>{" "}
+                    <span className="font-medium">Date & Time:</span>{" "}
                     {formatDateTime(
                       selectedBooking.date,
                       selectedBooking.startTime
                     )}
                   </p>
                   <p className="text-sm">
-                    <span className="font-medium">Thời lượng:</span>{" "}
-                    {selectedBooking.duration} phút
+                    <span className="font-medium">Duration:</span>{" "}
+                    {selectedBooking.duration} minutes
                   </p>
                 </div>
               </div>
@@ -393,8 +395,9 @@ const HistoryBooking = () => {
                 <label
                   htmlFor="cancelReason"
                   className="block text-sm font-medium text-gray-700 mb-1">
-                  Lý do hủy lịch (không bắt buộc):
+                  Cancellation Reason (Optional):
                 </label>
+
                 <textarea
                   id="cancelReason"
                   rows="3"
@@ -432,8 +435,9 @@ const HistoryBooking = () => {
                 type="button"
                 onClick={handleCloseModal}
                 className="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Hủy bỏ
+                Cancel
               </button>
+
               <button
                 type="button"
                 onClick={cancelBooking}
@@ -480,40 +484,40 @@ const HistoryBooking = () => {
                     <th
                       onClick={() => handleSortChange("bookingCode")}
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                      Mã đặt lịch{" "}
+                      Booking Code{" "}
                       {sortBy === "bookingCode" &&
                         (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Bác sĩ
+                      Doctor
                     </th>
                     <th
                       onClick={() => handleSortChange("date")}
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                      Ngày{" "}
+                      Date{" "}
                       {sortBy === "date" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th
                       onClick={() => handleSortChange("startTime")}
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                      Thời gian{" "}
+                      Time{" "}
                       {sortBy === "startTime" &&
                         (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thời lượng
+                      Duration
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Giá (VNĐ)
+                      Price
                     </th>
                     <th
                       onClick={() => handleSortChange("status")}
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                      Trạng thái{" "}
+                      State{" "}
                       {sortBy === "status" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -564,7 +568,7 @@ const HistoryBooking = () => {
                             {booking.startTime}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {booking.duration} phút
+                            {booking.duration} minutes
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {booking.price.toLocaleString()}
@@ -594,18 +598,18 @@ const HistoryBooking = () => {
                                     d="M6 18L18 6M6 6l12 12"
                                   />
                                 </svg>
-                                Hủy lịch
+                                Cancel
                               </button>
                             ) : (
                               <span className="text-gray-400 text-xs italic">
                                 {booking.status.toLowerCase() === "cancelled"
-                                  ? "Đã hủy"
+                                  ? "Cancelled"
                                   : !canCancelByTime(
                                       booking.date,
                                       booking.startTime
                                     )
-                                  ? "Quá hạn hủy (< 30 phút)"
-                                  : "Không thể hủy"}
+                                  ? "Cancellation expired (< 30 minutes)"
+                                  : "Cannot cancel"}
                               </span>
                             )}
                           </td>

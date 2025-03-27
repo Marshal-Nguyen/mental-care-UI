@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import { database } from "../../util/firebase/firebase"; // Đảm bảo đường dẫn đúng
-import { ref, onValue, push } from "firebase/database";
+import axios from "axios";
 
 const PremiumChatPopup = () => {
-  // State từ Firebase Chat
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      id: "welcome",
+      text: "👋 Xin chào! Tôi có thể giúp gì cho bạn hôm nay. Vui lòng mô tả yêu cầu của bạn chi tiết.",
+      sender: "shop",
+      timestamp: new Date(),
+    },
+  ]);
   const [input, setInput] = useState("");
-
-  // State từ Premium Chat
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Thay thế bằng API Key của bạn
+  const API_KEY = import.meta.env.VITE_API_GPT_KEY; // Nên lưu trong file .env để bảo mật
 
   // Kiểm tra kích thước màn hình để responsive
   useEffect(() => {
@@ -21,38 +27,6 @@ const PremiumChatPopup = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Kết nối và lắng nghe tin nhắn từ Firebase
-  useEffect(() => {
-    const messagesRef = ref(database, "messages");
-    onValue(messagesRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        // Chuyển đổi dữ liệu Firebase sang định dạng cần thiết
-        const formattedMessages = Object.entries(data).map(([key, value]) => ({
-          id: key,
-          text: value.text,
-          sender: value.sender || "user", // Mặc định là 'user' nếu không có
-          timestamp: new Date(value.timestamp),
-        }));
-        setMessages(formattedMessages);
-      }
-    });
-
-    // Thêm tin nhắn chào mừng nếu không có tin nhắn nào
-    const checkAndAddWelcomeMessage = async () => {
-      const snapshot = await ref(database, "messages").get();
-      if (!snapshot.exists()) {
-        push(ref(database, "messages"), {
-          text: "👋 Xin chào! Tôi có thể giúp gì cho bạn hôm nay. Vui lòng mô tả yêu cầu của bạn chi tiết.",
-          sender: "shop",
-          timestamp: Date.now(),
-        });
-      }
-    };
-
-    checkAndAddWelcomeMessage();
   }, []);
 
   // Cuộn xuống tin nhắn mới nhất
@@ -66,25 +40,59 @@ const PremiumChatPopup = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Gửi tin nhắn đến Firebase
-  const sendMessage = () => {
+  // Gửi tin nhắn và nhận phản hồi từ ChatGPT
+  const sendMessage = async () => {
     if (input.trim() !== "") {
-      // Thêm tin nhắn vào Firebase
-      push(ref(database, "messages"), {
+      const newMessage = {
+        id: Date.now().toString(),
         text: input,
         sender: "user",
-        timestamp: Date.now(),
-      });
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
       setInput("");
 
-      // Giả lập tin nhắn từ nhân viên cửa hàng sau 1 giây
-      setTimeout(() => {
-        push(ref(database, "messages"), {
-          text: "Cảm ơn bạn đã liên hệ. Nhân viên của chúng tôi sẽ phản hồi sớm nhất!",
+      try {
+        // Gọi API ChatGPT
+        const response = await axios.post(
+          "https://api.openai.com/v1/chat/completions",
+          {
+            model: "gpt-3.5-turbo", // Có thể thay bằng model khác như gpt-4 nếu bạn có quyền truy cập
+            messages: [
+              {
+                role: "system",
+                content: "Bạn là một trợ lý thân thiện và hữu ích.",
+              },
+              { role: "user", content: input },
+            ],
+            max_tokens: 150,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${API_KEY}`,
+            },
+          }
+        );
+
+        const botReply = response.data.choices[0].message.content;
+        const shopResponse = {
+          id: (Date.now() + 1).toString(),
+          text: botReply,
           sender: "shop",
-          timestamp: Date.now(),
-        });
-      }, 1000);
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, shopResponse]);
+      } catch (error) {
+        console.error("Lỗi khi gọi API ChatGPT:", error);
+        const errorResponse = {
+          id: (Date.now() + 1).toString(),
+          text: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+          sender: "shop",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorResponse]);
+      }
     }
   };
 
