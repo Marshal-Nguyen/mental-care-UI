@@ -102,13 +102,13 @@ const LogIn = () => {
       // Lấy role từ claim
       const userRole =
         decodedToken[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ];
       const profileId = decodedToken.profileId;
       const userId = decodedToken.userId;
       const username =
         decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ];
 
       // Lưu thông tin và cập nhật state
