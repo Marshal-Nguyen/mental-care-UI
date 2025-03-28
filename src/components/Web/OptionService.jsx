@@ -162,7 +162,7 @@ export default function Pricing() {
           endDate: endDateISO,
           paymentMethodName: "VNPay",
         },
-        returnUrl: "http://localhost:5173/payments/callback",
+        returnUrl: "/payments/callback",
       };
 
       const response = await axios.post(
@@ -197,7 +197,7 @@ export default function Pricing() {
             startDate: currentDate,
             paymentMethodName: "VNPay",
           },
-          returnUrl: "http://localhost:5173/payments/callback",
+          returnUrl: "/payments/callback",
         };
 
         const response = await axios.post(
@@ -250,13 +250,11 @@ export default function Pricing() {
           return (
             <div
               key={plan.id}
-              className={`bg-gradient-to-b ${
-                plan.isPurchased
-                  ? "from-green-100 to-green-200"
-                  : "from-violet-100 to-purple-300"
-              } rounded-3xl shadow-xl p-8 text-center border-2 ${
-                plan.isPurchased ? "border-green-300" : "border-purple-500"
-              } transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden`}>
+              className={`bg-gradient-to-b ${plan.isPurchased
+                ? "from-green-100 to-green-200"
+                : "from-violet-100 to-purple-300"
+                } rounded-3xl shadow-xl p-8 text-center border-2 ${plan.isPurchased ? "border-green-300" : "border-purple-500"
+                } transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden`}>
               {plan.isPurchased && (
                 <div className="absolute top-0 right-0">
                   <div className="bg-green-600 text-white text-xs font-bold px-6 py-1 transform rotate-45 translate-x-5 translate-y-3">
@@ -320,18 +318,17 @@ export default function Pricing() {
                   }
                 />
                 <button
-                  className={`w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all duration-300 ${
-                    plan.isPurchased
-                      ? "bg-green-500 text-white cursor-not-allowed"
-                      : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
-                  }`}
+                  className={`w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all duration-300 ${plan.isPurchased
+                    ? "bg-green-500 text-white cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
+                    }`}
                   disabled={plan.isPurchased || loadingStates[plan.id]}
                   onClick={() => handleBuyService(plan.id)}>
                   {plan.isPurchased
                     ? "Current Plan"
                     : loadingStates[plan.id]
-                    ? "Processing..."
-                    : "Subscribe Now"}
+                      ? "Processing..."
+                      : "Subscribe Now"}
                 </button>
               </div>
             </div>
