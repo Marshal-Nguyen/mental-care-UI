@@ -39,7 +39,7 @@ const LogIn = () => {
   };
   const [avatarUrl, setAvatarUrl] = useState(null);
   // Xử lý đăng nhập
-  const fetchAvatar = async () => {
+  const fetchAvatar = async (userId) => {
     try {
       const avatarResponse = await axios.get(
         `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
@@ -74,7 +74,7 @@ const LogIn = () => {
               userId: storedUserId,
             })
           );
-          fetchAvatar();
+          fetchAvatar(storedUserId);
         } else {
           handleLogout();
           toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
@@ -102,13 +102,13 @@ const LogIn = () => {
       // Lấy role từ claim
       const userRole =
         decodedToken[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ];
       const profileId = decodedToken.profileId;
       const userId = decodedToken.userId;
       const username =
         decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ];
 
       // Lưu thông tin và cập nhật state
@@ -125,7 +125,7 @@ const LogIn = () => {
       // Dispatch to Redux và đóng modal
       dispatch(setCredentials({ token, userRole, profileId, userId }));
       dispatch(closeLoginModal());
-      fetchAvatar();
+      fetchAvatar(userId);
       // Thông báo thành công
       toast.success("Đăng nhập thành công!", { position: "top-right" });
 
@@ -166,7 +166,7 @@ const LogIn = () => {
       dispatch(setCredentials({ token, userRole: "User", userId }));
       dispatch(closeLoginModal());
       toast.success("Đăng nhập thành công!");
-      fetchAvatar(); // Gọi fetchAvatar sau khi có userId
+      fetchAvatar(userId); // Gọi fetchAvatar sau khi có userId
       console.log("token for firebase", token);
     } catch (error) {
       console.error("Google login error:", error);

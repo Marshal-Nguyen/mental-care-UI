@@ -5,7 +5,6 @@ const MedicalProfile = ({ patientId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const symptomsContainerRef = useRef(null);
-  // patientId = "b0ea7bd6-e130-49a7-a539-037206e5954b";
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -81,7 +80,8 @@ const MedicalProfile = ({ patientId }) => {
           <p>{error}</p>
           <button
             className="mt-4 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600"
-            onClick={() => window.location.reload()}>
+            onClick={() => window.location.reload()}
+          >
             Retry
           </button>
         </div>
@@ -130,7 +130,8 @@ const MedicalProfile = ({ patientId }) => {
               height="24"
               viewBox="0 0 24 24"
               fill="none"
-              xmlns="http://www.w3.org/2000/svg">
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <circle cx="5" cy="12" r="2" fill="currentColor" />
               <circle cx="12" cy="12" r="2" fill="currentColor" />
               <circle cx="19" cy="12" r="2" fill="currentColor" />
@@ -148,13 +149,15 @@ const MedicalProfile = ({ patientId }) => {
               <div className="flex space-x-2">
                 <button
                   onClick={scrollLeft}
-                  className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
-                  <span>&larr;</span>
+                  className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"
+                >
+                  <span>←</span>
                 </button>
                 <button
                   onClick={scrollRight}
-                  className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
-                  <span>&rarr;</span>
+                  className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"
+                >
+                  <span>→</span>
                 </button>
               </div>
             )}
@@ -164,17 +167,16 @@ const MedicalProfile = ({ patientId }) => {
             <div
               ref={symptomsContainerRef}
               className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {patient.medicalHistory.physicalSymptoms.map((symptom) => (
                 <div
                   key={symptom.id}
-                  className="flex flex-col items-center flex-shrink-0">
+                  className="flex flex-col items-center flex-shrink-0"
+                >
                   <div className="w-10 h-10 rounded-full flex items-center justify-center">
                     <img
-                      src={`/MedicalHistory/${symptom.name.replace(
-                        " ",
-                        ""
-                      )}.png`}
+                      src={`/MedicalHistory/${symptom.name.replace(" ", "")}.png`}
                       className="w-8 h-8 shadow-2xl"
                       alt={symptom.name}
                     />
@@ -198,9 +200,8 @@ const MedicalProfile = ({ patientId }) => {
           {/* Personal Info */}
           <SectionItem
             title="Personal Information"
-            content={`Allergies: ${patient.allergies || "None"} | Traits: ${
-              patient.personalityTraits || "Not specified"
-            }`}
+            content={`Allergies: ${patient.allergies || "None"} | Traits: ${patient.personalityTraits || "Not specified"
+              }`}
           />
 
           {/* Latest Notes */}
@@ -217,9 +218,9 @@ const MedicalProfile = ({ patientId }) => {
             <h3 className="font-bold text-gray-800 text-sm pb-1">
               Specific Mental Disorders
             </h3>
-
             <ol className="list-disc px-6 space-y-1 text-xs">
-              {patient.medicalHistory.specificMentalDisorders.length > 0 ? (
+              {patient.medicalHistory &&
+                patient.medicalHistory.specificMentalDisorders?.length > 0 ? (
                 patient.medicalHistory.specificMentalDisorders.map(
                   (symptom) => (
                     <li key={symptom.id} className="text-gray-600">
@@ -253,7 +254,9 @@ const MedicalProfile = ({ patientId }) => {
                 </p>
               </>
             ) : (
-              <p className="text-xs text-gray-500">No contact info available</p>
+              <p className="text-xs text-gray-500">
+                No contact info available
+              </p>
             )}
           </div>
         </div>
