@@ -5,7 +5,6 @@ const MedicalProfile = ({ patientId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const symptomsContainerRef = useRef(null);
-  // patientId = "b0ea7bd6-e130-49a7-a539-037206e5954b";
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -149,12 +148,12 @@ const MedicalProfile = ({ patientId }) => {
                 <button
                   onClick={scrollLeft}
                   className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
-                  <span>&larr;</span>
+                  <span>←</span>
                 </button>
                 <button
                   onClick={scrollRight}
                   className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
-                  <span>&rarr;</span>
+                  <span>→</span>
                 </button>
               </div>
             )}
@@ -217,9 +216,9 @@ const MedicalProfile = ({ patientId }) => {
             <h3 className="font-bold text-gray-800 text-sm pb-1">
               Specific Mental Disorders
             </h3>
-
             <ol className="list-disc px-6 space-y-1 text-xs">
-              {patient.medicalHistory.specificMentalDisorders.length > 0 ? (
+              {patient.medicalHistory &&
+              patient.medicalHistory.specificMentalDisorders?.length > 0 ? (
                 patient.medicalHistory.specificMentalDisorders.map(
                   (symptom) => (
                     <li key={symptom.id} className="text-gray-600">

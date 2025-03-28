@@ -183,10 +183,36 @@ export default function Pricing() {
     }
   };
 
-  const handleUpgradeConfirm = () => {
+  const handleUpgradeConfirm = async () => {
     if (selectedUpgradePackage) {
-      proceedWithPurchase(selectedUpgradePackage);
-      setUpgradeModalOpen(false);
+      try {
+        const currentDate = new Date().toISOString().split("T")[0]; // Format date as YYYY-MM-DD
+
+        const upgradePayload = {
+          upgradeUserSubscriptionDto: {
+            patientId: profileId,
+            newServicePackageId: selectedUpgradePackage.id,
+            promoCode: promoCodes[selectedUpgradePackage.id] || null,
+            giftId: null,
+            startDate: currentDate,
+            paymentMethodName: "VNPay",
+          },
+          returnUrl: "http://localhost:5173/payments/callback",
+        };
+
+        const response = await axios.post(
+          "https://psychologysupport-subscription.azurewebsites.net/user-subscriptions/upgrade",
+          upgradePayload
+        );
+        if (response.data && response.data.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
+        }
+      } catch (error) {
+        console.error("Error upgrading subscription:", error);
+        toast.error("Failed to upgrade subscription. Please try again.");
+      } finally {
+        setUpgradeModalOpen(false);
+      }
     }
   };
 
