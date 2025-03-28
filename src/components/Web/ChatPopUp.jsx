@@ -13,10 +13,80 @@ const PremiumChatPopup = () => {
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [projectData, setProjectData] = useState(""); // Lưu nội dung file dự án
   const messagesEndRef = useRef(null);
 
-  // Thay thế bằng API Key của bạn
-  const API_KEY = import.meta.env.VITE_API_GPT_KEY; // Nên lưu trong file .env để bảo mật
+  const API_KEY = import.meta.env.VITE_API_GPT_KEY; // API Key từ .env
+
+  // Nội dung file dự án (được hardcode tạm thời, bạn có thể thay bằng fetch từ file)
+  const projectContent = `
+    **1. Start-up**
+
+    **1.1. Introduce startup**
+    SolTech with the goal to adopt modern technology, and take it as a core solution to solve real-time challenges in life. Alw finding and implementing innovative solutions to meet the actual needs of users. Ensuring the transparency of information provided to customers while delivering high-quality and sustainable products. This enhances the trustworthiness of the product and service that the startup offers, reflecting its commitment to social responsibility. Additionally, SolTech prioritizes building strong relationships with partners to create the best possible value.
+
+    **1.2. Introduce service idea**
+    EmoEase, an AI-integrated application, provides a comprehensive stress treatment solution for students. EmoEase is created as a user’s companion, providing a personalized roadmap based on an analysis of the user's stress level and needs for relief. The application uses AI to suggest relaxation exercises, physical activities, and advice on diet and sleep, creating the most suitable roadmap for each individual.
+
+    EmoEase is a bridge to connect users with psychological experts. Students can easily share problems and receive dedicated advice and support from experts right on the application. The friendly interface makes EmoEase easy to use anytime, anywhere, on both phones and computers. EmoEase not only helps reduce stress and anxiety, but also improves mental health, enhances learning and work performance. The app also creates a community for users to connect, share experiences with each other. EmoEase is an ideal choice for the young, especially students facing pressure of studying and exams, people looking for balance in life, and anyone concerned about mental health.
+
+    **2. Key Features**
+
+    **2.1. AI Consulting and Improvement Roadmap**
+    Students undertake preliminary mental health assessment tests like GAD-7, PHQ-9. AI algorithms processes these results and suggests activities in a roadmap that lasts for 1-2 weeks with the purpose of improving their mental health. One prominent feature of the application is that it guides students in performing the aim of the activity on a daily basis. The roadmap is adjusted according to student feedback upon completion of 1-2 weeks of activities.
+
+    **2.2. Detailed Daily Itinerary**
+    - **Nutrition:** Provides daily meals most beneficial in averting stress and containing: omega-3, magnesium, and vitamin B.
+    - **Exercise:** Mentions calming exercises like Yoga, Meditation, Breathing exercises to calm anxiety.
+    - **Psychological solutions:** Provides techniques to talk a person through a problem using Psychological medicine like CBT technique – Cognitive Behavioral Therapy and mindfulness technique.
+    - **Activity schedule:** Reminds students to sleep properly, don’t use electronic devices a few hours before bedtime.
+    - **Mood tracking diary:** Guiders to track mood and think positively via journaling.
+
+    **2.3. Different from other applications**
+    - **Tailored AI Application:** Unlike traditional psychological applications which offers broad advice, the software's AI system tailors the itinerary schedule for each student on a daily basis based on their feedback.
+    - **Implementation Monitoring:** A checklist tool that is implemented into the program ensures students stick to their plans.
+    - **Comprehensive Counseling Aid:** Students can consult directly with a psychologist in person or online in addition to the AI roadmap provided by the application.
+    - **Blending Learning and Self Management:** The application aids learners to not only develop and maintain mental health, but also supervises them on time allocation and work-life integration.
+
+    **2.4. Periodically Implemented Questioned & Progress Tracking**
+    - Students are prompted to perform monthly surveys which are automatically assigned by the system.
+    - An AI system monitors a student’s mental state change over a certain period.
+    - The dashboard monitors students’ self evaluations of their mental health.
+
+    **2.5. Free & Paid Accounts**
+    - **Free account:**
+      Access the application 2 or 3 times utilizing the basic improvement roadmap.
+      Always partake in periodic surveys and receive automated summary feedback.
+    - **Paid account:**
+      In-depth personalized roadmap, automated changes depending on daily feedback.
+      A comprehensive computerized structure allows booking online or attending in-person consultations with a psychologist.
+
+    **2.6. Online & Direct Consulting Services**
+    - Students with paid accounts may book appointments with a psychologist.
+    - Consultation types:
+      **Online:** Video call or chat
+      **In Person:** The system provides a list of psychologists in the vicinity of the student's location.
+
+    **2.7. Management and Reporting**
+    - Self-manage personal files and mental health records.
+    - Capture the students’ feedback for comments and improve AI roadmaps.
+    - Dashboard indicates the mental wellness status of the students.
+
+    **2.8. Benefits of the Application**
+    - **For students:** Automated support and guidance to improve mental health is more accessible and effective.
+    - **For lecturers and schools:** Proactive monitoring of student mental health enables prompt assistive actions.
+    - **For psychologists:** provides a more straightforward approach to students and use it to provide consultation services.
+  `;
+
+  // Tải nội dung file khi component mount (tạm thời hardcode, có thể thay bằng fetch)
+  useEffect(() => {
+    setProjectData(projectContent);
+    // Nếu muốn đọc từ file thực tế trong thư mục public:
+    // fetch("/project-data.txt")
+    //   .then((response) => response.text())
+    //   .then((text) => setProjectData(text))
+    //   .catch((error) => console.error("Lỗi khi đọc file:", error));
+  }, []);
 
   // Kiểm tra kích thước màn hình để responsive
   useEffect(() => {
@@ -52,20 +122,39 @@ const PremiumChatPopup = () => {
       setMessages((prev) => [...prev, newMessage]);
       setInput("");
 
+      if (!API_KEY) {
+        console.error("API Key không được tìm thấy!");
+        const errorResponse = {
+          id: (Date.now() + 1).toString(),
+          text: "Lỗi: API Key không hợp lệ!",
+          sender: "shop",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorResponse]);
+        return;
+      }
+
       try {
-        // Gọi API ChatGPT
+        // Kiểm tra nếu câu hỏi liên quan đến dự án
+        const isProjectRelated =
+          input.toLowerCase().includes("dự án") ||
+          input.toLowerCase().includes("project") ||
+          input.toLowerCase().includes("emoease") ||
+          input.toLowerCase().includes("soltech");
+
+        const systemPrompt = isProjectRelated
+          ? `Bạn là một trợ lý thông minh, hãy trả lời dựa trên thông tin từ tài liệu dự án sau đây:\n\n${projectData}\n\nNếu không tìm thấy thông tin trong tài liệu, hãy nói "Thông tin không có trong tài liệu dự án."`
+          : "Bạn là một trợ lý thân thiện và hữu ích.";
+
         const response = await axios.post(
           "https://api.openai.com/v1/chat/completions",
           {
-            model: "gpt-3.5-turbo", // Có thể thay bằng model khác như gpt-4 nếu bạn có quyền truy cập
+            model: "gpt-3.5-turbo",
             messages: [
-              {
-                role: "system",
-                content: "Bạn là một trợ lý thân thiện và hữu ích.",
-              },
+              { role: "system", content: systemPrompt },
               { role: "user", content: input },
             ],
-            max_tokens: 150,
+            max_tokens: 200, // Tăng max_tokens để trả lời chi tiết hơn nếu cần
           },
           {
             headers: {

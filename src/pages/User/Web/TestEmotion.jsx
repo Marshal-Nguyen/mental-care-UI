@@ -141,7 +141,7 @@ const TestEmotion = () => {
         setScores(newScores);
 
         // Gọi ChatGPT với điểm số
-        const prompt = `Sau khi test bài test DASS-21 tôi nhận được chỉ số Depression là ${newScores.depression}, Anxiety là ${newScores.anxiety}, Stress là ${newScores.stress}. Bạn có thể chẩn đoán tôi đang như thế nào và tôi nên làm gì không?.Dịch ra tiếng anh`;
+        const prompt = `Sau khi test bài test DASS-21 tôi nhận được chỉ số Depression là ${newScores.depression}, Anxiety là ${newScores.anxiety}, Stress là ${newScores.stress}. Bạn có thể chẩn đoán tôi đang như thế nào và tôi nên làm gì không?.Dịch ra tiếng anh.`;
 
         axios
           .post(

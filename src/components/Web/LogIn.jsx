@@ -96,46 +96,75 @@ const LogIn = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      const token = response.data.token;
-      const decodedToken = jwtDecode(token);
-
-      // Lấy role từ claim
-      const userRole =
-        decodedToken[
-        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        ];
-      const profileId = decodedToken.profileId;
-      const userId = decodedToken.userId;
-      const username =
-        decodedToken[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-        ];
-
-      // Lưu thông tin và cập nhật state
-      localStorage.setItem("token", token);
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userRole", userRole);
-      localStorage.setItem("profileId", profileId);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("username", username);
-      localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
-
-      setIsLoggedIn(true);
-
-      // Dispatch to Redux và đóng modal
-      dispatch(setCredentials({ token, userRole, profileId, userId }));
-      dispatch(closeLoginModal());
-      fetchAvatar(userId);
-      // Thông báo thành công
-      toast.success("Đăng nhập thành công!", { position: "top-right" });
-
-      const currentRole = localStorage.getItem("userRole");
-      if (currentRole === "Staff") {
-        navigate("/staff");
-      }
+      await handleAuthSuccess(response.data);
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("Lỗi đăng nhập, vui lòng thử lại!");
+
+      // Kiểm tra nếu lỗi là 401 (Unauthorized) thì thử refresh token
+      if (err.response && err.response.status === 401) {
+        try {
+          const formRefreshToken = {
+            token: localStorage.getItem("token") || "",
+            refreshToken: localStorage.getItem("refresh_token") || "",
+          };
+
+          const refreshResponse = await axios.post(
+            "https://psychologysupport-auth.azurewebsites.net/Auth/refresh-token",
+            formRefreshToken,
+            { headers: { "Content-Type": "application/json" } }
+          );
+
+          await handleAuthSuccess(refreshResponse.data);
+        } catch (refreshErr) {
+          console.error("Refresh token failed:", refreshErr);
+          toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+          logout();
+        }
+      } else {
+        toast.error("Lỗi đăng nhập, vui lòng thử lại!");
+      }
+    }
+  };
+
+  // ✅ Hàm lưu token và cập nhật state
+  const handleAuthSuccess = async (data) => {
+    const token = data.token;
+    const refresh_token = data.refreshToken;
+    const decodedToken = jwtDecode(token);
+
+    // Lấy thông tin từ JWT
+    const userRole =
+      decodedToken[
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+      ];
+    const profileId = decodedToken.profileId;
+    const userId = decodedToken.userId;
+    const username =
+      decodedToken[
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+      ];
+
+    // Lưu vào localStorage
+    localStorage.setItem("token", token);
+    localStorage.setItem("refresh_token", refresh_token);
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("userRole", userRole);
+    localStorage.setItem("profileId", profileId);
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("username", username);
+    localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
+
+    setIsLoggedIn(true);
+
+    // Dispatch Redux
+    dispatch(setCredentials({ token, userRole, profileId, userId }));
+    dispatch(closeLoginModal());
+    fetchAvatar(userId);
+
+    toast.success("Đăng nhập thành công!", { position: "top-right" });
+
+    if (userRole === "Staff") {
+      navigate("/staff");
     }
   };
 
