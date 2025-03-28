@@ -2,8 +2,10 @@ import { useEffect, useState, useCallback } from "react";
 import arrowDownAnimation from "../../../util/icon/arrowDown.json";
 import alertIcon from "../../../util/icon/alertOctagon.json";
 import Lottie from "lottie-react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios"; // Thêm axios
+
 // Color mapping based on the API response values
 const colorMap = {
   "Did not apply to me at all": "bg-green-500 border-green-700",
@@ -37,6 +39,7 @@ const TestEmotion = () => {
   const testId = "8fc88dbb-daee-4b17-9eca-de6cfe886097";
 
   const API_BASE = "https://psychologysupport-test.azurewebsites.net";
+  const API_KEY = import.meta.env.VITE_API_GPT_KEY; // Lấy API Key từ .env
 
   // Fetch initial question list
   useEffect(() => {
@@ -52,7 +55,6 @@ const TestEmotion = () => {
         }
 
         const data = await response.json();
-        // Sort questions by order
         const sortedQuestions = data.testQuestions.data.sort(
           (a, b) => a.order - b.order
         );
@@ -61,15 +63,12 @@ const TestEmotion = () => {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching questions:", error);
-        setError(error.message);
         setLoading(false);
       }
     }
 
     fetchQuestionList();
   }, []);
-
-  // Fetch current question with options
 
   // Handle option selection and move to next question
   const handleOptionChange = useCallback(
@@ -80,14 +79,14 @@ const TestEmotion = () => {
       }));
 
       if (currentQuestionIndex + 1 < totalQuestions) {
-        // Tăng thời gian delay để animation hoàn thành
         setTimeout(() => {
           setCurrentQuestionIndex((prev) => prev + 1);
-        }, 400); // Tăng delay lên 400ms
+        }, 400);
       }
     },
     [currentQuestionIndex, totalQuestions]
   );
+
   const handleTestAgain = () => {
     setCurrentQuestionIndex(0);
     setAnswers({});
@@ -99,8 +98,8 @@ const TestEmotion = () => {
     });
     setRecommend(null);
   };
-  const currentQuestion = questions[currentQuestionIndex];
-  // Submit answers and fetch results from API
+
+  // Submit answers and fetch results from API, then call ChatGPT
   const handleSubmit = useCallback(() => {
     setSubmitted(true);
 
@@ -134,24 +133,56 @@ const TestEmotion = () => {
       })
       .then((response) => response.json())
       .then((resultData) => {
-        setScores({
+        const newScores = {
           depression: resultData.testResult.depressionScore.value,
           anxiety: resultData.testResult.anxietyScore.value,
           stress: resultData.testResult.stressScore.value,
-        });
-        setRecommend(resultData.testResult.recommendation);
-        console.log("Updated scores and recommendation:", {
-          depression: resultData.testResult.depressionScore.value,
-          anxiety: resultData.testResult.anxietyScore.value,
-          stress: resultData.testResult.stressScore.value,
-          recommendation: resultData.testResult.recommendation,
-        });
+        };
+        setScores(newScores);
+
+        // Gọi ChatGPT với điểm số
+        const prompt = `Sau khi test bài test DASS-21 tôi nhận được chỉ số Depression là ${newScores.depression}, Anxiety là ${newScores.anxiety}, Stress là ${newScores.stress}. Bạn có thể chẩn đoán tôi đang như thế nào và tôi nên làm gì không?.Dịch ra tiếng anh`;
+
+        axios
+          .post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+              model: "gpt-3.5-turbo",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "Bạn là một chuyên gia tâm lý, hãy chẩn đoán dựa trên điểm số DASS-21 và đưa ra lời khuyên cụ thể.Dịch ra tiếng anh",
+                },
+                { role: "user", content: prompt },
+              ],
+              max_tokens: 300,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${API_KEY}`,
+              },
+            }
+          )
+          .then((chatGptResponse) => {
+            const chatGptReply =
+              chatGptResponse.data.choices[0].message.content;
+            setRecommend(chatGptReply); // Cập nhật recommendation từ ChatGPT
+          })
+          .catch((error) => {
+            console.error("Lỗi khi gọi API ChatGPT:", error);
+            setRecommend(
+              "Đã có lỗi xảy ra khi phân tích kết quả. Vui lòng thử lại sau."
+            );
+          });
       })
       .catch((error) => {
         console.error("Error submitting answers or fetching result:", error);
-        setError(error.message);
       });
-  }, [answers, questions, patientId, testId]);
+  }, [answers, questions, patientId, testId, API_KEY]);
+
+  const currentQuestion = questions[currentQuestionIndex];
 
   if (loading)
     return (
@@ -167,7 +198,6 @@ const TestEmotion = () => {
     <div className="grid grid-cols-7 grid-rows-5 w-full min-h-[calc(100vh-110px)]">
       <div className="col-span-4 row-span-5 pl-5 p-5 h-full">
         <div className="h-full flex flex-col">
-          {/* Current question */}
           {currentQuestion && (
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -215,7 +245,7 @@ const TestEmotion = () => {
                       delayChildren: 0.3,
                     },
                   }}>
-                  {currentQuestion.options.map((option, optIndex) => (
+                  {currentQuestion.options.map((option) => (
                     <motion.button
                       key={option.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -256,7 +286,7 @@ const TestEmotion = () => {
               <button
                 onClick={handleSubmit}
                 disabled={!answers[currentQuestionIndex]}
-                className={`relative flex items-center justify-center  py-4 px-8 text-black text-base font-bold nded-full overflow-hidden bg-[#f6f3f8] rounded-xl transition-all duration-400 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-blue-500 before:to-blue-300 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 ${
+                className={`relative flex items-center justify-center py-4 px-8 text-black text-base font-bold rounded-full overflow-hidden bg-[#f6f3f8] transition-all duration-400 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-blue-500 before:to-blue-300 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0 ${
                   !answers[currentQuestionIndex]
                     ? "opacity-60 cursor-not-allowed"
                     : ""
@@ -269,7 +299,8 @@ const TestEmotion = () => {
                   <path
                     clipRule="evenodd"
                     d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                    fillRule="evenodd"></path>
+                    fillRule="evenodd"
+                  />
                 </svg>
               </button>
             )}
@@ -277,7 +308,7 @@ const TestEmotion = () => {
             {submitted && (
               <button
                 onClick={handleTestAgain}
-                className="relative flex items-center justify-center  py-4 px-8 text-black text-base font-bold nded-full overflow-hidden bg-[#f6f3f8] rounded-xl transition-all duration-400 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-blue-500 before:to-blue-300 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0">
+                className="relative flex items-center justify-center py-4 px-8 text-black text-base font-bold rounded-full overflow-hidden bg-[#f6f3f8] transition-all duration-400 ease-in-out shadow-md hover:scale-105 hover:text-white hover:shadow-lg active:scale-90 before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-gradient-to-r before:from-blue-500 before:to-blue-300 before:transition-all before:duration-500 before:ease-in-out before:z-[-1] before:rounded-xl hover:before:left-0">
                 Try Again
                 <svg
                   viewBox="0 0 20 20"
@@ -286,7 +317,8 @@ const TestEmotion = () => {
                   <path
                     clipRule="evenodd"
                     d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                    fillRule="evenodd"></path>
+                    fillRule="evenodd"
+                  />
                 </svg>
               </button>
             )}
@@ -305,7 +337,7 @@ const TestEmotion = () => {
               {/* Depression Score */}
               <div className="bg-white py-3 px-5 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
                 <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  <span className="mr-2 ">Depression</span>
+                  <span className="mr-2">Depression</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
                     DASS-21
                   </span>
@@ -321,7 +353,8 @@ const TestEmotion = () => {
                         100,
                         (scores.depression / 42) * 100
                       )}%`,
-                    }}></div>
+                    }}
+                  />
                 </div>
                 <div className="flex justify-between mt-3 text-sm font-medium">
                   <span className="text-gray-700 font-serif">
@@ -353,7 +386,8 @@ const TestEmotion = () => {
                     )} transition-all duration-500 ease-out`}
                     style={{
                       width: `${Math.min(100, (scores.anxiety / 42) * 100)}%`,
-                    }}></div>
+                    }}
+                  />
                 </div>
                 <div className="flex justify-between mt-3 text-sm font-medium">
                   <span className="text-gray-700 font-serif">
@@ -385,7 +419,8 @@ const TestEmotion = () => {
                     )} transition-all duration-500 ease-out`}
                     style={{
                       width: `${Math.min(100, (scores.stress / 42) * 100)}%`,
-                    }}></div>
+                    }}
+                  />
                 </div>
                 <div className="flex justify-between mt-3 text-sm font-medium">
                   <span className="text-gray-700 font-serif">
@@ -419,7 +454,7 @@ const TestEmotion = () => {
                 </p>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed">
-                {recommend}
+                {recommend || "Analyzing results, please wait..."}
               </p>
             </div>
           </div>
@@ -465,7 +500,8 @@ const TestEmotion = () => {
                   className="bg-[#b36cec] h-2.5 rounded-full transition-all duration-500"
                   style={{
                     width: `${(currentQuestionIndex / totalQuestions) * 100}%`,
-                  }}></div>
+                  }}
+                />
               </div>
 
               <p className="text-sm text-gray-600">
@@ -531,7 +567,7 @@ const TestEmotion = () => {
   );
 };
 
-// Helper function to determine color based on score
+// Helper functions (giữ nguyên)
 function getScoreColor(type, score) {
   const severityLevels = {
     depression: [
@@ -563,7 +599,6 @@ function getScoreColor(type, score) {
   return "bg-red-500";
 }
 
-// Helper function to determine severity level text
 function getScoreLevel(type, score) {
   const severityLabels = {
     depression: [
