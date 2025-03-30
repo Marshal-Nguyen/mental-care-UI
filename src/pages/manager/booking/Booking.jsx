@@ -9,6 +9,8 @@ import { FiSearch } from "react-icons/fi";
 import { MdFilterList } from "react-icons/md";
 
 const BASE_API_URL = "https://psychologysupport-scheduling.azurewebsites.net/bookings";
+const PATIENT_API_URL = "https://psychologysupport-profile.azurewebsites.net/patients/";
+const DOCTOR_API_URL = "https://psychologysupport-profile.azurewebsites.net/doctors/";
 
 const BookingList = () => {
     const [bookings, setBookings] = useState([]);
@@ -24,6 +26,16 @@ const BookingList = () => {
     const [statusFilter, setStatusFilter] = useState("Completed");
     const [hasMoreData, setHasMoreData] = useState(true);
     const navigate = useNavigate();
+
+    const fetchProfileName = async (url, id) => {
+        try {
+            const response = await axios.get(`${url}${id}`);
+            return response.data[Object.keys(response.data)[0]].fullName;
+        } catch (error) {
+            console.error(`Error fetching profile from ${url}:`, error);
+            return "N/A";
+        }
+    };
 
     const fetchBookings = async () => {
         try {
@@ -41,7 +53,20 @@ const BookingList = () => {
             });
 
             const bookingData = response.data.bookings.data;
-            setBookings(bookingData);
+
+            const enrichedBookings = await Promise.all(
+                bookingData.map(async (booking) => {
+                    const doctorName = await fetchProfileName(DOCTOR_API_URL, booking.doctorId);
+                    const patientName = await fetchProfileName(PATIENT_API_URL, booking.patientId);
+                    return {
+                        ...booking,
+                        doctorName,
+                        patientName
+                    };
+                })
+            );
+
+            setBookings(enrichedBookings);
             setHasMoreData(bookingData.length === pageSize);
         } catch (error) {
             setError("Failed to load bookings. Please try again.");
@@ -62,7 +87,6 @@ const BookingList = () => {
             <p className="text-center text-red-500 text-xl font-semibold">{error}</p>
         );
 
-    // Hàm để xác định màu sắc dựa trên status
     const getStatusColor = (status) => {
         switch (status) {
             case "Completed":
@@ -82,7 +106,6 @@ const BookingList = () => {
 
     return (
         <div className="container mx-auto p-6 mt-2 bg-white min-h-screen">
-            {/* Header */}
             <motion.div
                 className="flex items-center justify-center mb-2"
                 initial={{ opacity: 0, y: -20 }}
@@ -95,14 +118,12 @@ const BookingList = () => {
                 </h2>
             </motion.div>
 
-            {/* Filter and Table Wrapper */}
             <motion.div
                 className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
             >
-                {/* Filter and Search Controls */}
                 <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                         <div className="relative w-full sm:w-1/3">
@@ -159,16 +180,15 @@ const BookingList = () => {
                     </div>
                 </div>
 
-                {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-sm">
                         <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                             <tr>
                                 <th className="px-6 py-4 text-left font-semibold text-sm">#</th>
                                 <th className="px-6 py-4 text-left font-semibold text-sm">Booking Code</th>
-                                <th className="px-6 py-4 text-left font-semibold text-sm">Date</th>
-                                <th className="px-6 py-4 text-left font-semibold text-sm">Start Time</th>
-                                <th className="px-6 py-4 text-left font-semibold text-sm">Duration</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Doctor</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Patient</th>
+                                <th className="px-6 py-4 text-left font-semibold text-sm">Schedule</th>
                                 <th className="px-6 py-4 text-left font-semibold text-sm">Price</th>
                                 <th className="px-6 py-4 text-left font-semibold text-sm">Status</th>
                                 <th className="px-6 py-4 text-center font-semibold text-sm">Actions</th>
@@ -192,16 +212,19 @@ const BookingList = () => {
                                             {booking.bookingCode}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600 font-medium">
+                                            {booking.doctorName}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">
+                                            {booking.patientName}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600 font-medium">
                                             <div className="flex items-center gap-2">
                                                 <FaCalendarAlt className="text-indigo-600" size={18} />
-                                                {booking.date}
+                                                <div>
+                                                    <div>{booking.date}</div>
+                                                    <div>{booking.startTime} ({booking.duration} mins)</div>
+                                                </div>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600 font-medium">
-                                            {booking.startTime}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600 font-medium">
-                                            {booking.duration} mins
                                         </td>
                                         <td className="px-6 py-4 text-gray-600 font-medium">
                                             {booking.price.toLocaleString()} VND
@@ -233,7 +256,6 @@ const BookingList = () => {
                 </div>
             </motion.div>
 
-            {/* Pagination */}
             <div className="mt-8 flex justify-center gap-6">
                 <motion.button
                     onClick={() => setPageIndex((prev) => Math.max(1, prev - 1))}
