@@ -148,7 +148,7 @@ function App() {
             <Route path="addDoctor" element={<AcceptDoctor />} />
             <Route path="viewDoctor" element={<ListDoctor />} />
             <Route path="ProfileDoctor/:userId" element={<EditDoctor />} />
-            <Route path="viewDoctor/:id" element={<DoctorDetail />} />
+            <Route path="viewDoctor/:userId" element={<DoctorDetail />} />
 
             {/* <Route path="promotion" element={<AddPackages />} /> */}
             <Route path="addPackages" element={<AddPackages />} />
@@ -184,3 +184,4 @@ function App() {
 }
 
 export default App;
+
