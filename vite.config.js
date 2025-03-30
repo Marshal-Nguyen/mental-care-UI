@@ -7,5 +7,5 @@ export default defineConfig({
   esbuild: {
     treeShaking: true,
   },
-  base: "./",
+  base: "/", // Ensure this is set correctly for Vercel
 });
