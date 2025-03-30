@@ -7,4 +7,5 @@ export default defineConfig({
   esbuild: {
     treeShaking: true,
   },
+  base: "./",
 });
