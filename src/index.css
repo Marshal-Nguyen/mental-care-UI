@@ -18,17 +18,17 @@ body {
 
 /* Phần nền thanh scroll */
 ::-webkit-scrollbar-track {
-  background: #b4b4b42c; /* Màu nền */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
 /* Thanh cuộn chính */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #b995da, #833edf); /* Gradient màu */
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 10px;
-  transition: background 0.3s ease-in-out;
 }
 
 /* Khi hover vào thanh cuộn */
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #2575fc, #6a11cb);
+  background: rgba(255, 255, 255, 0.4);
 }
