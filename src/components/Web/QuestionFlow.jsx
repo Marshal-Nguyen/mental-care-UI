@@ -4,7 +4,12 @@ import styles from "../../styles/Web/QuestionFlow.module.css";
 import WavyLine from "./WavyLine";
 import "animate.css";
 import { useNavigate } from "react-router-dom";
-
+import {
+  sleepOptions,
+  stressOptions,
+  copingOptions,
+  supportOptions,
+} from "./QuestionOption";
 const QuestionFlow = ({ onFinish }) => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
@@ -12,7 +17,7 @@ const QuestionFlow = ({ onFinish }) => {
   const [sleepQuality, setSleepQuality] = useState("");
   const [stressFactors, setStressFactors] = useState([]);
   const [copingMechanisms, setCopingMechanisms] = useState([]);
-  const [supportNeeded, setSupportNeeded] = useState("");
+  const [supportNeeded, setSupportNeeded] = useState([]);
 
   const navigate = useNavigate();
   const handleNavigae = () => {
@@ -166,285 +171,419 @@ const QuestionFlow = ({ onFinish }) => {
                 </div>
               </div>
             )}
-
             {step === 3 && (
-              <div className="mb-6 flex flex-col items-center">
-                <h1 className={`${styles.nameQuestion} text-[50px] mb-6`}>
+              <div className="mb-10 flex flex-col items-center">
+                <h1
+                  className={`${styles.nameQuestion} text-[45px] mb-6 text-center`}>
                   How has your sleep been lately?
                 </h1>
-
-                <div className="grid grid-cols-2 gap-2 w-full max-w-3xl">
-                  <div
-                    className={`bg-[#ffffff59] p-5 rounded-xl flex flex-col cursor-pointer transition-all hover:shadow-lg ${
-                      sleepQuality === "provider" ? "ring-2 ring-blue-500" : ""
-                    }`}
-                    onClick={() => {
-                      setSleepQuality("provider");
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <div className="mb-3">
-                      {/* <div className="bg-[#ffffff] inline-block p-2 rounded-lg">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <rect width="24" height="24" rx="4" fill="#E5F0FF" />
-                          <path
-                            d="M17 4H7C5.89543 4 5 4.89543 5 6V14C5 15.1046 5.89543 16 7 16H17C18.1046 16 19 15.1046 19 14V6C19 4.89543 18.1046 4 17 4Z"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                          />
-                          <path
-                            d="M12 16V19"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M9 19H15"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M10 8H14M10 11H14"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </div> */}
-                    </div>
-                    <h3 className="text-lg text-white font-bold">
-                      I sleep well most nights
-                    </h3>
-                  </div>
-
-                  <div
-                    className={`bg-[#ffffff59] p-5 rounded-xl flex flex-col cursor-pointer transition-all hover:shadow-lg relative ${
-                      sleepQuality === "agents" ? "ring-2 ring-blue-500" : ""
-                    }`}
-                    onClick={() => {
-                      setSleepQuality("agents");
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <div className="mb-3">
-                      {/* <div className="bg-white inline-block p-2 rounded-lg">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <rect width="24" height="24" rx="4" fill="#E5F0FF" />
-                          <path
-                            d="M12 6C7.03 6 3 8.23 3 11V13C3 15.77 7.03 18 12 18C16.97 18 21 15.77 21 13V11C21 8.23 16.97 6 12 6Z"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                          />
-                          <path
-                            d="M12 14C13.657 14 15 13.105 15 12C15 10.895 13.657 10 12 10C10.343 10 9 10.895 9 12C9 13.105 10.343 14 12 14Z"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                          />
-                        </svg>
-                      </div> */}
-                    </div>
-                    <h3 className="text-lg text-white font-bold">
-                      My sleep is okay, but I wake up tired.
-                    </h3>
-                  </div>
-
-                  <div
-                    className={`bg-[#ffffff59] p-5 rounded-xl flex flex-col cursor-pointer transition-all hover:shadow-lg relative ${
-                      sleepQuality === "github" ? "ring-2 ring-blue-500" : ""
-                    }`}
-                    onClick={() => {
-                      setSleepQuality("github");
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <div className="mb-3">
-                      {/* <div className="bg-white inline-block p-2 rounded-lg">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <rect width="24" height="24" rx="4" fill="#E5F0FF" />
-                          <path
-                            d="M17 4.5C17 3.4 16.1 2.5 15 2.5H9C7.9 2.5 7 3.4 7 4.5V19.5C7 20.6 7.9 21.5 9 21.5H15C16.1 21.5 17 20.6 17 19.5V4.5Z"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                          />
-                          <path
-                            d="M12 18.5H12.01"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M10 7H14M10 11H14"
-                            stroke="#0066FF"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </div> */}
-                    </div>
-                    <h3 className="text-lg text-white font-bold">
-                      I have trouble falling or staying asleep.
-                    </h3>
-                  </div>
-
-                  <div
-                    className={`bg-[#ffffff59] p-5 rounded-xl flex flex-col cursor-pointer transition-all hover:shadow-lg relative ${
-                      sleepQuality === "rendering" ? "ring-2 ring-blue-500" : ""
-                    }`}
-                    onClick={() => {
-                      setSleepQuality("rendering");
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <div className="mb-3">
-                      {/* <div className="bg-white inline-block p-2 rounded-lg">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg">
-                          <rect width="24" height="24" rx="4" fill="#E5F0FF" />
-                          <path
-                            d="M8 12H16"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M12 8V16"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          <circle
-                            cx="12"
-                            cy="12"
-                            r="9"
-                            stroke="#0066FF"
-                            strokeWidth="2"
-                          />
-                        </svg>
-                      </div> */}
-                    </div>
-                    <h3 className="text-lg text-white font-bold">Other...</h3>
-                  </div>
+                <div className="relative w-4/5 max-w-3xl h-[255px] overflow-y-auto custom-scrollbar hide-scrollbar px-10">
+                  {sleepOptions.map((option) => (
+                    <motion.div
+                      key={option.label}
+                      className="snap-start py-1 h-[75px] flex items-center"
+                      initial={{ scale: 0.9, opacity: 0.6 }}
+                      whileInView={{
+                        scale: 1,
+                        opacity: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 20,
+                        },
+                      }}
+                      viewport={{
+                        once: false,
+                        amount: 0.8,
+                        margin: "-5%",
+                      }}>
+                      <div
+                        onClick={() => {
+                          setSleepQuality(`${option.icon} ${option.label}`);
+                          setTimeout(handleNextStep, 400);
+                        }}
+                        className={`
+              bg-white/10 backdrop-blur-sm p-3 rounded-lg cursor-pointer
+              transform transition-all duration-300 w-full
+              hover:bg-white/20 hover:-translate-y-1
+              ${
+                sleepQuality === `${option.icon} ${option.label}`
+                  ? "ring-2 ring-blue-400 bg-white/30 scale-105"
+                  : "hover:scale-[1.02]"
+              }
+              flex items-center mx-auto h-[60px]
+            `}>
+                        <div className="flex items-center gap-3 w-full">
+                          <span className="text-3xl">{option.icon}</span>
+                          <div className="text-left flex-1">
+                            <h3 className="text-white font-semibold">
+                              {option.label}
+                            </h3>
+                            <p className="text-white/70 text-xs">
+                              {option.description}
+                            </p>
+                          </div>
+                          {sleepQuality ===
+                            `${option.icon} ${option.label}` && (
+                            <span className="text-blue-800 text-xl">✓</span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
             )}
-
             {step === 4 && (
               <div className="mb-10 flex flex-col items-center">
-                <h1 className={`${styles.nameQuestion} text-[70px] mb-5`}>
+                <h1
+                  className={`${styles.nameQuestion} text-[45px] mb-6 text-center`}>
                   Has anything been making you feel stressed recently?
                 </h1>
-                <div className="w-4/5 max-w-md">
-                  <select
-                    className="w-full px-4 py-3 rounded-2xl text-lg font-medium bg-white text-blue-800 border border-blue-500 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-700 transition-all duration-300"
-                    value={stressFactors}
-                    onChange={(e) => {
-                      setStressFactors(e.target.value);
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <option value="" disabled>
-                      Select an option
-                    </option>
-                    {[
-                      "📚 Work/Studies",
-                      "👨‍👩‍👧‍👦 Family/Friends",
-                      "💰 Financial Issues",
-                      "🏥 Health Concerns",
-                      "🤯 Feeling overwhelmed without a clear reason",
-                      "❓ Other",
-                    ].map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                <div
+                  className={` relative w-4/5 max-w-3xl h-[255px] overflow-y-auto custom-scrollbar hide-scrollbar px-10`}>
+                  {stressOptions.map((option, index) => (
+                    <motion.div
+                      key={option.label}
+                      className="snap-start py-1 h-[75px] flex items-center" // Reduced from py-2 to py-1 and height from 120px to 90px
+                      initial={{ scale: 0.9, opacity: 0.6 }}
+                      whileInView={{
+                        scale: 1,
+                        opacity: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 20,
+                        },
+                      }}
+                      viewport={{
+                        once: false,
+                        amount: 0.8,
+                        margin: "-10%",
+                      }}>
+                      <div
+                        onClick={() => {
+                          const value = `${option.icon} ${option.label}`;
+                          setStressFactors((prev) =>
+                            prev.includes(value)
+                              ? prev.filter((item) => item !== value)
+                              : [...prev, value]
+                          );
+                        }}
+                        className={`
+    bg-white/10 backdrop-blur-sm p-3 rounded-lg cursor-pointer
+    transform transition-all duration-300 w-full
+    hover:bg-white/20 hover:-translate-y-1
+    ${
+      stressFactors.includes(`${option.icon} ${option.label}`)
+        ? "ring-2 ring-blue-400 bg-white/30 scale-105"
+        : "hover:scale-[1.02]"
+    }
+    flex items-center mx-auto h-[60px]
+  `}>
+                        <div className="flex items-center gap-3 w-full">
+                          <span className="text-3xl">{option.icon}</span>
+                          <div className="text-left flex-1">
+                            <h3 className="text-white font-semibold">
+                              {option.label}
+                            </h3>
+                            <p className="text-white/70 text-xs">
+                              {option.description}
+                            </p>
+                          </div>
+                          {stressFactors.includes(
+                            `${option.icon} ${option.label}`
+                          ) && <span className="text-blue-800 text-xl">✓</span>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
+                {stressFactors.length > 0 && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{
+                      scale: 1.03,
+                      backdropFilter: "blur(12px)",
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleNextStep()}
+                    className="mt-6 px-5 py-3
+      bg-[#0099ff]/10 backdrop-blur-md
+      border-2 border-[#0099ff]/30
+      text-white rounded-xl
+      transition-all duration-300
+      flex items-center gap-4
+      shadow-[0_4px_20px_rgba(0,153,255,0.2)]
+      hover:bg-[#0099ff]/20
+      hover:border-[#0099ff]/50
+      hover:shadow-[0_8px_25px_rgba(0,153,255,0.3)]
+      group">
+                    <span className="text-lg font-medium tracking-wide">
+                      Continue
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="bg-[#ffffff9d] backdrop-blur-md 
+        px-3 py-1 rounded-full text-sm text-[#0099ff]
+        border border-[#0099ff]/30 font-medium">
+                        {stressFactors.length}
+                      </span>
+                      <motion.svg
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        animate={{ x: 0 }}
+                        whileHover={{ x: 3 }}
+                        transition={{ type: "spring", stiffness: 400 }}>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
+                      </motion.svg>
+                    </div>
+                  </motion.button>
+                )}
               </div>
             )}
-
             {step === 5 && (
               <div className="mb-10 flex flex-col items-center">
-                <h1 className={`${styles.nameQuestion} text-[66px] mb-5`}>
-                  When you're feeling stressed, what do you usually do to feel
-                  better?
+                <h1
+                  className={`${styles.nameQuestion} text-[45px] mb-6 text-center`}>
+                  How do you unwind when life gets tough?
                 </h1>
-                <div className="w-4/5 max-w-md">
-                  <select
-                    className="w-full px-4 py-3 rounded-2xl text-lg font-medium bg-white text-blue-800 border border-blue-500 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-700 transition-all duration-300"
-                    value={copingMechanisms}
-                    onChange={(e) => {
-                      setCopingMechanisms(e.target.value);
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <option value="" disabled>
-                      Select an option
-                    </option>
-                    {[
-                      "🎵 Listen to music ",
-                      "🎮 Play games",
-                      "🚶 Take a walk",
-                      "🛏 Sleep more ",
-                      "💬 Talk to someone",
-                      "🧘 Meditate or do breathing exercises ",
-                      "🍕 Eat something I like",
-                      "❓ Other",
-                    ].map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                <div className="relative w-4/5 max-w-3xl h-[255px] overflow-y-auto custom-scrollbar px-10">
+                  {copingOptions.map((option) => (
+                    <motion.div
+                      key={option.label}
+                      className="snap-start py-1 h-[75px] flex items-center"
+                      initial={{ scale: 0.9, opacity: 0.6 }}
+                      whileInView={{
+                        scale: 1,
+                        opacity: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 20,
+                        },
+                      }}
+                      viewport={{
+                        once: false,
+                        amount: 0.8,
+                        margin: "-5%",
+                      }}>
+                      <div
+                        onClick={() => {
+                          const value = `${option.icon} ${option.label}`;
+                          setCopingMechanisms((prev) =>
+                            prev.includes(value)
+                              ? prev.filter((item) => item !== value)
+                              : [...prev, value]
+                          );
+                        }}
+                        className={`
+                        bg-white/10 backdrop-blur-sm p-3 rounded-lg cursor-pointer
+                        transform transition-all duration-300 w-full
+                        hover:bg-white/20 hover:-translate-y-1
+                        ${
+                          copingMechanisms.includes(
+                            option.icon + " " + option.label
+                          )
+                            ? "ring-2 ring-blue-400 bg-white/30 scale-105"
+                            : "hover:scale-[1.02]"
+                        }
+                        flex items-center mx-auto h-[60px]
+                      `}>
+                        <div className="flex items-center gap-3 w-full">
+                          <span className="text-3xl">{option.icon}</span>
+                          <div className="text-left flex-1">
+                            <h3 className="text-white font-semibold">
+                              {option.label}
+                            </h3>
+                            <p className="text-white/70 text-xs">
+                              {option.description}
+                            </p>
+                          </div>
+                          {copingMechanisms.includes(
+                            option.icon + " " + option.label
+                          ) && <span className="text-blue-800 text-xl">✓</span>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
+                {copingMechanisms.length > 0 && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{
+                      scale: 1.03,
+                      backdropFilter: "blur(12px)",
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleNextStep()}
+                    className="mt-6 px-5 py-3
+                    bg-[#0099ff]/10 backdrop-blur-md
+                    border-2 border-[#0099ff]/30
+                    text-white rounded-xl
+                    transition-all duration-300
+                    flex items-center gap-4
+                    shadow-[0_4px_20px_rgba(0,153,255,0.2)]
+                    hover:bg-[#0099ff]/20
+                    hover:border-[#0099ff]/50
+                    hover:shadow-[0_8px_25px_rgba(0,153,255,0.3)]
+                    group">
+                    <span className="text-lg font-medium tracking-wide">
+                      Continue
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="bg-[#ffffff9d] backdrop-blur-md 
+                      px-3 py-1 rounded-full text-sm text-[#0099ff]
+                      border border-[#0099ff]/30 font-medium">
+                        {copingMechanisms.length}
+                      </span>
+                      <motion.svg
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        animate={{ x: 0 }}
+                        whileHover={{ x: 3 }}
+                        transition={{ type: "spring", stiffness: 400 }}>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
+                      </motion.svg>
+                    </div>
+                  </motion.button>
+                )}
               </div>
             )}
-
             {step === 6 && (
               <div className="mb-10 flex flex-col items-center">
-                <h1 className={`${styles.nameQuestion} text-[70px] mb-5`}>
+                <h1
+                  className={`${styles.nameQuestion} text-[45px] mb-6 text-center`}>
                   What kind of support would you like to receive today?
                 </h1>
-                <div className="w-4/5 max-w-md">
-                  <select
-                    className="w-full px-4 py-3 rounded-2xl text-lg font-medium bg-white text-blue-800 border border-blue-500 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-700 transition-all duration-300"
-                    value={supportNeeded}
-                    onChange={(e) => {
-                      setSupportNeeded(e.target.value);
-                      setTimeout(handleNextStep, 400);
-                    }}>
-                    <option value="" disabled>
-                      Select an option
-                    </option>
-                    {[
-                      "💆 I need something to help me relax.",
-                      "📝 I want to understand my feelings better.",
-                      "🤝 I want to talk to someone.",
-                      "🎯 I need a personalized plan to feel better.",
-                      "❓ Other",
-                    ].map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                <div className="relative w-4/5 max-w-3xl h-[255px] overflow-y-auto custom-scrollbar hide-scrollbar px-10">
+                  {supportOptions.map((option) => (
+                    <motion.div
+                      key={option.label}
+                      className="snap-start py-1 h-[75px] flex items-center"
+                      initial={{ scale: 0.9, opacity: 0.6 }}
+                      whileInView={{
+                        scale: 1,
+                        opacity: 1,
+                        transition: {
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 20,
+                        },
+                      }}
+                      viewport={{
+                        once: false,
+                        amount: 0.8,
+                        margin: "-5%",
+                      }}>
+                      <div
+                        onClick={() => {
+                          const value = `${option.icon} ${option.label}`;
+                          setSupportNeeded((prev) =>
+                            prev.includes(value)
+                              ? prev.filter((item) => item !== value)
+                              : [...prev, value]
+                          );
+                        }}
+                        className={`
+                        bg-white/10 backdrop-blur-sm p-3 rounded-lg cursor-pointer
+                        transform transition-all duration-300 w-full
+                        hover:bg-white/20 hover:-translate-y-1
+                        ${
+                          supportNeeded.includes(
+                            `${option.icon} ${option.label}`
+                          )
+                            ? "ring-2 ring-blue-400 bg-white/30 scale-105"
+                            : "hover:scale-[1.02]"
+                        }
+                        flex items-center mx-auto h-[60px]
+                      `}>
+                        <div className="flex items-center gap-3 w-full">
+                          <span className="text-3xl">{option.icon}</span>
+                          <div className="text-left flex-1">
+                            <h3 className="text-white font-semibold">
+                              {option.label}
+                            </h3>
+                            <p className="text-white/70 text-xs">
+                              {option.description}
+                            </p>
+                          </div>
+                          {supportNeeded.includes(
+                            `${option.icon} ${option.label}`
+                          ) && <span className="text-blue-800 text-xl">✓</span>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
+                {supportNeeded.length > 0 && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{
+                      scale: 1.03,
+                      backdropFilter: "blur(12px)",
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => handleNextStep()}
+                    className="mt-6 px-5 py-3
+                    bg-[#0099ff]/10 backdrop-blur-md
+                    border-2 border-[#0099ff]/30
+                    text-white rounded-xl
+                    transition-all duration-300
+                    flex items-center gap-4
+                    shadow-[0_4px_20px_rgba(0,153,255,0.2)]
+                    hover:bg-[#0099ff]/20
+                    hover:border-[#0099ff]/50
+                    hover:shadow-[0_8px_25px_rgba(0,153,255,0.3)]
+                    group">
+                    <span className="text-lg font-medium tracking-wide">
+                      Continue
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="bg-[#ffffff9d] backdrop-blur-md 
+                      px-3 py-1 rounded-full text-sm text-[#0099ff]
+                      border border-[#0099ff]/30 font-medium">
+                        {supportNeeded.length}
+                      </span>
+                      <motion.svg
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        animate={{ x: 0 }}
+                        whileHover={{ x: 3 }}
+                        transition={{ type: "spring", stiffness: 400 }}>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 7l5 5m0 0l-5 5m5-5H6"
+                        />
+                      </motion.svg>
+                    </div>
+                  </motion.button>
+                )}
               </div>
             )}
-
             {step === 7 && (
               <div className="flex flex-col justify-center items-center gap-2">
                 <h1 className={`${styles.shareWith}`}>
