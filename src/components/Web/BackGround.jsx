@@ -47,7 +47,7 @@ const BackGround = () => {
         />
 
         <motion.img
-          src="/bg_HomeRight.webp"
+          src="/bg_HomeBottomRight.webp"
           alt=""
           animate={{ y: -scrollY * 0.1 }}
           className="absolute top-[21%] left-0 w-full h-[120vh] scale-110 object-cover"
