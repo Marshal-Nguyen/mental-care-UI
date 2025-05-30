@@ -27,7 +27,7 @@ const BackGround = () => {
         {/* Nền chính - Không di chuyển */}
         <div className="absolute top-50 left-0 w-full h-screen">
           <img
-            src="/bg_HomeCenter.png"
+            src="/bg_HomeCenter.webp"
             alt=""
             className="w-full h-full scale-125 object-cover"
           />
@@ -40,14 +40,14 @@ const BackGround = () => {
 
         {/* Các lớp ảnh di chuyển */}
         <motion.img
-          src="/bg_HomeUnder.png"
+          src="/bg_HomeUnder.webp"
           alt=""
           animate={{ y: -scrollY * 0.3 }}
           className="absolute top-[30%] left-0 w-full h-[120vh] scale-100 object-cover"
         />
 
         <motion.img
-          src="/bg_HomeRight.png"
+          src="/bg_HomeRight.webp"
           alt=""
           animate={{ y: -scrollY * 0.1 }}
           className="absolute top-[21%] left-0 w-full h-[120vh] scale-110 object-cover"
