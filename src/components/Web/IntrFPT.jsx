@@ -50,7 +50,7 @@ const IntrFPT = () => {
             {/* Hình ảnh nhỏ (overlay) */}
             <div className="absolute bottom-[-60px] right-[-100px] w-[250px] h-[250px] rounded-xl shadow-md overflow-hidden">
               <img
-                src="/exe.png"
+                src="/image_IntroduceExe.webp"
                 alt="Trải nghiệm khởi nghiệp"
                 className="w-full h-full object-cover object-left border-white rounded-2xl border-[10px] "
               />

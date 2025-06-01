@@ -52,6 +52,7 @@ const LogIn = () => {
       setAvatarUrl("https://i.pravatar.cc/150?img=3"); // Giá trị mặc định
     }
   };
+
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserRole = localStorage.getItem("userRole");
@@ -91,7 +92,7 @@ const LogIn = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://psychologysupport-auth.azurewebsites.net/Auth/login",
+        "https://anhtn.id.vn/auth-service/Auth/login",
         formData,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -109,7 +110,7 @@ const LogIn = () => {
           };
 
           const refreshResponse = await axios.post(
-            "https://psychologysupport-auth.azurewebsites.net/Auth/refresh-token",
+            "https://anhtn.id.vn/auth-service/Auth/refresh-token",
             formRefreshToken,
             { headers: { "Content-Type": "application/json" } }
           );
@@ -205,7 +206,7 @@ const LogIn = () => {
   const checkPurchasedPackage = async (profileId) => {
     try {
       const baseUrl =
-        "https://psychologysupport-subscription.azurewebsites.net/service-packages";
+        "https://anhtn.id.vn/subscription-service/service-packages";
       const url = profileId
         ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
         : `${baseUrl}?PageIndex=1&PageSize=10`;

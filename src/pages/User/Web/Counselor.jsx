@@ -37,7 +37,7 @@ const DoctorList = () => {
   const [endTime, setEndTime] = useState("");
   // Refs for specialty scrolling
   const specialtyScrollRef = useRef(null);
-
+  const YOUR_TOKEN = localStorage.getItem("token");
   const fetchDoctors = async (params = {}) => {
     // Don't set loading true immediately to prevent flashing on quick responses
     const loadingTimeout = setTimeout(() => {
@@ -62,8 +62,14 @@ const DoctorList = () => {
       }
 
       const doctorsResponse = await axios.get(
-        "https://psychologysupport-profile.azurewebsites.net/doctors",
-        { params: mergedParams }
+        "https://anhtn.id.vn/profile-service/doctors",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${YOUR_TOKEN}`,
+          },
+          params: mergedParams,
+        }
       );
 
       setDoctors(doctorsResponse.data.doctorProfiles.data || []);
@@ -83,8 +89,12 @@ const DoctorList = () => {
     const fetchInitialData = async () => {
       try {
         const specialtiesResponse = await axios.get(
-          "https://psychologysupport-profile.azurewebsites.net/specialties",
+          "https://anhtn.id.vn/profile-service/specialties",
           {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${YOUR_TOKEN}`,
+            },
             params: {
               PageIndex: 1,
               PageSize: 10,

@@ -38,16 +38,22 @@ const TestEmotion = () => {
   const patientId = useSelector((state) => state.auth.profileId);
   const testId = "8fc88dbb-daee-4b17-9eca-de6cfe886097";
 
-  const API_BASE = "https://psychologysupport-test.azurewebsites.net";
+  const API_BASE = "https://anhtn.id.vn/test-service";
   const API_KEY = import.meta.env.VITE_API_GPT_KEY; // Lấy API Key từ .env
-
+  const YOUR_TOKEN = localStorage.getItem("token");
   // Fetch initial question list
   useEffect(() => {
     async function fetchQuestionList() {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_BASE}/test-questions/${testId}?pageSize=21`
+          `${API_BASE}/test-questions/${testId}?pageSize=21`,
+          {
+            headers: {
+              // "Content-Type": "application/json",
+              Authorization: `Bearer ${YOUR_TOKEN}`,
+            },
+          }
         );
 
         if (!response.ok) {
@@ -123,6 +129,7 @@ const TestEmotion = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${YOUR_TOKEN}`,
       },
       body: JSON.stringify(payload),
     })
