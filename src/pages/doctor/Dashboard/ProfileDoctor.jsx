@@ -31,7 +31,7 @@ const ProfileDoctor = () => {
   const fetchAvatar = async () => {
     try {
       const avatarResponse = await axios.get(
-        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
+        `https://anhtn.id.vn/image-service/image/get?ownerType=User&ownerId=${userId}`
         // { responseType: "blob" }
       );
 
@@ -74,8 +74,8 @@ const ProfileDoctor = () => {
 
       // Determine if we need to upload a new image or update existing one
       const endpoint = avatarUrl
-        ? "https://psychologysupport-image.azurewebsites.net/image/update"
-        : "https://psychologysupport-image.azurewebsites.net/image/upload";
+        ? "https://anhtn.id.vn/image-service/image/update"
+        : "https://anhtn.id.vn/image-service/image/upload";
 
       const method = avatarUrl ? axios.put : axios.post;
       await method(endpoint, formDataImg, {
@@ -105,7 +105,13 @@ const ProfileDoctor = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupport-profile.azurewebsites.net/doctors/${id}`
+          `https://anhtn.id.vn/profile-service/doctors/${id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         const { doctorProfileDto } = response.data;
 
@@ -138,7 +144,12 @@ const ProfileDoctor = () => {
       try {
         // Note: This is a placeholder. You would need to replace with your actual API endpoint
         const response = await axios.get(
-          "https://psychologysupport-profile.azurewebsites.net/specialties"
+          "https://anhtn.id.vn/profile-service/specialties",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         setSpecialtiesList(response.data);
       } catch (err) {
@@ -219,8 +230,13 @@ const ProfileDoctor = () => {
 
       console.log("updatedProfileDoctor", updatedProfile);
       await axios.put(
-        `https://psychologysupport-profile.azurewebsites.net/doctors/${id}`,
-        updatedProfile
+        `https://anhtn.id.vn/profile-service/doctors/${id}`,
+        updatedProfile,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       setLoading(false);

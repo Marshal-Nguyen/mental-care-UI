@@ -27,13 +27,25 @@ const StatictisDoctor = () => {
         setLoading(true);
         // Fetch doctor profile
         const profileResponse = await axios.get(
-          `https://psychologysupport-profile.azurewebsites.net/doctors/${profileId}`
+          `https://anhtn.id.vn/profile-service/doctors/${profileId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         setName(profileResponse.data.doctorProfileDto.fullName);
 
         // Fetch total number of pages
         const initialResponse = await axios.get(
-          `https://psychologysupport-profile.azurewebsites.net/medical-records?PageIndex=1&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`
+          `https://anhtn.id.vn/profile-service/medical-records?PageIndex=1&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
 
         const totalPages = initialResponse.data.medicalRecords.totalPages;
@@ -43,7 +55,13 @@ const StatictisDoctor = () => {
         const allRecords = [];
         for (let page = 1; page <= totalPages; page++) {
           const response = await axios.get(
-            `https://psychologysupport-profile.azurewebsites.net/medical-records?PageIndex=${page}&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`
+            `https://anhtn.id.vn/profile-service/medical-records?PageIndex=${page}&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
           );
 
           allRecords.push(...response.data.medicalRecords.data);

@@ -14,7 +14,7 @@ export default function TreatmentActivities({ profileId }) {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupport-profile.azurewebsites.net/medical-records`,
+          `https://anhtn.id.vn/profile-service/medical-records`,
           {
             params: {
               PageIndex: 1,
@@ -22,6 +22,12 @@ export default function TreatmentActivities({ profileId }) {
               SortBy: "CreatedAt",
               SortOrder: "desc",
               DoctorId: profileId,
+            },
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );

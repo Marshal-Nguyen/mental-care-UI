@@ -31,7 +31,7 @@ const PaymentCallback = () => {
 
         // Gửi request tới backend với toàn bộ query params
         await axios.get(
-          `https://psychologysupport-payment.azurewebsites.net/payments/callback?${queryParams.toString()}`
+          `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`
         );
 
         // Kiểm tra kết quả thanh toán

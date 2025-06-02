@@ -23,7 +23,13 @@ const PatientBooking = () => {
     setError(null);
     try {
       const response = await axios.get(
-        `https://psychologysupport-scheduling.azurewebsites.net/bookings?PageIndex=${pageIndex}&PageSize=10&SortBy=date&SortOrder=asc&DoctorId=${profileId}&Status=AwaitMeeting`
+        `https://anhtn.id.vn/scheduling-service/bookings?PageIndex=${pageIndex}&PageSize=10&SortBy=date&SortOrder=asc&DoctorId=${profileId}&Status=AwaitMeeting`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       const { bookings } = response.data;
@@ -48,7 +54,13 @@ const PatientBooking = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://psychologysupport-profile.azurewebsites.net/patients/${patientId}`
+        `https://anhtn.id.vn/profile-service/patients/${patientId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       setSelectedPatientDetails(response.data.patientProfileDto);

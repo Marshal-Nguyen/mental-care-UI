@@ -55,13 +55,12 @@ export default function Pricing() {
       ],
     },
   ];
+  const API_BASE = import.meta.env.VITE_API_SUBSCRIPTION_URL;
   const fetchData = async () => {
     try {
-      const baseUrl =
-        "https://anhtn.id.vn/subscription-service/service-packages";
       const url = profileId
-        ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
-        : `${baseUrl}?PageIndex=1&PageSize=10`;
+        ? `${API_BASE}?PageIndex=1&PageSize=10&patientId=${profileId}`
+        : `${API_BASE}?PageIndex=1&PageSize=10`;
 
       const response = await axios.get(url);
 
@@ -166,8 +165,13 @@ export default function Pricing() {
       };
 
       const response = await axios.post(
-        "https://anhtn.id.vn/subscription-service/user-subscriptions",
-        payloadData
+        `${API_BASE}/user-subscriptions`,
+        payloadData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       if (response.data && response.data.paymentUrl) {

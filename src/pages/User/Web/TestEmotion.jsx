@@ -136,7 +136,12 @@ const TestEmotion = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log("Submission successful:", data.testResultId);
-        return fetch(`${API_BASE}/test-result/${data.testResultId}`);
+        return fetch(`${API_BASE}/test-result/${data.testResultId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${YOUR_TOKEN}`,
+          },
+        });
       })
       .then((response) => response.json())
       .then((resultData) => {

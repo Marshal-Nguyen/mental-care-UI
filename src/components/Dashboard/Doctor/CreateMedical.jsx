@@ -13,11 +13,17 @@ const CreateMedical = ({ selectedPatient, patientDetails, profileId }) => {
   const fetchMentalDisorders = async (page) => {
     try {
       const response = await axios.get(
-        `https://psychologysupport-profile.azurewebsites.net/specific-mental-disorders`,
+        `https://anhtn.id.vn/profile-service/specific-mental-disorders`,
         {
           params: {
             PageIndex: page,
             PageSize: 10,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -49,12 +55,24 @@ const CreateMedical = ({ selectedPatient, patientDetails, profileId }) => {
       };
 
       await axios.post(
-        "https://psychologysupport-profile.azurewebsites.net/patients/medical-record",
-        payload
+        "https://anhtn.id.vn/profile-service/patients/medical-record",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       await axios.put(
-        `https://psychologysupport-scheduling.azurewebsites.net/bookings/${selectedPatient.bookingCode}/status`,
-        { status: "Completed" }
+        `https://anhtn.id.vn/scheduling-service/bookings/${selectedPatient.bookingCode}/status`,
+        { status: "Completed" },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       toast.success(
         "Medical record created and booking status updated successfully!"
