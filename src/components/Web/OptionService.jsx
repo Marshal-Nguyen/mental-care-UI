@@ -58,9 +58,10 @@ export default function Pricing() {
   const API_BASE = import.meta.env.VITE_API_SUBSCRIPTION_URL;
   const fetchData = async () => {
     try {
+      const baseUrl = `${API_BASE}/service-packages`;
       const url = profileId
-        ? `${API_BASE}?PageIndex=1&PageSize=10&patientId=${profileId}`
-        : `${API_BASE}?PageIndex=1&PageSize=10`;
+        ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
+        : `${baseUrl}?PageIndex=1&PageSize=10`;
 
       const response = await axios.get(url);
 
