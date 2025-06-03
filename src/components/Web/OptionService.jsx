@@ -207,7 +207,12 @@ export default function Pricing() {
 
         const response = await axios.post(
           "https://anhtn.id.vn/subscription-service/user-subscriptions/upgrade",
-          upgradePayload
+          upgradePayload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         if (response.data && response.data.paymentUrl) {
           window.location.href = response.data.paymentUrl;
