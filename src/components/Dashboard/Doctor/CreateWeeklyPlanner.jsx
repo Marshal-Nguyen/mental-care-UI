@@ -14,9 +14,9 @@ const CreateWeeklyPlanner = ({ profileId }) => {
   const [sessionsForDate, setSessionsForDate] = useState(null);
 
   // API endpoints
-  const BASE_URL = "https://psychologysupport-scheduling.azurewebsites.net";
-  const SCHEDULES_ENDPOINT = `${BASE_URL}/schedules`;
-  const ACTIVITIES_ENDPOINT = `${BASE_URL}/schedule-activities`;
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL;
+  const SCHEDULES_ENDPOINT = `${VITE_API_SCHEDULE_URL}/schedules`;
+  const ACTIVITIES_ENDPOINT = `${VITE_API_SCHEDULE_URL}/schedule-activities`;
 
   // Format date to use as object key (YYYY-MM-DD)
   const formatDateKey = (date) => {
@@ -216,11 +216,12 @@ const CreateWeeklyPlanner = ({ profileId }) => {
       setTaskLoading((prev) => ({ ...prev, [taskId]: true }));
       try {
         const response = await fetch(
-          `https://psychologysupport-scheduling.azurewebsites.net/schedule-activities/${taskId}/${sessionsForDate}/status`,
+          `${VITE_API_SCHEDULE_URL}/schedule-activities/${taskId}/${sessionsForDate}/status`,
           {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ status: apiStatus }),
           }

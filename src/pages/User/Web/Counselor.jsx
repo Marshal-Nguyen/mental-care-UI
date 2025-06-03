@@ -38,6 +38,7 @@ const DoctorList = () => {
   // Refs for specialty scrolling
   const specialtyScrollRef = useRef(null);
   const YOUR_TOKEN = localStorage.getItem("token");
+  const API_PROFILE = import.meta.env.VITE_API_PROFILE_URL;
   const fetchDoctors = async (params = {}) => {
     // Don't set loading true immediately to prevent flashing on quick responses
     const loadingTimeout = setTimeout(() => {
@@ -61,16 +62,13 @@ const DoctorList = () => {
         mergedParams.EndDate = formattedEndDate;
       }
 
-      const doctorsResponse = await axios.get(
-        "https://anhtn.id.vn/profile-service/doctors",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${YOUR_TOKEN}`,
-          },
-          params: mergedParams,
-        }
-      );
+      const doctorsResponse = await axios.get(`${API_PROFILE}/doctors`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${YOUR_TOKEN}`,
+        },
+        params: mergedParams,
+      });
 
       setDoctors(doctorsResponse.data.doctorProfiles.data || []);
     } catch (error) {
@@ -89,7 +87,7 @@ const DoctorList = () => {
     const fetchInitialData = async () => {
       try {
         const specialtiesResponse = await axios.get(
-          "https://anhtn.id.vn/profile-service/specialties",
+          `${API_PROFILE}/specialties`,
           {
             headers: {
               "Content-Type": "application/json",

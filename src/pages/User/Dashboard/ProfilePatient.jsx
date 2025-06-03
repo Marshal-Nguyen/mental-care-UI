@@ -31,14 +31,21 @@ const EditProfileForm = () => {
     },
     recommendedActivities: [],
   });
-
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
+  const VITE_API_IMAGE_URL = import.meta.env.VITE_API_IMAGE_URL;
   // Fetch patient data
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupport-profile.azurewebsites.net/patients/${profileId}`
+          `${VITE_API_PROFILE_URL}/patients/${profileId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         const { patientProfileDto } = response.data;
 
@@ -71,8 +78,13 @@ const EditProfileForm = () => {
   const fetchAvatar = async () => {
     try {
       const avatarResponse = await axios.get(
-        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
-        // { responseType: "blob" }
+        `${VITE_API_IMAGE_URL}/image/get?ownerType=User&ownerId=${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       // Create object URL from the blob response
@@ -114,13 +126,14 @@ const EditProfileForm = () => {
 
       // Determine if we need to upload a new image or update existing one
       const endpoint = avatarUrl
-        ? "https://psychologysupport-image.azurewebsites.net/image/update"
-        : "https://psychologysupport-image.azurewebsites.net/image/upload";
+        ? `${VITE_API_IMAGE_URL}/image/update`
+        : `${VITE_API_IMAGE_URL}/image/upload`;
 
       const method = avatarUrl ? axios.put : axios.post;
       await method(endpoint, formDataImg, {
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       console.log("FomeData:", formDataImg);
@@ -184,8 +197,14 @@ const EditProfileForm = () => {
       };
 
       await axios.put(
-        `https://psychologysupport-profile.azurewebsites.net/patients/${profileId}`,
-        updatedProfile
+        `${VITE_API_PROFILE_URL}/patients/${profileId}`,
+        updatedProfile,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       setLoading(false);

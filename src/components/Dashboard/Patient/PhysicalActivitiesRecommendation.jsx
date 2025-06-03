@@ -20,7 +20,7 @@ const PhysicalActivitiesRecommendation = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [filterIntensity, setFilterIntensity] = useState("");
-
+  const VITE_API_LIFESTYLE_URL = import.meta.env.VITE_API_LIFESTYLE_URL;
   // Sync selectedActivities with initialSelectedActivities only on mount
   useEffect(() => {
     setSelectedActivities(initialSelectedActivities);
@@ -34,10 +34,16 @@ const PhysicalActivitiesRecommendation = ({
     }
     try {
       const response = await axios.get(
-        `https://psychologysupport-lifestyles.azurewebsites.net/physical-activities?pageIndex=${
+        `${VITE_API_LIFESTYLE_URL}/physical-activities?pageIndex=${
           pageIndex + 1
         }&pageSize=10`,
-        { signal }
+        {
+          signal,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       const pageData = {

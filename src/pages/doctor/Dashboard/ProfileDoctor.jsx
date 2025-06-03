@@ -26,12 +26,21 @@ const ProfileDoctor = () => {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const fileInputRef = useRef(null);
-  const userId = useSelector((state) => state.auth.userId);
+  // const userId = useSelector((state) => state.auth.userId);
+  const userId = localStorage.getItem("userId");
+  const VITE_API_IMAGE_URL = import.meta.env.VITE_API_IMAGE_URL;
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
   // Add fetchAvatar function
   const fetchAvatar = async () => {
     try {
       const avatarResponse = await axios.get(
-        `https://anhtn.id.vn/image-service/image/get?ownerType=User&ownerId=${userId}`
+        `${VITE_API_IMAGE_URL}/image/get?ownerType=User&ownerId=${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
         // { responseType: "blob" }
       );
 
@@ -74,8 +83,8 @@ const ProfileDoctor = () => {
 
       // Determine if we need to upload a new image or update existing one
       const endpoint = avatarUrl
-        ? "https://anhtn.id.vn/image-service/image/update"
-        : "https://anhtn.id.vn/image-service/image/upload";
+        ? `${VITE_API_IMAGE_URL}/image/update`
+        : `${VITE_API_IMAGE_URL}/image/upload`;
 
       const method = avatarUrl ? axios.put : axios.post;
       await method(endpoint, formDataImg, {
@@ -105,7 +114,7 @@ const ProfileDoctor = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://anhtn.id.vn/profile-service/doctors/${id}`,
+          `${VITE_API_PROFILE_URL}/doctors/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -144,7 +153,7 @@ const ProfileDoctor = () => {
       try {
         // Note: This is a placeholder. You would need to replace with your actual API endpoint
         const response = await axios.get(
-          "https://anhtn.id.vn/profile-service/specialties",
+          `${VITE_API_PROFILE_URL}/specialties`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -229,15 +238,11 @@ const ProfileDoctor = () => {
       };
 
       console.log("updatedProfileDoctor", updatedProfile);
-      await axios.put(
-        `https://anhtn.id.vn/profile-service/doctors/${id}`,
-        updatedProfile,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      await axios.put(`${VITE_API_PROFILE_URL}/doctors/${id}`, updatedProfile, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       setLoading(false);
       toast.success("Patient profile updated successfully!");

@@ -5,13 +5,19 @@ const PatientMedicalRecord = ({ patientId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
-
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://psychologysupport-profile.azurewebsites.net/patients/${patientId}`
+          `${VITE_API_PROFILE_URL}/patients/${patientId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
 
         if (!response.ok) {

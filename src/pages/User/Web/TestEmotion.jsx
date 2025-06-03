@@ -38,7 +38,7 @@ const TestEmotion = () => {
   const patientId = useSelector((state) => state.auth.profileId);
   const testId = "8fc88dbb-daee-4b17-9eca-de6cfe886097";
 
-  const API_BASE = "https://anhtn.id.vn/test-service";
+  const API_TEST = import.meta.env.VITE_API_TEST_URL; // Lấy API Test từ .env
   const API_KEY = import.meta.env.VITE_API_GPT_KEY; // Lấy API Key từ .env
   const YOUR_TOKEN = localStorage.getItem("token");
   // Fetch initial question list
@@ -47,7 +47,7 @@ const TestEmotion = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_BASE}/test-questions/${testId}?pageSize=21`,
+          `${API_TEST}/test-questions/${testId}?pageSize=21`,
           {
             headers: {
               // "Content-Type": "application/json",
@@ -125,7 +125,7 @@ const TestEmotion = () => {
       selectedOptionIds: selectedOptionIds,
     };
 
-    fetch(`${API_BASE}/test-results`, {
+    fetch(`${API_TEST}/test-results`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -136,7 +136,7 @@ const TestEmotion = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log("Submission successful:", data.testResultId);
-        return fetch(`${API_BASE}/test-result/${data.testResultId}`, {
+        return fetch(`${API_TEST}/test-result/${data.testResultId}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${YOUR_TOKEN}`,

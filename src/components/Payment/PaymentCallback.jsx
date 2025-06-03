@@ -31,7 +31,13 @@ const PaymentCallback = () => {
 
         // Gửi request tới backend với toàn bộ query params
         await axios.get(
-          `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`
+          `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
 
         // Kiểm tra kết quả thanh toán

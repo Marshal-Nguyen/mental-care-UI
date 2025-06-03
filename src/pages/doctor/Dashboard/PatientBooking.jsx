@@ -17,13 +17,15 @@ const PatientBooking = () => {
   const [error, setError] = useState(null);
   const profileId = useSelector((state) => state.auth.profileId);
   console.log("profileId Doctor", profileId);
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL;
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
   // Hàm fetch danh sách bệnh nhân từ API
   const fetchPatients = async (pageIndex = 1) => {
     setLoading(true);
     setError(null);
     try {
       const response = await axios.get(
-        `https://anhtn.id.vn/scheduling-service/bookings?PageIndex=${pageIndex}&PageSize=10&SortBy=date&SortOrder=asc&DoctorId=${profileId}&Status=AwaitMeeting`,
+        `${VITE_API_SCHEDULE_URL}/bookings?PageIndex=${pageIndex}&PageSize=10&SortBy=date&SortOrder=asc&DoctorId=${profileId}&Status=AwaitMeeting`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -54,7 +56,7 @@ const PatientBooking = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://anhtn.id.vn/profile-service/patients/${patientId}`,
+        `${VITE_API_PROFILE_URL}/patients/${patientId}`,
         {
           headers: {
             "Content-Type": "application/json",

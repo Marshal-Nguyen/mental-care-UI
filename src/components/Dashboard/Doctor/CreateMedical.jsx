@@ -10,17 +10,17 @@ const CreateMedical = ({ selectedPatient, patientDetails, profileId }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Processing");
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL;
   const fetchMentalDisorders = async (page) => {
     try {
       const response = await axios.get(
-        `https://anhtn.id.vn/profile-service/specific-mental-disorders`,
+        `${VITE_API_PROFILE_URL}/specific-mental-disorders`,
         {
           params: {
             PageIndex: page,
             PageSize: 10,
           },
-        },
-        {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -55,7 +55,7 @@ const CreateMedical = ({ selectedPatient, patientDetails, profileId }) => {
       };
 
       await axios.post(
-        "https://anhtn.id.vn/profile-service/patients/medical-record",
+        `${VITE_API_PROFILE_URL}/patients/medical-record`,
         payload,
         {
           headers: {
@@ -65,7 +65,7 @@ const CreateMedical = ({ selectedPatient, patientDetails, profileId }) => {
         }
       );
       await axios.put(
-        `https://anhtn.id.vn/scheduling-service/bookings/${selectedPatient.bookingCode}/status`,
+        `${VITE_API_SCHEDULE_URL}/bookings/${selectedPatient.bookingCode}/status`,
         { status: "Completed" },
         {
           headers: {

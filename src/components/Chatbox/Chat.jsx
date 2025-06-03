@@ -19,7 +19,7 @@ const Chat = () => {
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
   const username = localStorage.getItem("username");
-
+  const VITE_API_CHAT_URL = import.meta.env.VITE_API_CHAT_URL;
   useEffect(() => {
     if (!token) {
       console.error("No token found. Please log in.");
@@ -27,7 +27,7 @@ const Chat = () => {
     }
 
     const connect = new HubConnectionBuilder()
-      .withUrl("https://psychologysupport-chathub.azurewebsites.net/chatHub", {
+      .withUrl(`${VITE_API_CHAT_URL}/chatHub`, {
         accessTokenFactory: () => token,
         skipNegotiation: true,
         transport: HttpTransportType.WebSockets,

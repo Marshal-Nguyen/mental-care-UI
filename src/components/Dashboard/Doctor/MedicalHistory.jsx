@@ -34,8 +34,6 @@ export default function MedicalHistory() {
             SortOrder: "desc",
             DoctorId: profileId,
           },
-        },
-        {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,

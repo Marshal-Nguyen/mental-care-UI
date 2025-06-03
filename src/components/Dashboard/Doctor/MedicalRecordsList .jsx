@@ -8,13 +8,13 @@ export default function MedicalRecordsList({ profileId }) {
   const [error, setError] = useState(null);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [activeRecord, setActiveRecord] = useState(null);
-
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
   useEffect(() => {
     const fetchMedicalRecords = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://psychologysupport-profile.azurewebsites.net/medical-records`,
+          `${VITE_API_PROFILE_URL}/medical-records`,
           {
             params: {
               PageIndex: 1,
@@ -22,6 +22,10 @@ export default function MedicalRecordsList({ profileId }) {
               SortBy: "CreatedAt",
               SortOrder: "desc",
               DoctorId: profileId,
+            },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );

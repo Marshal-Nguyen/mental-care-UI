@@ -12,7 +12,8 @@ const StatictisDoctor = () => {
   const [error, setError] = useState("");
   const [newPatientsCount, setNewPatientsCount] = useState(0);
   const [oldPatientsCount, setOldPatientsCount] = useState(0);
-
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL;
   useEffect(() => {
     const date = new Date();
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -26,8 +27,9 @@ const StatictisDoctor = () => {
       try {
         setLoading(true);
         // Fetch doctor profile
+        console.log("Get toke to fix bug", localStorage.getItem("token"));
         const profileResponse = await axios.get(
-          `https://anhtn.id.vn/profile-service/doctors/${profileId}`,
+          `${VITE_API_PROFILE_URL}/doctors/${profileId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -39,7 +41,7 @@ const StatictisDoctor = () => {
 
         // Fetch total number of pages
         const initialResponse = await axios.get(
-          `https://anhtn.id.vn/profile-service/medical-records?PageIndex=1&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`,
+          `${VITE_API_PROFILE_URL}/medical-records?PageIndex=1&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -55,7 +57,7 @@ const StatictisDoctor = () => {
         const allRecords = [];
         for (let page = 1; page <= totalPages; page++) {
           const response = await axios.get(
-            `https://anhtn.id.vn/profile-service/medical-records?PageIndex=${page}&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`,
+            `${VITE_API_PROFILE_URL}/medical-records?PageIndex=${page}&PageSize=10&SortBy=CreatedAt&SortOrder=desc&DoctorId=${profileId}`,
             {
               headers: {
                 "Content-Type": "application/json",

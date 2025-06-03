@@ -19,9 +19,9 @@ const WeeklyPlanner = () => {
   const profileId = useSelector((state) => state.auth.profileId);
 
   // API endpoints và keys
-  const BASE_URL = "https://psychologysupport-scheduling.azurewebsites.net";
-  const SCHEDULES_ENDPOINT = `${BASE_URL}/schedules`;
-  const ACTIVITIES_ENDPOINT = `${BASE_URL}/schedule-activities`;
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL; // Thay bằng URL của bạn
+  const SCHEDULES_ENDPOINT = `${VITE_API_SCHEDULE_URL}/schedules`;
+  const ACTIVITIES_ENDPOINT = `${VITE_API_SCHEDULE_URL}/schedule-activities`;
   const OPENAI_API_KEY = import.meta.env.VITE_API_GPT_KEY; // Thay bằng key của bạn
   const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_API_GM_KEY; // Thay bằng key của bạn
 
@@ -45,7 +45,13 @@ const WeeklyPlanner = () => {
       try {
         console.log("Fetching sessions data...");
         const scheduleResponse = await axios.get(
-          `${SCHEDULES_ENDPOINT}?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`
+          `${SCHEDULES_ENDPOINT}?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         const sessionsData =
           scheduleResponse.data.schedules.data[0]?.sessions || [];
@@ -218,7 +224,10 @@ const WeeklyPlanner = () => {
           `${ACTIVITIES_ENDPOINT}/${taskId}/${sessionsForDate}/status`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
             body: JSON.stringify({ status: apiStatus }),
           }
         );

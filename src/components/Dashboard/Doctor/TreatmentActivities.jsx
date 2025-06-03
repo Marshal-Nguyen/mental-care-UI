@@ -23,8 +23,6 @@ export default function TreatmentActivities({ profileId }) {
               SortOrder: "desc",
               DoctorId: profileId,
             },
-          },
-          {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -36,14 +36,15 @@ const HistoryBooking = () => {
 
   // ID bệnh nhân cố định (có thể chuyển thành prop nếu cần)
   const patientId = useSelector((state) => state.auth.profileId);
-
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL;
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
   // Hàm lấy dữ liệu booking
   const fetchBookings = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const url = `https://psychologysupport-scheduling.azurewebsites.net/bookings`;
+      const url = `${VITE_API_SCHEDULE_URL}/bookings`;
       const response = await axios.get(url, {
         params: {
           PageIndex: pageIndex,
@@ -52,6 +53,10 @@ const HistoryBooking = () => {
           SortBy: sortBy,
           SortOrder: sortOrder,
           PatientId: patientId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -90,7 +95,13 @@ const HistoryBooking = () => {
         if (!doctorsData[doctorId]) {
           try {
             const response = await axios.get(
-              `https://psychologysupport-profile.azurewebsites.net/doctors/${doctorId}`
+              `${VITE_API_PROFILE_URL}/doctors/${doctorId}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
             );
             doctorsData[doctorId] = response.data.doctorProfileDto;
           } catch (doctorErr) {
@@ -141,9 +152,15 @@ const HistoryBooking = () => {
     try {
       // Gọi API để hủy lịch hẹn
       await axios.put(
-        `https://psychologysupport-scheduling.azurewebsites.net/bookings/${selectedBooking.bookingCode}/status`,
+        `${VITE_API_SCHEDULE_URL}/bookings/${selectedBooking.bookingCode}/status`,
         {
           status: "Cancelled",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 

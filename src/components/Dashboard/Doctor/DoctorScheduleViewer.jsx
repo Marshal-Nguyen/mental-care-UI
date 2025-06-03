@@ -27,7 +27,8 @@ export default function DoctorScheduleViewer({ doctorId }) {
 
   const [isBusyLoading, setIsBusyLoading] = useState(false);
   const [busyMessage, setBusyMessage] = useState({ type: "", text: "" });
-
+  const VITE_API_SCHEDULE_URL = import.meta.env.VITE_API_SCHEDULE_URL;
+  const VITE_API_PROFILE_URL = import.meta.env.VITE_API_PROFILE_URL;
   const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
   const markDoctorBusy = async () => {
     if (!selectedDate) {
@@ -55,11 +56,17 @@ export default function DoctorScheduleViewer({ doctorId }) {
         .split("T")[0]; // Format: YYYY-MM-DD
 
       const response = await axios.post(
-        "https://psychologysupport-scheduling.azurewebsites.net/doctor-busy",
+        `${VITE_API_SCHEDULE_URL}/doctor-busy`,
         {
           doctorBusyDto: {
             doctorId: doctorId,
             date: formattedDate,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -193,12 +200,18 @@ export default function DoctorScheduleViewer({ doctorId }) {
       const startTimes = selectedSlots.map((slot) => slot.startTime);
 
       const response = await axios.post(
-        "https://psychologysupport-scheduling.azurewebsites.net/doctor-availabilities",
+        `${VITE_API_SCHEDULE_URL}/doctor-availabilities`,
         {
           doctorAvailabilityCreate: {
             doctorId: doctorId,
             date: formattedDate,
             startTimes: startTimes,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -237,7 +250,13 @@ export default function DoctorScheduleViewer({ doctorId }) {
     try {
       const formattedDate = date.toLocaleDateString("en-CA").split("T")[0]; // Format: YYYY-MM-DD
       const response = await axios.get(
-        `https://psychologysupport-scheduling.azurewebsites.net/doctor-schedule/${doctorId}/${formattedDate}`
+        `${VITE_API_SCHEDULE_URL}/doctor-schedule/${doctorId}/${formattedDate}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       setScheduledSlots(response.data.timeSlots || []);
     } catch (error) {

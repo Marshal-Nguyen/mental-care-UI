@@ -38,11 +38,14 @@ const LogIn = () => {
     }));
   };
   const [avatarUrl, setAvatarUrl] = useState(null);
+  const API_AUTH = import.meta.env.VITE_API_AUTH_URL;
+  const API_SUBSCRIPTION = import.meta.env.VITE_API_SUBSCRIPTION_URL;
+  const API_IMAGE = import.meta.env.VITE_API_IMAGE_URL;
   // Xử lý đăng nhập
   const fetchAvatar = async (userId) => {
     try {
       const avatarResponse = await axios.get(
-        `https://psychologysupport-image.azurewebsites.net/image/get?ownerType=User&ownerId=${userId}`
+        `${API_IMAGE}/get?ownerType=User&ownerId=${userId}`
       );
       setAvatarUrl(
         avatarResponse.data.url || "https://i.pravatar.cc/150?img=3"
@@ -91,11 +94,9 @@ const LogIn = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "https://anhtn.id.vn/auth-service/Auth/login",
-        formData,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await axios.post(`${API_AUTH}/Auth/login`, formData, {
+        headers: { "Content-Type": "application/json" },
+      });
 
       await handleAuthSuccess(response.data);
     } catch (err) {
@@ -110,7 +111,7 @@ const LogIn = () => {
           };
 
           const refreshResponse = await axios.post(
-            "https://anhtn.id.vn/auth-service/Auth/refresh-token",
+            `${API_AUTH}/Auth/refresh-token`,
             formRefreshToken,
             { headers: { "Content-Type": "application/json" } }
           );
@@ -205,8 +206,7 @@ const LogIn = () => {
   };
   const checkPurchasedPackage = async (profileId) => {
     try {
-      const baseUrl =
-        "https://anhtn.id.vn/subscription-service/service-packages";
+      const baseUrl = `${API_SUBSCRIPTION}/service-packages`;
       const url = profileId
         ? `${baseUrl}?PageIndex=1&PageSize=10&patientId=${profileId}`
         : `${baseUrl}?PageIndex=1&PageSize=10`;

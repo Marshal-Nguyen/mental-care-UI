@@ -8,13 +8,19 @@ const HistoryTestResult = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const profileId = useSelector((state) => state.auth.profileId);
-
+  const VITE_API_TEST_URL = import.meta.env.VITE_API_TEST_URL;
   useEffect(() => {
     const fetchTestResults = async () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://psychologysupport-test.azurewebsites.net/test-results/${profileId}?PageIndex=0&PageSize=10&SortBy=TakenAt&SortOrder=desc`
+          `${VITE_API_TEST_URL}/test-results/${profileId}?PageIndex=0&PageSize=10&SortBy=TakenAt&SortOrder=desc`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
 
         if (!response.ok) {

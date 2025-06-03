@@ -16,7 +16,7 @@ const TaskProgressChart = () => {
   const [error, setError] = useState(null);
 
   const profileId = useSelector((state) => state.auth.profileId);
-
+  const API_SCHEDULING = import.meta.env.VITE_API_SCHEDULE_URL;
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +25,13 @@ const TaskProgressChart = () => {
 
         // First API call to get schedule info
         const schedulesResponse = await axios.get(
-          `https://psychologysupport-scheduling.azurewebsites.net/schedules?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`
+          `${API_SCHEDULING}/schedules?PageIndex=1&PageSize=10&SortBy=startDate&SortOrder=asc&PatientId=${profileId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
 
         if (schedulesResponse.data.schedules.data.length === 0) {
@@ -36,7 +42,7 @@ const TaskProgressChart = () => {
 
         // Second API call to get sessions data
         const sessionsResponse = await axios.get(
-          `https://psychologysupport-scheduling.azurewebsites.net/schedule/get-total-sessions?ScheduleId=${
+          `${API_SCHEDULING}/schedule/get-total-sessions?ScheduleId=${
             schedulesResponse.data.schedules.data[0].id
           }&StartDate=${schedulesResponse.data.schedules.data[0].startDate.substring(
             0,
@@ -44,7 +50,13 @@ const TaskProgressChart = () => {
           )}&EndDate=${schedulesResponse.data.schedules.data[0].endDate.substring(
             0,
             10
-          )}`
+          )}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
 
         // Process sessions data

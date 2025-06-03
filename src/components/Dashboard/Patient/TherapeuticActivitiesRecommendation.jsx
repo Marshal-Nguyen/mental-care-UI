@@ -20,7 +20,7 @@ const TherapeuticActivitiesRecommendation = ({
   const [filterIntensity, setFilterIntensity] = useState("");
   const [filterTherapeuticType, setFilterTherapeuticType] = useState("");
   const [isSaved, setIsSaved] = useState(false);
-
+  const VITE_API_LIFESTYLE_URL = import.meta.env.VITE_API_LIFESTYLE_URL;
   // For debounce implementation
   const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -53,10 +53,16 @@ const TherapeuticActivitiesRecommendation = ({
     }
     try {
       const response = await axios.get(
-        `https://psychologysupport-lifestyles.azurewebsites.net/therapeutic-activities?pageIndex=${
+        `${VITE_API_LIFESTYLE_URL}/therapeutic-activities?pageIndex=${
           pageIndex + 1
         }&pageSize=10`,
-        { signal }
+        {
+          signal,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       const pageData = {

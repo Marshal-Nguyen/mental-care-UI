@@ -39,6 +39,8 @@ export default function Booking() {
 
   const daysOfWeek = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
   const profileId = useSelector((state) => state.auth.profileId);
+  const API_SCHEDULING_SERVICE = import.meta.env.VITE_API_SCHEDULE_URL;
+  const API_PROFILE_SERVICE = import.meta.env.VITE_API_PROFILE_URL;
   // Hàm lấy số ngày trong tháng (cải tiến)
   const getDaysInMonth = (year, month) => {
     const firstDay = new Date(year, month, 1).getDay();
@@ -92,7 +94,7 @@ export default function Booking() {
           .toLocaleDateString("en-CA")
           .split("T")[0]; // Format: YYYY-MM-DD
         const response = await axios.get(
-          `https://anhtn.id.vn/scheduling-service/doctor-schedule/${doctorId}/${formattedDate}`,
+          `${API_SCHEDULING_SERVICE}/doctor-schedule/${doctorId}/${formattedDate}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -123,8 +125,7 @@ export default function Booking() {
     const fetchDoctorInfo = async () => {
       try {
         const response = await axios.get(
-          `https://anhtn.id.vn/profile-service/doctors/${doctorId}
-          `,
+          `${API_PROFILE_SERVICE}/doctors/${doctorId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -185,7 +186,7 @@ export default function Booking() {
       // Make API call to create the booking
       console.log("bookingData", JSON.stringify(bookingData, null, 2));
       const response = await axios.post(
-        "https://anhtn.id.vn/scheduling-service/bookings",
+        `${API_SCHEDULING_SERVICE}/bookings`,
         bookingData,
         {
           headers: {
