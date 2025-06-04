@@ -261,16 +261,23 @@ export default function Pricing() {
             <div
               key={plan.id}
               className={`bg-gradient-to-b ${
-                plan.isPurchased
-                  ? "from-green-100 to-green-200"
-                  : "from-violet-100 to-purple-300"
-              } rounded-3xl shadow-xl p-8 text-center border-2 ${
-                plan.isPurchased ? "border-green-300" : "border-purple-500"
-              } transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden`}>
-              {plan.isPurchased && (
+                plan.purchaseStatus === "Purchased"
+                  ? "from-green-100 to-green-200 border-green-300"
+                  : plan.purchaseStatus === "PendingPayment"
+                  ? "from-yellow-100 to-orange-200 border-yellow-400"
+                  : "from-violet-100 to-purple-300 border-purple-500"
+              } rounded-3xl shadow-xl p-8 text-center border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden`}>
+              {plan.purchaseStatus === "Purchased" && (
                 <div className="absolute top-0 right-0">
                   <div className="bg-green-600 text-white text-xs font-bold px-6 py-1 transform rotate-45 translate-x-5 translate-y-3">
                     CURRENT PLAN
+                  </div>
+                </div>
+              )}
+              {plan.purchaseStatus === "PendingPayment" && (
+                <div className="absolute top-0 right-0">
+                  <div className="bg-yellow-600 text-white text-xs font-bold px-6 py-1 transform rotate-45 translate-x-5 translate-y-3">
+                    PENDING PAYMENT
                   </div>
                 </div>
               )}
@@ -288,7 +295,7 @@ export default function Pricing() {
                 </p>
               </div>
               {/* Thêm phần hiển thị services */}
-              <div className=" mb-4 text-left">
+              <div className="mb-4 text-left">
                 <h3 className="text-lg font-semibold text-purple-800 mb-3">
                   What's Included:
                 </h3>
@@ -331,14 +338,22 @@ export default function Pricing() {
                 />
                 <button
                   className={`w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all duration-300 ${
-                    plan.isPurchased
+                    plan.purchaseStatus === "Purchased"
                       ? "bg-green-500 text-white cursor-not-allowed"
+                      : plan.purchaseStatus === "PendingPayment"
+                      ? "bg-yellow-500 text-white cursor-not-allowed"
                       : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
                   }`}
-                  disabled={plan.isPurchased || loadingStates[plan.id]}
+                  disabled={
+                    plan.purchaseStatus === "Purchased" ||
+                    plan.purchaseStatus === "PendingPayment" ||
+                    loadingStates[plan.id]
+                  }
                   onClick={() => handleBuyService(plan.id)}>
-                  {plan.isPurchased
+                  {plan.purchaseStatus === "Purchased"
                     ? "Current Plan"
+                    : plan.purchaseStatus === "PendingPayment"
+                    ? "Pending Payment"
                     : loadingStates[plan.id]
                     ? "Processing..."
                     : "Subscribe Now"}

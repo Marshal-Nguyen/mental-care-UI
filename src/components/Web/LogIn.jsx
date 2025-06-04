@@ -45,7 +45,10 @@ const LogIn = () => {
   const fetchAvatar = async (userId) => {
     try {
       const avatarResponse = await axios.get(
-        `${API_IMAGE}/get?ownerType=User&ownerId=${userId}`
+        `${API_IMAGE}/get?ownerType=User&ownerId=${userId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
       );
       setAvatarUrl(
         avatarResponse.data.url || "https://i.pravatar.cc/150?img=3"
