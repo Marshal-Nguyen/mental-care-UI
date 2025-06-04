@@ -107,14 +107,17 @@ export default function Pricing() {
     const selectedPackage = packages.find((pkg) => pkg.id === packageId);
 
     // Check if the package is already purchased
-    if (selectedPackage.isPurchased) {
+    if (selectedPackage.purchaseStatus === "Purchased") {
       toast.info("Bạn đã sở hữu gói này.");
       return;
     }
 
     // Find the currently purchased package
-    const purchasedPackage = packages.find((pkg) => pkg.isPurchased);
+    const purchasedPackage = packages.find(
+      (pkg) => pkg.purchaseStatus === "Purchased"
+    );
 
+    // If there is a purchased package, check for upgrade/downgrade
     if (purchasedPackage) {
       // If the new package is more expensive, show upgrade modal
       if (selectedPackage.price > purchasedPackage.price) {
@@ -125,12 +128,14 @@ export default function Pricing() {
 
       // If the new package is cheaper or equal, prevent purchase
       if (selectedPackage.price <= purchasedPackage.price) {
-        toast.error("You cannot switch to a plan with a lower or equal price.");
+        toast.error(
+          "Bạn không thể chuyển sang gói có giá thấp hơn hoặc bằng gói hiện tại."
+        );
         return;
       }
     }
 
-    // Proceed with package purchase if no issues
+    // Proceed with package purchase or payment completion
     await proceedWithPurchase(selectedPackage);
   };
 
@@ -340,20 +345,17 @@ export default function Pricing() {
                   className={`w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all duration-300 ${
                     plan.purchaseStatus === "Purchased"
                       ? "bg-green-500 text-white cursor-not-allowed"
-                      : plan.purchaseStatus === "PendingPayment"
-                      ? "bg-yellow-500 text-white cursor-not-allowed"
                       : "bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg"
                   }`}
                   disabled={
                     plan.purchaseStatus === "Purchased" ||
-                    plan.purchaseStatus === "PendingPayment" ||
                     loadingStates[plan.id]
                   }
                   onClick={() => handleBuyService(plan.id)}>
                   {plan.purchaseStatus === "Purchased"
                     ? "Current Plan"
                     : plan.purchaseStatus === "PendingPayment"
-                    ? "Pending Payment"
+                    ? "Complete Payment"
                     : loadingStates[plan.id]
                     ? "Processing..."
                     : "Subscribe Now"}
