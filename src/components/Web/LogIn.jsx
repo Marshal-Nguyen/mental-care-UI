@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import supabase from "../../Supabase/supabaseClient";
 import {
   setCredentials,
   clearCredentials,
@@ -207,6 +208,19 @@ const LogIn = () => {
       toast.error("Lỗi đăng nhập! Vui lòng thử lại.");
     }
   };
+  const handleLoginWithithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:5173/oauth/callback",
+      },
+    });
+  };
+  useEffect(() => {
+    const token = localStorage.getItem("jwt");
+    setIsLoggedIn(!!token); // Cập nhật trạng thái đăng nhập dựa trên token
+  }, []);
+
   const checkPurchasedPackage = async (profileId) => {
     try {
       const baseUrl = `${API_SUBSCRIPTION}/service-packages`;
@@ -254,6 +268,7 @@ const LogIn = () => {
     }
 
     const currentRole = localStorage.getItem("userRole");
+    console.log("Current role:", currentRole);
     const profileId = localStorage.getItem("profileId");
 
     // Chỉ kiểm tra gói đã mua nếu role là "User"
@@ -379,7 +394,7 @@ const LogIn = () => {
                 <div class="flex justify-center w-full items-center">
                   <div>
                     <button
-                      onClick={handleGoogleLogin}
+                      onClick={handleLoginWithithGoogle}
                       class="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
                       <svg
                         viewBox="0 0 24 24"

@@ -44,7 +44,7 @@ import ProfileManager from "./pages/manager/profile/Profile";
 import HistoryPatient1 from "./components/manager/customer/HistoryPatient";
 import BookingList from "./pages/manager/booking/Booking";
 import BookingDetail from "./pages/manager/booking/BookingDetail";
-import Transactions from "./pages/manager/transaction/Transactions"
+import Transactions from "./pages/manager/transaction/Transactions";
 //staff
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
@@ -83,6 +83,7 @@ import PaymentCallback from "./components/Payment/PaymentCallback";
 import Chat from "./components/Chatbox/Chat";
 import PatientBooking from "./pages/doctor/Dashboard/PatientBooking";
 import Shopping from "./pages/User/Dashboard/Shopping";
+import OAuthCallback from "./components/oauth/callback";
 function App() {
   return (
     <>
@@ -105,6 +106,7 @@ function App() {
             <Route path="payment-success" element={<PaymentSuccess />} />
             <Route path="payment-failure" element={<PaymentFailure />} />
           </Route>
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
           <Route path="/payments/callback" element={<PaymentCallback />} />
           <Route element={<PrivateRoute allowedRoles={["User"]} />}>
             <Route path="/DashboardPartient" element={<DashboardPartient />}>
@@ -184,4 +186,3 @@ function App() {
 }
 
 export default App;
-
