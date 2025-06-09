@@ -13,10 +13,11 @@ import {
 import { useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
 import { toast } from "react-toastify";
+import { useAuth } from "../../oauth/AuthContext";
 const Navigation = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-
+  const { setIsLoggedIn } = useAuth();
   const navItems = [
     {
       icon: <Activity size={20} strokeWidth={1.5} />,
@@ -99,6 +100,7 @@ const Navigation = () => {
             type="button"
             onClick={() => {
               dispatch(clearCredentials());
+              setIsLoggedIn(false);
               toast.success("Logout successfully");
             }}
             className="cursor-pointer font-medium tracking-wide text-[#554d4ddc] hover:text-[#5D4DB8] font-serif">

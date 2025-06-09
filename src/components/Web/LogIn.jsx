@@ -15,13 +15,16 @@ import {
   closeLoginModal,
   openLoginModal,
 } from "../../store/authSlice";
+import { useAuth } from "../oauth/AuthContext";
 const LogIn = () => {
-  const userId = localStorage.getItem("userId");
+  // const { isLoggedInGoogle, setIsLoggedInGoogle } = useAuth();
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
+
   const dispatch = useDispatch();
   const isModalOpen = useSelector((state) => state.auth.isLoginModalOpen);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
+  // const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +42,7 @@ const LogIn = () => {
     }));
   };
   const [avatarUrl, setAvatarUrl] = useState(null);
-  const API_AUTH = import.meta.env.VITE_API_AUTH_URL;
+  const API_AUTH = import.meta.env.VITE_SUPABASE_URL;
   const API_SUBSCRIPTION = import.meta.env.VITE_API_SUBSCRIPTION_URL;
   const API_IMAGE = import.meta.env.VITE_API_IMAGE_URL;
   // Xử lý đăng nhập
@@ -60,47 +63,51 @@ const LogIn = () => {
     }
   };
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUserRole = localStorage.getItem("userRole");
-    const storedProfileId = localStorage.getItem("profileId");
+  // useEffect(() => {
+  //   const storedToken = localStorage.getItem("token");
+  //   const storedUserRole = localStorage.getItem("userRole");
+  //   const storedProfileId = localStorage.getItem("profileId");
 
-    const storedUserId = localStorage.getItem("userId");
+  //   const storedUserId = localStorage.getItem("userId");
 
-    if (storedToken && storedUserRole) {
-      try {
-        const decodedToken = jwtDecode(storedToken);
-        // Kiểm tra token hết hạn
-        if (decodedToken.exp * 1000 > Date.now()) {
-          setIsLoggedIn(true);
+  //   if (storedToken && storedUserRole) {
+  //     try {
+  //       const decodedToken = jwtDecode(storedToken);
+  //       // Kiểm tra token hết hạn
+  //       if (decodedToken.exp * 1000 > Date.now()) {
+  //         setIsLoggedIn(true);
 
-          dispatch(
-            setCredentials({
-              token: storedToken,
-              userRole: storedUserRole,
-              profileId: storedProfileId,
-              userId: storedUserId,
-            })
-          );
-          fetchAvatar(storedUserId);
-        } else {
-          handleLogout();
-          toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
-        }
-      } catch (error) {
-        console.error("Token decode error:", error);
-        handleLogout();
-        toast.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!");
-      }
-    }
-  }, [dispatch]);
+  //         dispatch(
+  //           setCredentials({
+  //             token: storedToken,
+  //             userRole: storedUserRole,
+  //             profileId: storedProfileId,
+  //             userId: storedUserId,
+  //           })
+  //         );
+  //         fetchAvatar(storedUserId);
+  //       } else {
+  //         handleLogout();
+  //         toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
+  //       }
+  //     } catch (error) {
+  //       console.error("Token decode error:", error);
+  //       handleLogout();
+  //       toast.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!");
+  //     }
+  //   }
+  // }, [dispatch]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_AUTH}/Auth/login`, formData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post(
+        `http://localhost:3000/api/auth/login`,
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       await handleAuthSuccess(response.data);
     } catch (err) {
@@ -134,81 +141,38 @@ const LogIn = () => {
 
   // ✅ Hàm lưu token và cập nhật state
   const handleAuthSuccess = async (data) => {
-    const token = data.token;
-    const refresh_token = data.refreshToken;
-    const decodedToken = jwtDecode(token);
-
-    // Lấy thông tin từ JWT
-    const userRole =
-      decodedToken[
-        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-      ];
-    const profileId = decodedToken.profileId;
-    const userId = decodedToken.userId;
-    const username =
-      decodedToken[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-      ];
-
-    // Lưu vào localStorage
-    localStorage.setItem("token", token);
-    localStorage.setItem("refresh_token", refresh_token);
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userRole", userRole);
-    localStorage.setItem("profileId", profileId);
-    localStorage.setItem("userId", userId);
-    localStorage.setItem("username", username);
-    localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
-
-    setIsLoggedIn(true);
-
-    // Dispatch Redux
-    dispatch(setCredentials({ token, userRole, profileId, userId }));
-    dispatch(closeLoginModal());
-    fetchAvatar(userId);
-
-    toast.success("Đăng nhập thành công!", { position: "top-right" });
-
-    if (userRole === "Staff") {
-      navigate("/staff");
-    }
-  };
-
-  // Sửa lại handleGoogleLogin để cũng navigate ngay
-  const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+      const token = data.token;
+      const decodedToken = jwtDecode(token);
+      const { role, user_id, profileId } = decodedToken;
 
-      if (!user.email.endsWith("@fpt.edu.vn")) {
-        toast.warn("Chỉ email FPT được phép đăng nhập!");
-        await auth.signOut();
-        return;
-      }
+      console.log("Decoded token data:", { role, user_id, profileId }); // Debug log
 
-      const token = await user.getIdToken();
-      const decodedToken = jwtDecode(token); // Giải mã token Firebase
-      const userId = user.uid; // Sử dụng uid từ Firebase làm userId
+      // Set Redux state first
+      dispatch(
+        setCredentials({
+          token,
+          role,
+          profileId,
+          user_id,
+        })
+      );
 
+      // Then set other states
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userRole", "User");
-      localStorage.setItem("userImage", user.photoURL);
-      localStorage.setItem("firebaseToken", token);
-      localStorage.setItem("userId", userId); // Lưu userId
-
       setIsLoggedIn(true);
 
-      dispatch(setCredentials({ token, userRole: "User", userId }));
       dispatch(closeLoginModal());
-      toast.success("Đăng nhập thành công!");
-      fetchAvatar(userId); // Gọi fetchAvatar sau khi có userId
-      console.log("token for firebase", token);
+      fetchAvatar(user_id);
+
+      toast.success("Đăng nhập thành công!", { position: "top-right" });
     } catch (error) {
-      console.error("Google login error:", error);
-      toast.error("Lỗi đăng nhập! Vui lòng thử lại.");
+      console.error("Auth success handling error:", error);
+      toast.error("Có lỗi xảy ra trong quá trình xử lý đăng nhập!");
     }
   };
-  const handleLoginWithithGoogle = async () => {
+
+  const handleLoginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -216,10 +180,6 @@ const LogIn = () => {
       },
     });
   };
-  useEffect(() => {
-    const token = localStorage.getItem("jwt");
-    setIsLoggedIn(!!token); // Cập nhật trạng thái đăng nhập dựa trên token
-  }, []);
 
   const checkPurchasedPackage = async (profileId) => {
     try {
@@ -244,9 +204,7 @@ const LogIn = () => {
       await auth.signOut();
       dispatch(clearCredentials());
       setIsLoggedIn(false);
-
       setAvatarUrl(null); // Reset avatarUrl
-
       navigate("learnAboutEmo");
       toast.warn("Đã đăng xuất thành công!");
     } catch (error) {
@@ -268,27 +226,17 @@ const LogIn = () => {
     }
 
     const currentRole = localStorage.getItem("userRole");
-    console.log("Current role:", currentRole);
-    const profileId = localStorage.getItem("profileId");
-
-    // Chỉ kiểm tra gói đã mua nếu role là "User"
-    if (currentRole === "User") {
-      const hasPurchased = await checkPurchasedPackage(profileId);
-      if (hasPurchased) {
-        navigate("/DashboardPartient");
-      } else {
-        toast.error("Bạn cần đăng ký một gói dịch vụ để truy cập Dashboard!");
-      }
-    } else {
-      // Các role khác không cần kiểm tra isPurchased
-      if (currentRole === "Doctor") {
-        navigate("/DashboardDoctor");
-      } else if (currentRole === "Staff") {
-        navigate("/staff");
-      } else if (currentRole === "Manager") {
-        navigate("/manager");
-      }
+    const currentRole1 = localStorage.getItem("userRole1");
+    if (currentRole === "Patient" || currentRole1 === "Patient") {
+      navigate("/DashboardPartient");
+    } else if (currentRole === "Doctor" || currentRole1 === "Doctor") {
+      navigate("/DashboardDoctor");
+    } else if (currentRole === "Staff" || currentRole1 === "Staff") {
+      navigate("/staff");
+    } else if (currentRole === "Manager" || currentRole1 === "Manager") {
+      navigate("/manager");
     }
+
     setDropdownOpen(false);
   };
   return (
@@ -394,7 +342,7 @@ const LogIn = () => {
                 <div class="flex justify-center w-full items-center">
                   <div>
                     <button
-                      onClick={handleLoginWithithGoogle}
+                      onClick={handleLoginWithGoogle}
                       class="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
                       <svg
                         viewBox="0 0 24 24"
