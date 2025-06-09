@@ -63,41 +63,6 @@ const LogIn = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const storedToken = localStorage.getItem("token");
-  //   const storedUserRole = localStorage.getItem("userRole");
-  //   const storedProfileId = localStorage.getItem("profileId");
-
-  //   const storedUserId = localStorage.getItem("userId");
-
-  //   if (storedToken && storedUserRole) {
-  //     try {
-  //       const decodedToken = jwtDecode(storedToken);
-  //       // Kiểm tra token hết hạn
-  //       if (decodedToken.exp * 1000 > Date.now()) {
-  //         setIsLoggedIn(true);
-
-  //         dispatch(
-  //           setCredentials({
-  //             token: storedToken,
-  //             userRole: storedUserRole,
-  //             profileId: storedProfileId,
-  //             userId: storedUserId,
-  //           })
-  //         );
-  //         fetchAvatar(storedUserId);
-  //       } else {
-  //         handleLogout();
-  //         toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
-  //       }
-  //     } catch (error) {
-  //       console.error("Token decode error:", error);
-  //       handleLogout();
-  //       toast.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!");
-  //     }
-  //   }
-  // }, [dispatch]);
-
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -159,12 +124,10 @@ const LogIn = () => {
       );
 
       // Then set other states
-      localStorage.setItem("isLoggedIn", "true");
+      // localStorage.setItem("isLoggedIn", "true");
       setIsLoggedIn(true);
-
       dispatch(closeLoginModal());
       fetchAvatar(user_id);
-
       toast.success("Đăng nhập thành công!", { position: "top-right" });
     } catch (error) {
       console.error("Auth success handling error:", error);
@@ -226,14 +189,14 @@ const LogIn = () => {
     }
 
     const currentRole = localStorage.getItem("userRole");
-    const currentRole1 = localStorage.getItem("userRole1");
-    if (currentRole === "Patient" || currentRole1 === "Patient") {
+
+    if (currentRole === "User") {
       navigate("/DashboardPartient");
-    } else if (currentRole === "Doctor" || currentRole1 === "Doctor") {
+    } else if (currentRole === "Doctor") {
       navigate("/DashboardDoctor");
-    } else if (currentRole === "Staff" || currentRole1 === "Staff") {
+    } else if (currentRole === "Staff") {
       navigate("/staff");
-    } else if (currentRole === "Manager" || currentRole1 === "Manager") {
+    } else if (currentRole === "Manager") {
       navigate("/manager");
     }
 

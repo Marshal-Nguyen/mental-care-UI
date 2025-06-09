@@ -13,9 +13,11 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { clearCredentials } from "../../../store/authSlice";
 import { toast } from "react-toastify";
+import { useAuth } from "../../oauth/AuthContext";
 const Navigation = () => {
   const dispatch = useDispatch();
   const profileId = useSelector((state) => state.auth.profileId);
+  const { setIsLoggedIn } = useAuth();
   console.log("Test Profile", profileId);
 
   // Sử dụng useLocation để lấy thông tin URL hiện tại
@@ -83,6 +85,7 @@ const Navigation = () => {
             type="button"
             onClick={() => {
               dispatch(clearCredentials());
+              setIsLoggedIn(false);
               toast.success("Logout successfully!");
             }}
             className="cursor-pointer font-medium tracking-wide text-[#554d4ddc] hover:text-[#5D4DB8] font-serif">
