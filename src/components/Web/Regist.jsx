@@ -53,7 +53,7 @@ const RegisterForm = () => {
         setIsSubmitting(true);
         try {
             const response = await axios.post(
-                'https://psychologysupport-auth.azurewebsites.net/Auth/register',
+                'https://anhtn.id.vn/auth-service/Auth/register',
                 formData
             );
             console.log('Registration successful:', response.data);
