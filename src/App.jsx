@@ -44,7 +44,7 @@ import ProfileManager from "./pages/manager/profile/Profile";
 import HistoryPatient1 from "./components/manager/customer/HistoryPatient";
 import BookingList from "./pages/manager/booking/Booking";
 import BookingDetail from "./pages/manager/booking/BookingDetail";
-import Transactions from "./pages/manager/transaction/Transactions"
+import Transactions from "./pages/manager/transaction/Transactions";
 //staff
 import Staff from "./pages/staff/Staff";
 import Chatbox from "./components/staff/Chatbox";
@@ -83,6 +83,7 @@ import PaymentCallback from "./components/Payment/PaymentCallback";
 import Chat from "./components/Chatbox/Chat";
 import PatientBooking from "./pages/doctor/Dashboard/PatientBooking";
 import Shopping from "./pages/User/Dashboard/Shopping";
+import VerifyDoctorEmail from "./components/mental_veri/verifiEmail";
 function App() {
   return (
     <>
@@ -91,6 +92,7 @@ function App() {
           {/* Các route chính */}
           <Route path="/" element={<Intro />} />
           <Route path="regist" element={<Regist />} />
+          <Route path="/verify-email" element={<VerifyDoctorEmail />} />
           <Route path="/EMO" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
@@ -184,4 +186,3 @@ function App() {
 }
 
 export default App;
-
