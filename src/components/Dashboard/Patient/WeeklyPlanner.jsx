@@ -83,7 +83,13 @@ const WeeklyPlanner = () => {
         if (sessionForDate) {
           setSessionsForDate(sessionForDate.id);
           const activityResponse = await axios.get(
-            `${ACTIVITIES_ENDPOINT}/${sessionForDate.id}`
+            `${ACTIVITIES_ENDPOINT}/${sessionForDate.id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
           );
           activitiesForDate = activityResponse.data.scheduleActivities.map(
             (activity) =>
