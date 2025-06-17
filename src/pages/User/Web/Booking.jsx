@@ -177,7 +177,7 @@ export default function Booking() {
           price: 200000,
           promoCode: promoCode.trim() || null,
           giftCodeId: null, // As specified, set to null
-          paymentMethod: "VNPay", // Using the payment method from the image
+          paymentMethod: "PayOS", // Using the payment method from the image
         },
         returnUrl: "/payments/callback",
         // returnUrl: "https://emo-rouge.vercel.app/payments/callback",
