@@ -27,15 +27,15 @@ const PaymentCallback = () => {
         };
 
         // Send callback parameters to backend for initial processing
-        await axios.get(
-          `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        // await axios.get(
+        //   `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`,
+        //   {
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+        //     },
+        //   }
+        // );
 
         // Verify payment status using BE's link-information endpoint
         const linkInfoResponse = await axios.get(
@@ -48,7 +48,7 @@ const PaymentCallback = () => {
         );
 
         const linkInfo = linkInfoResponse.data;
-
+        console.log("Link Information:", linkInfo);
         // Check payment result based on status
         if (linkInfo.status === "PAID") {
           // Redirect to success page
@@ -59,6 +59,7 @@ const PaymentCallback = () => {
               transactionDate: linkInfo.transactionDate || linkInfo.createdAt,
             },
           });
+          console.log("Link Information:", linkInfo);
         } else if (linkInfo.status === "CANCELLED" || paymentData.cancel) {
           // Redirect to failure page for cancelled transactions
           navigate("/EMO/payment-failure", {
@@ -67,6 +68,7 @@ const PaymentCallback = () => {
               message: "Giao dịch đã bị hủy",
             },
           });
+          console.log("Link Information:", linkInfo);
         } else {
           // Redirect to failure page for other errors
           navigate("/EMO/payment-failure", {
@@ -75,6 +77,7 @@ const PaymentCallback = () => {
               message: getPayOSErrorMessage(paymentData.code || linkInfo.code),
             },
           });
+          console.log("Link Information:", linkInfo);
         }
       } catch (error) {
         console.error("Error processing payment callback:", error);
