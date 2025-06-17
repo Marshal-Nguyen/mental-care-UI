@@ -20,10 +20,10 @@ const PaymentCallback = () => {
           cancel: queryParams.get("cancel") === "true",
           status: queryParams.get("status"),
           orderCode: queryParams.get("orderCode"),
-          amount: queryParams.get("amount"),
-          description: queryParams.get("description"),
-          transactionDate: queryParams.get("transactionDate"),
-          checksum: queryParams.get("checksum"),
+          // amount: queryParams.get("amount"),
+          // description: queryParams.get("description"),
+          // transactionDate: queryParams.get("transactionDate"),
+          // checksum: queryParams.get("checksum"),
         };
 
         // Send callback parameters to backend for initial processing
@@ -60,11 +60,11 @@ const PaymentCallback = () => {
             },
           });
           console.log("Link Information:", linkInfo);
-        } else if (linkInfo.status === "CANCELLED" || paymentData.cancel) {
+        } else if (linkInfo.status === "CANCELLED") {
           // Redirect to failure page for cancelled transactions
           navigate("/EMO/payment-failure", {
             state: {
-              code: paymentData.code || linkInfo.code,
+              code: linkInfo.code,
               message: "Giao dịch đã bị hủy",
             },
           });
@@ -73,8 +73,8 @@ const PaymentCallback = () => {
           // Redirect to failure page for other errors
           navigate("/EMO/payment-failure", {
             state: {
-              code: paymentData.code || linkInfo.code,
-              message: getPayOSErrorMessage(paymentData.code || linkInfo.code),
+              code: linkInfo.code,
+              message: getPayOSErrorMessage(linkInfo.code),
             },
           });
           console.log("Link Information:", linkInfo);
