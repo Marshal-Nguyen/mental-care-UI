@@ -165,11 +165,12 @@ export default function Pricing() {
           giftId: null,
           startDate: startDate,
           endDate: endDateISO,
-          paymentMethodName: "VNPay",
+          paymentMethodName: "PayOS",
         },
-        returnUrl: "/payments/callback",
+        returnUrl: `${window.location.origin}/payments/callback`, // Ensure absolute URL for PayOS
+        cancelUrl: `${window.location.origin}/payments/callback`,
       };
-
+      console.log("Payload data for purchase:", payloadData);
       const response = await axios.post(
         `${API_BASE}/user-subscriptions`,
         payloadData,
@@ -179,7 +180,7 @@ export default function Pricing() {
           },
         }
       );
-
+      console.log("Response from purchase:", response.data);
       if (response.data && response.data.paymentUrl) {
         window.location.href = response.data.paymentUrl;
       }
@@ -205,9 +206,10 @@ export default function Pricing() {
             promoCode: promoCodes[selectedUpgradePackage.id] || null,
             giftId: null,
             startDate: currentDate,
-            paymentMethodName: "VNPay",
+            paymentMethodName: "PayOS",
           },
-          returnUrl: "/payments/callback",
+          returnUrl: `${window.location.origin}/payments/callback`, // Ensure absolute URL for PayOS
+          cancelUrl: `${window.location.origin}/payments/callback`,
         };
 
         const response = await axios.post(

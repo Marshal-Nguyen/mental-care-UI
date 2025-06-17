@@ -10,26 +10,23 @@ const PaymentCallback = () => {
   useEffect(() => {
     const processPaymentResult = async () => {
       try {
-        // Lấy query parameters từ URL
+        // Get query parameters from URL
         const queryParams = new URLSearchParams(location.search);
 
-        // Lấy tất cả các tham số từ URL
+        // Collect PayOS-specific parameters
         const paymentData = {
-          amount: queryParams.get("vnp_Amount"),
-          bankCode: queryParams.get("vnp_BankCode"),
-          bankTranNo: queryParams.get("vnp_BankTranNo"),
-          cardType: queryParams.get("vnp_CardType"),
-          orderInfo: queryParams.get("vnp_OrderInfo"),
-          payDate: queryParams.get("vnp_PayDate"),
-          responseCode: queryParams.get("vnp_ResponseCode"),
-          tmnCode: queryParams.get("vnp_TmnCode"),
-          transactionNo: queryParams.get("vnp_TransactionNo"),
-          transactionStatus: queryParams.get("vnp_TransactionStatus"),
-          txnRef: queryParams.get("vnp_TxnRef"),
-          secureHash: queryParams.get("vnp_SecureHash"),
+          code: queryParams.get("code"),
+          id: queryParams.get("id"),
+          cancel: queryParams.get("cancel") === "true",
+          status: queryParams.get("status"),
+          orderCode: queryParams.get("orderCode"),
+          amount: queryParams.get("amount"),
+          description: queryParams.get("description"),
+          transactionDate: queryParams.get("transactionDate"),
+          checksum: queryParams.get("checksum"),
         };
 
-        // Gửi request tới backend với toàn bộ query params
+        // Send callback parameters to backend for initial processing
         await axios.get(
           `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`,
           {
@@ -40,25 +37,42 @@ const PaymentCallback = () => {
           }
         );
 
-        // Kiểm tra kết quả thanh toán
-        if (
-          paymentData.responseCode === "00" &&
-          paymentData.transactionStatus === "00"
-        ) {
-          // Chuyển hướng đến trang thành công với dữ liệu cần thiết
+        // Verify payment status using BE's link-information endpoint
+        const linkInfoResponse = await axios.get(
+          `https://anhtn.id.vn/payment-service/payments/payos/link-information/${paymentData.orderCode}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        const linkInfo = linkInfoResponse.data;
+
+        // Check payment result based on status
+        if (linkInfo.status === "PAID") {
+          // Redirect to success page
           navigate("/EMO/payment-success", {
             state: {
-              transactionNo: paymentData.transactionNo,
-              amount: paymentData.amount,
-              payDate: paymentData.payDate,
+              transactionId: linkInfo.id,
+              amount: linkInfo.amount,
+              transactionDate: linkInfo.transactionDate || linkInfo.createdAt,
+            },
+          });
+        } else if (linkInfo.status === "CANCELLED" || paymentData.cancel) {
+          // Redirect to failure page for cancelled transactions
+          navigate("/EMO/payment-failure", {
+            state: {
+              code: paymentData.code || linkInfo.code,
+              message: "Giao dịch đã bị hủy",
             },
           });
         } else {
-          // Chuyển hướng đến trang thất bại với thông tin lỗi
+          // Redirect to failure page for other errors
           navigate("/EMO/payment-failure", {
             state: {
-              responseCode: paymentData.responseCode,
-              message: getVNPayErrorMessage(paymentData.responseCode),
+              code: paymentData.code || linkInfo.code,
+              message: getPayOSErrorMessage(paymentData.code || linkInfo.code),
             },
           });
         }
@@ -75,17 +89,18 @@ const PaymentCallback = () => {
     processPaymentResult();
   }, [location.search, navigate]);
 
-  // Hàm lấy thông báo lỗi từ mã lỗi VNPay
-  const getVNPayErrorMessage = (responseCode) => {
+  // Function to get error message from PayOS error code
+  const getPayOSErrorMessage = (code) => {
     const errorMessages = {
-      24: "Transaction canceled by customer",
-      51: "Insufficient account balance",
-      65: "Transaction limit exceeded for the day",
-      75: "Payment bank under maintenance",
-      99: "Unknown error",
-      "02": "Transaction failed",
+      "00": "Giao dịch thành công", // Handle BE's custom code=00
+      "01": "Dữ liệu không hợp lệ",
+      "02": "Giao dịch thất bại",
+      "03": "Lỗi hệ thống",
+      "04": "Thông tin thanh toán không khớp",
+      "05": "Giao dịch đã tồn tại",
+      99: "Lỗi không xác định",
     };
-    return errorMessages[responseCode] || "Transaction failed";
+    return errorMessages[code] || "Giao dịch thất bại";
   };
 
   return (
