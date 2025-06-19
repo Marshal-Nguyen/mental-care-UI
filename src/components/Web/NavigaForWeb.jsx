@@ -4,6 +4,7 @@ import styles from "../../styles/Web/Navigation.module.css";
 import { useSelector, useDispatch } from "react-redux";
 import { openLoginModal } from "../../store/authSlice"; // Import action mở modal
 import { toast } from "react-toastify"; // Import toast
+import { Tooltip } from "react-tooltip"; // Thêm import này
 
 const NavigaForWeb = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,19 +40,30 @@ const NavigaForWeb = () => {
     }
   };
 
+  const handleComingSoon = (e) => {
+    e.preventDefault();
+    toast.info("Coming Soon! This feature is under development.", {
+      position: "top-center",
+      autoClose: 2000,
+    });
+  };
+
   return (
     <nav className="ml-8 flex items-center px-6 py-5 rounded-2xl bg-white shadow-[0px_5px_4px_-5px_#00000041]">
       {/* Left Navigation */}
       <div className="flex space-x-10 text-gray-600 font-medium items-center">
-        <Link
-          to="TestQuestionList"
-          className={`hover:text-purple-500 ${
-            location.pathname === "/HomeUser/TestQuestionList"
-              ? "text-purple-500"
-              : ""
-          }`}>
+        {/* location.pathname === "/HomeUser/TestQuestionList" */}
+        <a
+          href="#"
+          onClick={handleComingSoon}
+          className="hover:text-purple-500 cursor-pointer relative group"
+          data-tooltip-id="coming-soon-tooltip"
+          data-tooltip-content="Coming Soon!">
           Game
-        </Link>
+          <span className="absolute -top-2 -right-4 bg-yellow-400 text-xs px-1 rounded-full text-white">
+            Soon
+          </span>
+        </a>
         <Link
           to="learnAboutEmo"
           className={`hover:text-purple-500 ${
@@ -61,13 +73,17 @@ const NavigaForWeb = () => {
           }`}>
           Learn about EmoEase
         </Link>
-        <Link
-          to="counselor"
-          className={`hover:text-purple-500 ${
-            location.pathname === "/HomeUser/counselor" ? "text-purple-500" : ""
-          }`}>
+        <a
+          href="#"
+          onClick={handleComingSoon}
+          className="hover:text-purple-500 cursor-pointer relative group"
+          data-tooltip-id="coming-soon-tooltip"
+          data-tooltip-content="Coming Soon!">
           Therapist
-        </Link>
+          <span className="absolute -top-2 -right-4 bg-yellow-400 text-xs px-1 rounded-full text-white">
+            Soon
+          </span>
+        </a>
       </div>
 
       {/* Logo */}
@@ -83,49 +99,46 @@ const NavigaForWeb = () => {
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`block cursor-pointer ${
-              location.pathname === "/HomeUser/workshop"
-                ? "text-purple-500"
-                : ""
-            }`}
+            className="block cursor-pointer group"
+            data-tooltip-id="coming-soon-tooltip"
+            data-tooltip-content="Coming Soon!"
             aria-expanded={isOpen}>
             Extras
           </button>
 
           {isOpen && (
             <div className="absolute left-0 mt-2 w-40 bg-white shadow-md rounded-md border z-999">
-              <Link
-                onClick={() => setIsOpen(false)}
-                to="workshop"
-                className={`block px-4 py-2 hover:bg-gray-100 ${
-                  location.pathname === "/workshop" ? "text-purple-500" : ""
-                }`}>
+              <a
+                href="#"
+                onClick={handleComingSoon}
+                className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 Workshop
-              </Link>
-              <Link
-                onClick={() => setIsOpen(false)}
-                to="shop"
-                className={`block px-4 py-2 hover:bg-gray-100 hover:rounded-md ${
-                  location.pathname === "/shop" ? "text-purple-500" : ""
-                }`}>
-                Store
-              </Link>
+                <span className="ml-2 text-xs text-yellow-600">
+                  (Coming Soon)
+                </span>
+              </a>
+              <a
+                href="#"
+                onClick={handleComingSoon}
+                className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                Blog
+                <span className="ml-2 text-xs text-yellow-600">
+                  (Coming Soon)
+                </span>
+              </a>
             </div>
           )}
         </div>
-        <Link
-          to="blog"
-          className={`hover:text-purple-500 ${
-            location.pathname === "/blog" ? "text-purple-500" : ""
-          }`}>
-          Blog
+
+        <Link to="shop" className="hover:text-purple-500">
+          Store
         </Link>
 
-        {/* ✅ Check trạng thái đăng nhập */}
+        {/* Test button */}
         {isLoggedIn ? (
           <Link
             to="testEmotion"
-            onClick={handleTestClick} // Chặn role bị cấm
+            onClick={handleTestClick}
             className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
             Take the test
           </Link>
@@ -137,6 +150,8 @@ const NavigaForWeb = () => {
           </button>
         )}
       </div>
+
+      <Tooltip id="coming-soon-tooltip" place="top" effect="solid" />
     </nav>
   );
 };
