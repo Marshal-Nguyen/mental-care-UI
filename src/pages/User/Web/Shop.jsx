@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import * as XLSX from "xlsx";
 import { motion } from "framer-motion";
-import { Search, Filter, Eye, X } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 
 const AffiliatePage = () => {
   const [products, setProducts] = useState([]);
@@ -103,7 +103,10 @@ const AffiliatePage = () => {
   };
 
   const filteredProducts = getFilteredProducts();
-
+  // const filteredProducts = useMemo(
+  //   () => getFilteredProducts(),
+  //   [searchTerm, filters, minPrice, maxPrice, products]
+  // );
   useEffect(() => {
     const loadExcelData = async () => {
       try {
@@ -242,12 +245,12 @@ const AffiliatePage = () => {
 
       <div className=" mx-auto lg:px-0 py-6">
         <header className="pt-12 w-full bg-gradient-to-r from-[#4A2580] to-[#804ac2] pb-8 px-6 text-center">
-          <h2 className="text-xl opacity-80 mb-2 text-[#ffffff]">
+          <h1 className="text-xl opacity-80 mb-2 text-[#ffffff]">
             Welcome to EmoRelax
-          </h2>
-          <h1 className="text-5xl font-bold mb-4 text-[#ffffff]">
-            Explore a Relaxing Space
           </h1>
+          <h2 className="text-5xl font-bold mb-4 text-[#ffffff]">
+            Explore a Relaxing Space
+          </h2>
           <p className="mb-8 opacity-80 max-w-3xl mx-auto text-[#ffffff]">
             We carefully select premium products to help you relax and regain
             mental balance in your daily life.
@@ -280,8 +283,12 @@ const AffiliatePage = () => {
               <div className="space-y-6">
                 {/* Search Input */}
                 <div className="relative">
+                  <label htmlFor="search-input" className="sr-only">
+                    Tìm kiếm sản phẩm
+                  </label>
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
+                    id="search-input"
                     type="text"
                     placeholder="Tìm kiếm sản phẩm..."
                     value={searchTerm}
@@ -305,7 +312,7 @@ const AffiliatePage = () => {
                         ${
                           filters.category === category
                             ? "bg-purple-600 text-white"
-                            : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                            : "bg-purple-50 text-gray-600 hover:bg-purple-100"
                         }`}>
                         {category === "all" ? "Tất cả" : category}
                       </button>
@@ -386,7 +393,7 @@ const AffiliatePage = () => {
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="w-full px-4 py-2 rounded-xl text-sm font-medium text-left
-              bg-purple-50 text-purple-700 hover:bg-purple-100 
+              bg-purple-50 text-gray-600 hover:bg-purple-100 
               transition-all flex justify-between items-center">
                     <span>
                       {SORT_OPTIONS.find(
@@ -488,6 +495,7 @@ const AffiliatePage = () => {
                         <img
                           src={product.image}
                           alt={product.name}
+                          loading="lazy"
                           className="w-full h-full object-cover transform group-hover:scale-110 
                    transition-transform duration-500"
                         />
@@ -537,27 +545,7 @@ const AffiliatePage = () => {
                       group-hover:text-purple-700 transition-colors">
                           {formatPrice(product.price)}
                         </span>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-full bg-purple-100 text-purple-600 
-                   hover:bg-purple-200 transition-colors">
-                          <Eye className="w-5 h-5" />
-                        </motion.button>
                       </div>
-
-                      {/* Optional: Usage Preview - Hidden by Default */}
-                      {/* {product.usage && (
-                    <div
-                      className="hidden group-hover:block absolute bottom-0 left-0 right-0 
-                     bg-white/95 backdrop-blur-sm p-3 transform translate-y-full 
-                     group-hover:translate-y-0 transition-transform duration-300">
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        <span className="font-medium">Công dụng:</span>{" "}
-                        {product.usage}
-                      </p>
-                    </div>
-                  )} */}
                     </div>
                   </motion.div>
                 ))

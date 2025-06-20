@@ -217,122 +217,58 @@ const PremiumChatPopup = () => {
 
       {/* Modal Chat */}
       {isOpen && (
-        <div
-          className={`absolute ${
-            isMobileView ? "inset-x-2 bottom-2" : "bottom-0 right-0"
-          } bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col ${
-            isMobileView ? "w-auto h-96" : "w-96 h-96"
-          }`}>
-          {/* Header */}
-          <div className="bg-white text-black p-4 flex justify-between items-center border-b border-gray-100">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-[#602985] flex items-center justify-center mr-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-6 h-6 text-white">
-                  <circle cx="12" cy="12" r="5" />
-                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">EMO</h3>
-                <div className="text-xs text-gray-500">
-                  Nhân viên trực tuyến
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
+        <>
+          {/* Backdrop with blur effect */}
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+            onClick={() => setIsOpen(false)}
+          />
+
+          {/* Chat Modal */}
+          <div
+            className={`fixed ${
+              isMobileView
+                ? "inset-x-2 inset-y-2"
+                : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            } bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col ${
+              isMobileView ? "w-auto h-[95vh]" : "w-[800px] h-[66vh]"
+            } transition-all duration-300 ease-in-out z-50`}
+            style={{
+              maxHeight: isMobileView ? "95vh" : "800px",
+            }}>
+            {/* Header */}
+            <div className="bg-white text-black p-4 flex justify-between items-center border-b border-gray-100">
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-lg bg-[#602985] flex items-center justify-center mr-3">
+                  {/* <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-6 h-6 text-white">
+                    <circle cx="12" cy="12" r="5" />
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                  </svg> */}
+                  <img
+                    src="/emo.webp"
+                    alt="Logo"
+                    className="w-10 h-10 rounded-lg"
                   />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Chat Messages */}
-          <div className="flex-1 p-4 overflow-y-auto bg-white">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`mb-4 flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
-                }`}>
-                {message.sender === "shop" && (
-                  <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center mr-2">
-                    <span className="text-sm">AI</span>
-                  </div>
-                )}
-                <div
-                  className={`max-w-3/4 rounded-2xl px-4 py-2 ${
-                    message.sender === "user"
-                      ? "bg-black text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}>
-                  <p className="text-sm">{message.text}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      message.sender === "user"
-                        ? "text-gray-300"
-                        : "text-gray-500"
-                    }`}>
-                    {formatTime(message.timestamp)}
-                  </p>
                 </div>
-                {message.sender === "user" && (
-                  <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center ml-2">
-                    <span className="text-sm">Bạn</span>
+                <div>
+                  <h3 className="font-bold text-lg">EMO</h3>
+                  <div className="text-xs text-gray-500">
+                    Nhân viên trực tuyến
                   </div>
-                )}
+                </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <div className="p-3 border-t border-gray-100 flex items-center">
-            <label className="mr-2 text-gray-500 cursor-pointer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                />
-              </svg>
-            </label>
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="Nhập tin nhắn..."
-                className="w-full bg-gray-100 rounded-full px-4 py-2 pr-10 focus:outline-none text-sm"
-              />
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 focus:outline-none">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -340,26 +276,124 @@ const PremiumChatPopup = () => {
                     fill="currentColor">
                     <path
                       fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                       clipRule="evenodd"
                     />
                   </svg>
                 </button>
               </div>
             </div>
-            <button
-              onClick={sendMessage}
-              className="ml-2 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-800 focus:outline-none">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-              </svg>
-            </button>
+
+            {/* Chat Messages */}
+            <div
+              className="flex-1 p-4 overflow-y-auto bg-white relative"
+              style={{
+                backgroundImage: `url('public/doctor.png')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}>
+              {/* Add an overlay div for blur effect */}
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" />
+
+              {/* Messages container with relative positioning */}
+              <div className="relative z-10">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`mb-4 flex ${
+                      message.sender === "user"
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}>
+                    {message.sender === "shop" && (
+                      <div className="h-8 w-8 rounded-full bg-gray-100/90 backdrop-blur-sm flex items-center justify-center mr-2">
+                        <span className="text-sm">AI</span>
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-3/4 rounded-2xl px-4 py-2 ${
+                        message.sender === "user"
+                          ? "bg-black/90 backdrop-blur-sm text-white"
+                          : "bg-gray-100/90 backdrop-blur-sm text-gray-800"
+                      }`}>
+                      <p className="text-sm">{message.text}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          message.sender === "user"
+                            ? "text-gray-300"
+                            : "text-gray-500"
+                        }`}>
+                        {formatTime(message.timestamp)}
+                      </p>
+                    </div>
+                    {message.sender === "user" && (
+                      <div className="h-8 w-8 rounded-full bg-gray-100/90 backdrop-blur-sm flex items-center justify-center ml-2">
+                        <span className="text-sm">Bạn</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Chat Input */}
+            <div className="p-3 border-t border-gray-100 flex items-center">
+              <label className="mr-2 text-gray-500 cursor-pointer">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                  />
+                </svg>
+              </label>
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                  placeholder="Nhập tin nhắn..."
+                  className="w-full bg-gray-100 rounded-full px-4 py-2 pr-10 focus:outline-none text-sm"
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                  <button className="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={sendMessage}
+                className="ml-2 bg-black text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-800 focus:outline-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor">
+                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
