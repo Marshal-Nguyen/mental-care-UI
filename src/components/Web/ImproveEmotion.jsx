@@ -22,7 +22,11 @@ const ImproveEmotion = () => {
             few minutes each day can bring noticeable positive changes to your
             mind and body.
           </p>
-          <img src="/FreeYourMind.png " alt="" className="scale-150 mt-5" />
+          <img
+            src={`${import.meta.env.VITE_API_CDN_URL}FreeYourMind.png`}
+            alt=""
+            className="scale-150 mt-5"
+          />
         </div>
         <div
           data-aos="fade-up"
@@ -36,7 +40,11 @@ const ImproveEmotion = () => {
             keeping a journal can help ease your emotional load. Don’t bottle
             everything up – let your words set you free!
           </p>
-          <img src="/SharetoLighten.png" alt="" className="scale-150 mt-5" />
+          <img
+            src={`${import.meta.env.VITE_API_CDN_URL}SharetoLighten.png`}
+            alt=""
+            className="scale-150 mt-5"
+          />
         </div>
         <div
           data-aos="fade-up"
@@ -49,7 +57,11 @@ const ImproveEmotion = () => {
             Maintaining a regular sleep schedule, a balanced diet, and limiting
             caffeine intake can help you manage your emotions better
           </p>
-          <img src="/AHealthyLife.png " alt="" className="scale-150 mt-5" />
+          <img
+            src={`${import.meta.env.VITE_API_CDN_URL}AHealthyLife.png`}
+            alt=""
+            className="scale-150 mt-5"
+          />
         </div>
       </div>
     </div>

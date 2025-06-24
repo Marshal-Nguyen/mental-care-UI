@@ -8,6 +8,6 @@ export default defineConfig({
   esbuild: {
     treeShaking: true,
   },
-  // base: "https://emoease.b-cdn.net/", // 👈 Sửa ở đây để trỏ về CDN
-  base: "/", // Ensure this is set correctly for Vercel
+  base: "https://emoease.b-cdn.net/",
+  // base: "/",
 });

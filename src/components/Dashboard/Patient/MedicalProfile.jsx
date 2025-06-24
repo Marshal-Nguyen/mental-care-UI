@@ -176,10 +176,9 @@ const MedicalProfile = ({ patientId }) => {
                   className="flex flex-col items-center flex-shrink-0">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center">
                     <img
-                      src={`/MedicalHistory/${symptom.name.replace(
-                        " ",
-                        ""
-                      )}.png`}
+                      src={`${
+                        import.meta.env.BASE_URL
+                      }MedicalHistory/${symptom.name.replace(" ", "")}.png`}
                       className="w-8 h-8 shadow-2xl"
                       alt={symptom.name}
                     />

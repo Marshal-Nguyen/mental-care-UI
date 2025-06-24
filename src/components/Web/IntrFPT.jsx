@@ -41,7 +41,7 @@ const IntrFPT = () => {
             {/* Hình ảnh chính */}
             <div className="w-[400px] h-[400px] rounded-2xl overflow-hidden shadow-lg">
               <img
-                src="/fpt.jpeg"
+                src={import.meta.env.VITE_API_CDN_URL + "fpt.jpeg"}
                 alt="FPT Campus"
                 className="w-full h-full object-cover object-left border-white rounded-2xl border-[10px]"
               />
@@ -50,7 +50,9 @@ const IntrFPT = () => {
             {/* Hình ảnh nhỏ (overlay) */}
             <div className="absolute bottom-[-60px] right-[-100px] w-[250px] h-[250px] rounded-xl shadow-md overflow-hidden">
               <img
-                src="/image_IntroduceExe.webp"
+                src={
+                  import.meta.env.VITE_API_CDN_URL + "image_IntroduceExe.webp"
+                }
                 alt="Trải nghiệm khởi nghiệp"
                 className="w-full h-full object-cover object-left border-white rounded-2xl border-[10px] "
               />
