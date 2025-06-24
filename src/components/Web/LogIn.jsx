@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
-import styles from "../../styles/Web/LogIn.module.css";
-import { auth, provider, signInWithPopup } from "../../util/firebase/firebase";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
