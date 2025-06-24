@@ -44,7 +44,7 @@ const Navigation = () => {
       <div className="grid grid-cols-1 grid-rows-8 h-full text-center">
         <div className="row-span-2 flex items-center justify-center">
           <div className="w-35 flex justify-center items-center h-35 bg-gradient-to-b from-[#925FE2] to-[#7042C0] rounded-4xl">
-            <img src="/LogoUpdate.png" alt="Logo" className="w-[70%]" />
+            <img src="/emo.webp" alt="Logo" className="w-[100%] rounded-4xl" />
           </div>
         </div>
         <div className="row-span-5 row-start-3 mt-4 flex justify-center">

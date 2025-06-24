@@ -90,7 +90,8 @@ function App() {
       <Router>
         <Routes>
           {/* Các route chính */}
-          <Route path="/" element={<Intro />} />
+          {/* <Route path="/" element={<Intro />} /> */}
+          <Route path="/" element={<Navigate to="/EMO" replace />} />
           <Route path="regist" element={<Regist />} />
           <Route path="/verify-email" element={<VerifyDoctorEmail />} />
           <Route path="/EMO" element={<Home />}>

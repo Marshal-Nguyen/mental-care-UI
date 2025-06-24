@@ -54,7 +54,7 @@ const RegisterForm = () => {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        "https://anhtn.id.vn/auth-service/Auth/register",
+        "https://api.emoease.vn/auth-service/Auth/register",
         formData
       );
       console.log("Registration successful:", response.data);

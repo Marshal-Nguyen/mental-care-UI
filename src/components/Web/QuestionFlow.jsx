@@ -9,6 +9,9 @@ import {
   stressOptions,
   copingOptions,
   supportOptions,
+  AvailableTimePerDay,
+  SleepHoursLevel,
+  ExerciseFrequency,
 } from "./QuestionOption";
 const QuestionFlow = ({ onFinish }) => {
   const [step, setStep] = useState(0);
@@ -18,7 +21,38 @@ const QuestionFlow = ({ onFinish }) => {
   const [stressFactors, setStressFactors] = useState([]);
   const [copingMechanisms, setCopingMechanisms] = useState([]);
   const [supportNeeded, setSupportNeeded] = useState([]);
+  const BASE_URL = import.meta.env.VITE_API_LIFESTYLE_URL;
 
+  const handleDelayedClick = (event) => {
+    event.preventDefault();
+    const emotionLabel = event.currentTarget.getAttribute("data-label");
+    const sendEmotionData = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/current-emotions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            patientProfileId: localStorage.getItem("profileId"),
+            emotion1: emotionLabel,
+            emotion2: null,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to send emotion data");
+        }
+
+        console.log("Emotion data sent successfully");
+      } catch (error) {
+        console.error("Error sending emotion data:", error);
+      }
+    };
+    sendEmotionData();
+    setTimeout(handleNextStep, 400);
+  };
   const navigate = useNavigate();
   const handleNavigae = () => {
     navigate("/EMO");
@@ -34,9 +68,7 @@ const QuestionFlow = ({ onFinish }) => {
     if (step === 1 && name.trim() === "") return;
     setStep(step + 1);
   };
-  const handleDelayedClick = () => {
-    setTimeout(handleNextStep, 400); // Trì hoãn 2 giây
-  };
+
   const handlePrevStep = (e) => {
     if (e.clientX < 100 && step > 0) setStep(step - 1);
   };
@@ -127,14 +159,14 @@ const QuestionFlow = ({ onFinish }) => {
                   </label>
                   <label
                     className={`${styles.feedbackLabel} ${styles.ok}`}
-                    data-label="Ok"
+                    data-label="Hopeless"
                     onClick={handleDelayedClick}>
                     <input name="feedback" value="3" type="radio" />
                     <div></div>
                   </label>
                   <label
                     className={`${styles.feedbackLabel} ${styles.good}`}
-                    data-label="Good"
+                    data-label="Ashamed"
                     onClick={handleDelayedClick}>
                     <input
                       name="feedback"

@@ -8,9 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 import { MdFilterList } from "react-icons/md";
 
-const BASE_API_URL = "https://anhtn.id.vn/profile-service/patients";
-const IMAGE_API_URL = "https://anhtn.id.vn/image-service/image/get";
-const SUBSCRIPTION_API_URL = "https://anhtn.id.vn/subscription-service/service-packages";
+const BASE_API_URL = "https://api.emoease.vn/profile-service/patients";
+const IMAGE_API_URL = "https://api.emoease.vn/image-service/image/get";
+const SUBSCRIPTION_API_URL =
+  "https://api.emoease.vn/subscription-service/service-packages";
 
 const PsychologistList = () => {
   const [customers, setCustomers] = useState([]);
@@ -66,9 +67,14 @@ const PsychologistList = () => {
             });
             const packages = subscriptionResponse.data.servicePackages.data;
             const purchasedPackage = packages.find((pkg) => pkg.isPurchased);
-            purchasedPackageName = purchasedPackage ? purchasedPackage.name : null;
+            purchasedPackageName = purchasedPackage
+              ? purchasedPackage.name
+              : null;
           } catch (subError) {
-            console.error(`Error fetching subscription for ${customer.id}:`, subError);
+            console.error(
+              `Error fetching subscription for ${customer.id}:`,
+              subError
+            );
           }
 
           return {
@@ -107,8 +113,7 @@ const PsychologistList = () => {
         className="flex items-center justify-center mb-2"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+        transition={{ duration: 0.6 }}>
         <FaUsers className="text-indigo-700 mr-3" size={36} />
         <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">
           Users List
@@ -120,8 +125,7 @@ const PsychologistList = () => {
         className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+        transition={{ duration: 0.5 }}>
         {/* Filter and Search Controls */}
         <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
@@ -143,8 +147,7 @@ const PsychologistList = () => {
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
-                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
-              >
+                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md">
                 <option value={5}>5 per page</option>
                 <option value={10}>10 per page</option>
                 <option value={20}>20 per page</option>
@@ -152,16 +155,14 @@ const PsychologistList = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
-              >
+                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md">
                 <option value="fullname">Sort by Name</option>
                 <option value="Gender">Sort by Gender</option>
               </select>
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md"
-              >
+                className="p-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm transition-all duration-300 hover:shadow-md">
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
               </select>
@@ -175,13 +176,27 @@ const PsychologistList = () => {
             <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
               <tr>
                 <th className="px-6 py-4 text-left font-semibold text-sm">#</th>
-                <th className="px-6 py-4 text-center font-semibold text-sm">Avatar</th>
-                <th className="px-6 py-4 text-left font-semibold text-sm">Name</th>
-                <th className="px-6 py-4 text-left font-semibold text-sm">Gender</th>
-                <th className="px-6 py-4 text-left font-semibold text-sm">Phone Number</th>
-                <th className="px-6 py-4 text-left font-semibold text-sm">Personality Traits</th>
-                <th className="px-6 py-4 text-left font-semibold text-sm">Purchased Package</th>
-                <th className="px-6 py-4 text-center font-semibold text-sm">Actions</th>
+                <th className="px-6 py-4 text-center font-semibold text-sm">
+                  Avatar
+                </th>
+                <th className="px-6 py-4 text-left font-semibold text-sm">
+                  Name
+                </th>
+                <th className="px-6 py-4 text-left font-semibold text-sm">
+                  Gender
+                </th>
+                <th className="px-6 py-4 text-left font-semibold text-sm">
+                  Phone Number
+                </th>
+                <th className="px-6 py-4 text-left font-semibold text-sm">
+                  Personality Traits
+                </th>
+                <th className="px-6 py-4 text-left font-semibold text-sm">
+                  Purchased Package
+                </th>
+                <th className="px-6 py-4 text-center font-semibold text-sm">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -193,8 +208,7 @@ const PsychologistList = () => {
                     whileHover={{ scale: 1.005 }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                    transition={{ duration: 0.3 }}>
                     <td className="px-6 py-4 text-gray-700 font-medium">
                       {(pageIndex - 1) * pageSize + index + 1}
                     </td>
@@ -205,7 +219,9 @@ const PsychologistList = () => {
                         className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-indigo-300 shadow-md transition-transform duration-300 hover:scale-110"
                       />
                     </td>
-                    <td className="px-6 py-4 text-gray-800 font-semibold">{customer.fullName}</td>
+                    <td className="px-6 py-4 text-gray-800 font-semibold">
+                      {customer.fullName}
+                    </td>
                     <td className="px-6 py-4 flex items-center gap-2 text-gray-600">
                       {customer.gender === "Male" ? (
                         <FaMars className="text-blue-600" size={18} />
@@ -218,11 +234,11 @@ const PsychologistList = () => {
                       {customer.contactInfo?.phoneNumber || "N/A"}
                     </td>
                     <td
-                      className={`px-6 py-4 italic ${customer.personalityTraits === "Introversion"
-                        ? "text-blue-600"
-                        : "text-red-600"
-                        }`}
-                    >
+                      className={`px-6 py-4 italic ${
+                        customer.personalityTraits === "Introversion"
+                          ? "text-blue-600"
+                          : "text-red-600"
+                      }`}>
                       {customer.personalityTraits}
                     </td>
                     <td className="px-6 py-4 text-gray-600 font-medium">
@@ -234,8 +250,7 @@ const PsychologistList = () => {
                           className="p-2 bg-teal-600 text-white rounded-full hover:bg-teal-700 transition-colors shadow-lg"
                           title="View Detail"
                           onClick={() => navigate(`${customer.id}`)}
-                          whileHover={{ scale: 1.15 }}
-                        >
+                          whileHover={{ scale: 1.15 }}>
                           <AiFillEye size={20} />
                         </motion.button>
                       </div>
@@ -244,7 +259,9 @@ const PsychologistList = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={8}
+                    className="px-6 py-4 text-center text-gray-500">
                     No data available
                   </td>
                 </tr>
@@ -260,17 +277,17 @@ const PsychologistList = () => {
           onClick={() => setPageIndex((prev) => Math.max(1, prev - 1))}
           disabled={pageIndex === 1}
           className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
-          whileHover={{ scale: pageIndex === 1 ? 1 : 1.05 }}
-        >
+          whileHover={{ scale: pageIndex === 1 ? 1 : 1.05 }}>
           Previous
         </motion.button>
-        <span className="py-2 text-gray-800 font-semibold text-lg">Page {pageIndex}</span>
+        <span className="py-2 text-gray-800 font-semibold text-lg">
+          Page {pageIndex}
+        </span>
         <motion.button
           onClick={() => setPageIndex((prev) => prev + 1)}
           disabled={!hasMoreData}
           className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:bg-gray-300 disabled:text-gray-500 hover:bg-indigo-700 transition-colors shadow-lg font-semibold"
-          whileHover={{ scale: !hasMoreData ? 1 : 1.05 }}
-        >
+          whileHover={{ scale: !hasMoreData ? 1 : 1.05 }}>
           Next
         </motion.button>
       </div>

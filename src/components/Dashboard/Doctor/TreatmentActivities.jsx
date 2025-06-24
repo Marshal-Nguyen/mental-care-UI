@@ -14,7 +14,7 @@ export default function TreatmentActivities({ profileId }) {
       try {
         setLoading(true);
         const response = await axios.get(
-          `https://anhtn.id.vn/profile-service/medical-records`,
+          `https://api.emoease.vn/profile-service/medical-records`,
           {
             params: {
               PageIndex: 1,

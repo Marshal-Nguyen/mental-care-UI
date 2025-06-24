@@ -213,7 +213,7 @@ export default function Pricing() {
         };
 
         const response = await axios.post(
-          "https://anhtn.id.vn/subscription-service/user-subscriptions/upgrade",
+          "https://api.emoease.vn/subscription-service/user-subscriptions/upgrade",
           upgradePayload,
           {
             headers: {

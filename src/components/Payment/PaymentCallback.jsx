@@ -28,7 +28,7 @@ const PaymentCallback = () => {
 
         // Send callback parameters to backend for initial processing
         // await axios.get(
-        //   `https://anhtn.id.vn/payment-service/payments/callback?${queryParams.toString()}`,
+        //   `https://api.emoease.vn/payment-service/payments/callback?${queryParams.toString()}`,
         //   {
         //     headers: {
         //       "Content-Type": "application/json",
@@ -39,7 +39,7 @@ const PaymentCallback = () => {
 
         // Verify payment status using BE's link-information endpoint
         const linkInfoResponse = await axios.get(
-          `https://anhtn.id.vn/payment-service/payments/payos/link-information/${paymentData.orderCode}`,
+          `https://api.emoease.vn/payment-service/payments/payos/link-information/${paymentData.orderCode}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
