@@ -1,18 +1,24 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 
-export const useMultiStepForm = (steps) => {
+export const useMultiStepForm = (totalSteps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
 
-  const goToNext = useCallback(() => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+  const goToNext = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(currentStep + 1);
     }
-  }, [currentStep, steps.length]);
+  };
 
-  const updateFormData = useCallback((key, value) => {
+  const goToPrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const updateFormData = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  };
 
-  return { currentStep, formData, goToNext, updateFormData };
+  return { currentStep, formData, goToNext, goToPrevious, updateFormData };
 };

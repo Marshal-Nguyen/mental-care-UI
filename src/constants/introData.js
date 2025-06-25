@@ -1,40 +1,80 @@
-// src/constants/introData.js
-export const MOOD_OPTIONS = [
-  { emoji: "😊", label: "Hạnh phúc", value: "Happy" },
-  { emoji: "😔", label: "Buồn bã", value: "Sad" },
-  { emoji: "😡", label: "Tức giận", value: "Angry" },
-  { emoji: "😨", label: "Lo lắng", value: "Anxious" },
-  { emoji: "🙂", label: "Bình yên", value: "Calm" },
-  { emoji: "😴", label: "Mệt mỏi", value: "Tired" },
-  { emoji: "💪", label: "Động lực", value: "Motivated" },
-  { emoji: "😢", label: "Cô đơn", value: "Lonely" },
-  { emoji: "🤔", label: "Bối rối", value: "Confused" },
-  { emoji: "🙏", label: "Biết ơn", value: "Grateful" },
+export const AvailableTimePerDay = [
+  {
+    icon: "🕒",
+    label: "Dưới 30 phút",
+    value: "LessThan30Minutes",
+    description: "Tôi chỉ có thể dành dưới 30 phút mỗi ngày",
+  },
+  {
+    icon: "⏳",
+    label: "Từ 30 đến 60 phút",
+    value: "From30To60Minutes",
+    description: "Tôi có thể dành khoảng 30 đến 60 phút mỗi ngày",
+  },
+  {
+    icon: "⏰",
+    label: "Hơn 1 tiếng",
+    value: "MoreThan1Hour",
+    description: "Tôi có thể dành hơn 1 tiếng mỗi ngày",
+  },
 ];
 
-export const SLEEP_OPTIONS = [
+export const SleepHoursLevel = [
   {
-    hours: "< 4",
-    label: "Dưới 4 giờ",
-    description: "Thiếu ngủ nghiêm trọng",
-    value: "Dưới 4 giờ",
+    icon: "📅",
+    label: "Dưới 4 tiếng",
+    value: "LessThan4Hours",
+    description: "Tôi ngủ dưới 4 tiếng mỗi ngày",
   },
   {
-    hours: "4-5",
-    label: "4-5 giờ",
-    description: "Ngủ ít, cần cải thiện",
-    value: "4-5 giờ",
+    icon: "🗓️",
+    label: "Từ 4 đến 6 tiếng",
+    value: "From4To6Hours",
+    description: "Tôi ngủ từ 4 đến 6 tiếng mỗi ngày",
   },
   {
-    hours: "6-7",
-    label: "6-7 giờ",
-    description: "Ngủ trung bình, ổn định",
-    value: "6-7 giờ",
+    icon: "⏳",
+    label: "Từ 6 đến 8 tiếng",
+    value: "From6To8Hours",
+    description: "Tôi ngủ từ 6 đến 8 tiếng mỗi ngày",
   },
   {
-    hours: "8+",
-    label: "8 giờ trở lên",
-    description: "Ngủ đủ, sức khỏe tốt",
-    value: "8+ giờ",
+    icon: "⏰",
+    label: "Từ 8 đến 10 tiếng",
+    value: "From8To10Hours",
+    description: "Tôi ngủ từ 8 đến 10 tiếng mỗi ngày",
+  },
+  {
+    icon: "🛌",
+    label: "Trên 10 tiếng",
+    value: "MoreThan10Hours",
+    description: "Tôi ngủ hơn 10 tiếng mỗi ngày",
+  },
+];
+
+export const ExerciseFrequency = [
+  {
+    icon: "🚫",
+    label: "Không bao giờ",
+    value: "Never",
+    description: "Tôi không tập thể dục chút nào",
+  },
+  {
+    icon: "🗓️",
+    label: "Thỉnh thoảng",
+    value: "Rarely",
+    description: "Tôi thỉnh thoảng tập, có thể mỗi tháng một lần",
+  },
+  {
+    icon: "📅",
+    label: "2 - 3 lần mỗi tuần",
+    value: "TwoToThreePerWeek",
+    description: "Tôi tập thể dục 2 đến 3 lần mỗi tuần",
+  },
+  {
+    icon: "🏆",
+    label: "Hằng ngày",
+    value: "Daily",
+    description: "Tôi tập thể dục mỗi ngày, không bỏ buổi nào",
   },
 ];
