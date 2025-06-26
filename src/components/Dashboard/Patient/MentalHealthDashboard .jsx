@@ -60,8 +60,14 @@ const MentalHealthDashboard = () => {
   const depressionScore = latestTest.depressionScore.value;
   const anxietyScore = latestTest.anxietyScore.value;
   const stressScore = latestTest.stressScore.value;
-  const recommendation =
-    latestTest.recommendation || "No specific recommendations provided.";
+  const recommendationRaw = latestTest.recommendation;
+  let recommendation = "No specific recommendations provided.";
+  if (
+    typeof recommendationRaw === "string" &&
+    recommendationRaw.trim().length > 0
+  ) {
+    recommendation = recommendationRaw;
+  }
   const recommendationList = recommendation
     .split(".")
     .filter((item) => item.trim().length > 0);
