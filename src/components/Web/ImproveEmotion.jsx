@@ -23,7 +23,8 @@ const ImproveEmotion = () => {
             mind and body.
           </p>
           <img
-            src={`${import.meta.env.VITE_API_CDN_URL}FreeYourMind.png`}
+            // src={`${import.meta.env.VITE_API_CDN_URL}FreeYourMind.png`}
+            src="/FreeYourMind.png"
             alt=""
             className="scale-150 mt-5"
           />
@@ -41,7 +42,8 @@ const ImproveEmotion = () => {
             everything up – let your words set you free!
           </p>
           <img
-            src={`${import.meta.env.VITE_API_CDN_URL}SharetoLighten.png`}
+            // src={`${import.meta.env.VITE_API_CDN_URL}SharetoLighten.png`}
+            src="/SharetoLighten.png"
             alt=""
             className="scale-150 mt-5"
           />
@@ -58,7 +60,8 @@ const ImproveEmotion = () => {
             caffeine intake can help you manage your emotions better
           </p>
           <img
-            src={`${import.meta.env.VITE_API_CDN_URL}AHealthyLife.png`}
+            // src={`${import.meta.env.VITE_API_CDN_URL}AHealthyLife.png`}
+            src="/AHealthyLife.png"
             alt=""
             className="scale-150 mt-5"
           />

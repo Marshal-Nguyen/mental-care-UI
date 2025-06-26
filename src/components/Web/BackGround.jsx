@@ -27,7 +27,8 @@ const BackGround = () => {
         {/* Nền chính - Không di chuyển */}
         <div className="absolute top-50 left-0 w-full h-screen">
           <img
-            src={`${import.meta.env.VITE_API_CDN_URL}bg_HomeCenter.webp`}
+            // src={`${import.meta.env.VITE_API_CDN_URL}bg_HomeCenter.webp`}
+            src="/bg_HomeCenter.webp"
             alt=""
             className="w-full h-full scale-125 object-cover"
           />
@@ -40,14 +41,16 @@ const BackGround = () => {
 
         {/* Các lớp ảnh di chuyển */}
         <motion.img
-          src={`${import.meta.env.VITE_API_CDN_URL}bg_HomeUnder.webp`}
+          // src={`${import.meta.env.VITE_API_CDN_URL}bg_HomeUnder.webp`}
+          src="/bg_HomeUnder.webp"
           alt=""
           animate={{ y: -scrollY * 0.3 }}
           className="absolute top-[30%] left-0 w-full h-[120vh] scale-100 object-cover"
         />
 
         <motion.img
-          src={`${import.meta.env.VITE_API_CDN_URL}bg_HomeBottomRight.webp`}
+          // src={`${import.meta.env.VITE_API_CDN_URL}bg_HomeBottomRight.webp`}
+          src="/bg_HomeBottomRight.webp"
           alt=""
           animate={{ y: -scrollY * 0.1 }}
           className="absolute top-[21%] left-0 w-full h-[120vh] scale-110 object-cover"

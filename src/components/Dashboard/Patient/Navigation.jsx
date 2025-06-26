@@ -45,7 +45,8 @@ const Navigation = () => {
         <div className="row-span-2 flex items-center justify-center">
           <div className="w-35 flex justify-center items-center h-35 bg-gradient-to-b from-[#925FE2] to-[#7042C0] rounded-4xl">
             <img
-              src={`${import.meta.env.VITE_API_CDN_URL}emo.webp`}
+              // src={`${import.meta.env.VITE_API_CDN_URL}emo.webp`}
+              src="/emo.webp"
               alt="Logo"
               className="w-[100%] rounded-4xl"
             />

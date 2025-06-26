@@ -8,6 +8,6 @@ export default defineConfig({
   esbuild: {
     treeShaking: true,
   },
-  base: "https://emoease.b-cdn.net/",
-  // base: "/",
+  // base: "https://emoease.b-cdn.net/",
+  base: "/",
 });
