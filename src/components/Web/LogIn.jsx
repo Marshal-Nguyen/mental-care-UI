@@ -134,7 +134,7 @@ const LogIn = () => {
     const token = data.token;
     const refresh_token = data.refreshToken;
     const decodedToken = jwtDecode(token);
-
+    console.log("data from login:", data);
     // Lấy thông tin từ JWT
     const userRole =
       decodedToken[
@@ -146,7 +146,7 @@ const LogIn = () => {
       decodedToken[
         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
       ];
-
+    const IsProfileCompleted = decodedToken.IsProfileCompleted;
     // Lưu vào localStorage
     localStorage.setItem("token", token);
     localStorage.setItem("refresh_token", refresh_token);
@@ -163,7 +163,10 @@ const LogIn = () => {
     dispatch(setCredentials({ token, userRole, profileId, userId }));
     dispatch(closeLoginModal());
     fetchAvatar(userId);
-
+    if (!IsProfileCompleted || IsProfileCompleted === "False") {
+      navigate("/daily-habits");
+      return;
+    }
     toast.success("Đăng nhập thành công!", { position: "top-right" });
 
     if (userRole === "Staff") {
@@ -229,7 +232,7 @@ const LogIn = () => {
   // Xử lý đăng xuất
   const handleLogout = async () => {
     try {
-      await auth.signOut();
+      // await auth.signOut();
       dispatch(clearCredentials());
       setIsLoggedIn(false);
 
