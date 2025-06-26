@@ -44,7 +44,7 @@ const HistoryPatient = () => {
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden bg-white rounded-xl shadow-sm">
         <div className="h-full p-6">
-          {activeTab === "Result" && <HistoryTestResult />}
+          {/* {activeTab === "Result" && <HistoryTestResult />} */}
           {activeTab === "Booking" && <HistoryBooking />}
         </div>
       </div>

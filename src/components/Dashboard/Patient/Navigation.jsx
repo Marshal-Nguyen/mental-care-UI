@@ -21,9 +21,34 @@ const Navigation = () => {
   // Sử dụng useLocation để lấy thông tin URL hiện tại
   const location = useLocation();
 
-  const NavItem = ({ icon, text, to }) => {
+  // Hàm xử lý click cho các mục Coming Soon
+  const handleComingSoon = (e) => {
+    e.preventDefault();
+    toast.info("Coming Soon! This feature is under development.", {
+      position: "top-center",
+      autoClose: 2000,
+    });
+  };
+
+  const NavItem = ({ icon, text, to, comingSoon }) => {
     // Kiểm tra xem đường dẫn hiện tại có chứa "to" hay không
     const isActive = location.pathname.includes(to);
+
+    if (comingSoon) {
+      return (
+        <a
+          href="#"
+          onClick={handleComingSoon}
+          className="flex items-center gap-3 cursor-pointer transition duration-300 font-medium text-[#b3b3b3] font-serif text-[15px] opacity-70 relative"
+          title="Coming Soon!">
+          {icon}
+          <span className="tracking-wide">{text}</span>
+          <span className="absolute -top-2 -right-4 bg-yellow-400 text-xs px-1 rounded-full text-white">
+            Soon
+          </span>
+        </a>
+      );
+    }
 
     return (
       <Link
@@ -65,20 +90,24 @@ const Navigation = () => {
               text="Records"
               to="HistoryPatient"
             />
+            {/* Shopping - Coming Soon */}
             <NavItem
               icon={<ShoppingCart size={20} />}
               text="Shopping"
               to="Shopping"
+              comingSoon={true}
             />
             <NavItem
               icon={<User size={20} />}
               text="Profile Patient"
               to="ProfilePatient"
             />
+            {/* Messenger - Coming Soon */}
             <NavItem
               icon={<MessageCircleCode size={20} />}
               text="Messenger"
               to="Chat"
+              comingSoon={true}
             />
           </nav>
         </div>
