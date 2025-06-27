@@ -7,10 +7,10 @@ import alertIcon from "../../../util/icon/alertOctagon.json";
 
 // Color mappings for UI consistency
 const colorMap = {
-  "Did not apply to me at all": "bg-green-500 border-green-700",
-  "Applied to me to some degree": "bg-yellow-500 border-yellow-700",
-  "Applied to me to a considerable degree": "bg-orange-500 border-orange-700",
-  "Applied to me very much": "bg-red-500 border-red-700",
+  "Did not apply to me at all": "bg-teal-400 border-teal-600",
+  "Applied to me to some degree": "bg-amber-400 border-amber-600",
+  "Applied to me to a considerable degree": "bg-orange-400 border-orange-600",
+  "Applied to me very much": "bg-rose-400 border-rose-600",
 };
 
 const textColorMap = {
@@ -22,7 +22,6 @@ const textColorMap = {
 
 // Helper functions for score visualization
 const getScoreColor = (type, score) => {
-  // Ánh xạ loại tiếng Việt sang tiếng Anh
   const typeKey =
     type === "trầm cảm"
       ? "depression"
@@ -30,38 +29,36 @@ const getScoreColor = (type, score) => {
       ? "anxiety"
       : type === "căng thẳng"
       ? "stress"
-      : type; // Sử dụng giá trị gốc nếu không phải các loại đã biết
+      : type;
 
   const severityLevels = {
     depression: [
-      { max: 9, color: "bg-green-500" },
-      { max: 13, color: "bg-yellow-500" },
-      { max: 20, color: "bg-orange-500" },
-      { max: 42, color: "bg-red-500" },
+      { max: 9, color: "bg-teal-400" },
+      { max: 13, color: "bg-amber-400" },
+      { max: 20, color: "bg-orange-400" },
+      { max: 42, color: "bg-rose-400" },
     ],
     anxiety: [
-      { max: 7, color: "bg-green-500" },
-      { max: 9, color: "bg-yellow-500" },
-      { max: 14, color: "bg-orange-500" },
-      { max: 42, color: "bg-red-500" },
+      { max: 7, color: "bg-teal-400" },
+      { max: 9, color: "bg-amber-400" },
+      { max: 14, color: "bg-orange-400" },
+      { max: 42, color: "bg-rose-400" },
     ],
     stress: [
-      { max: 14, color: "bg-green-500" },
-      { max: 18, color: "bg-yellow-500" },
-      { max: 25, color: "bg-orange-500" },
-      { max: 42, color: "bg-red-500" },
+      { max: 14, color: "bg-teal-400" },
+      { max: 18, color: "bg-amber-400" },
+      { max: 25, color: "bg-orange-400" },
+      { max: 42, color: "bg-rose-400" },
     ],
   };
 
-  // Thêm optional chaining (?) để tránh lỗi khi key không tồn tại
   return (
     severityLevels[typeKey]?.find((level) => score <= level.max)?.color ||
-    "bg-red-500"
+    "bg-rose-400"
   );
 };
 
 const getScoreLevel = (type, score) => {
-  // Ánh xạ loại tiếng Việt sang tiếng Anh
   const typeKey =
     type === "trầm cảm"
       ? "depression"
@@ -73,82 +70,104 @@ const getScoreLevel = (type, score) => {
 
   const severityLabels = {
     depression: [
-      { max: 9, label: "Normal" },
-      { max: 13, label: "Mild" },
-      { max: 20, label: "Moderate" },
-      { max: 27, label: "Severe" },
-      { max: 42, label: "Extremely Severe" },
+      { max: 9, label: "Bình thường" },
+      { max: 13, label: "Nhẹ" },
+      { max: 20, label: "Trung bình" },
+      { max: 27, label: "Nặng" },
+      { max: 42, label: "Rất nặng" },
     ],
     anxiety: [
-      { max: 7, label: "Normal" },
-      { max: 9, label: "Mild" },
-      { max: 14, label: "Moderate" },
-      { max: 19, label: "Severe" },
-      { max: 42, label: "Extremely Severe" },
+      { max: 7, label: "Bình thường" },
+      { max: 9, label: "Nhẹ" },
+      { max: 14, label: "Trung bình" },
+      { max: 19, label: "Nặng" },
+      { max: 42, label: "Rất nặng" },
     ],
     stress: [
-      { max: 14, label: "Normal" },
-      { max: 18, label: "Mild" },
-      { max: 25, label: "Moderate" },
-      { max: 33, label: "Severe" },
-      { max: 42, label: "Extremely Severe" },
+      { max: 14, label: "Bình thường" },
+      { max: 18, label: "Nhẹ" },
+      { max: 25, label: "Trung bình" },
+      { max: 33, label: "Nặng" },
+      { max: 42, label: "Rất nặng" },
     ],
   };
 
-  // Thêm optional chaining (?) để tránh lỗi khi key không tồn tại
   return (
     severityLabels[typeKey]?.find((level) => score <= level.max)?.label ||
-    "Extremely Severe"
+    "Rất nặng"
   );
 };
 
-// Component to display individual score
-const ScoreCard = ({ type, score, maxScore = 42 }) => (
-  <div className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
-    <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center capitalize">
-      {type}
-      <span className="ml-2 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+// ScoreCard Component
+const ScoreCard = ({ type, score, compact }) => {
+  // Đã bỏ iconMap, chỉ giữ borderColorMap
+  const borderColorMap = {
+    "trầm cảm": "border-blue-300",
+    "lo âu": "border-yellow-300",
+    "căng thẳng": "border-pink-300",
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`bg-white ${
+        compact ? "p-3" : "p-5"
+      } rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 border-l-8 ${
+        borderColorMap[type] || "border-indigo-200"
+      } flex flex-col items-center justify-center`}>
+      <h3
+        className={`font-semibold text-gray-800 mb-1 flex items-center capitalize ${
+          compact ? "text-base" : "text-lg"
+        }`}>
+        {/* Đã xóa icon */}
+        {type}
+      </h3>
+      <div className="text-2xl font-bold text-indigo-700 mb-1">{score}</div>
+      <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
         DASS-21
       </span>
-    </h3>
-    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-      <div
-        className={`h-2 rounded-full ${getScoreColor(
+      <span
+        className={`mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${getScoreColor(
           type,
           score
-        )} transition-all duration-500`}
-        style={{ width: `${Math.min(100, (score / maxScore) * 100)}%` }}
-      />
-    </div>
-    <div className="flex justify-between text-sm font-medium">
-      <span className="text-gray-700">Điểm: {score}</span>
-      <span
-        className={`px-2 py-1 rounded-lg ${getScoreColor(type, score).replace(
-          "bg-",
-          "bg-opacity-20 text-"
-        )}`}>
+        ).replace("bg-", "bg-opacity-20 text-")}`}>
         {getScoreLevel(type, score)}
       </span>
-    </div>
-  </div>
-);
+    </motion.div>
+  );
+};
 
-// Component to display test information
-const TestInfoCard = ({ testId, patientId, takenAt, severityLevel }) => {
-  const formattedDate = new Date(takenAt).toLocaleString("vi-VN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
+// TestInfoCard Component
+const TestInfoCard = ({
+  testId,
+  patientId,
+  takenAt,
+  severityLevel,
+  patientName,
+}) => {
+  let formattedDate = "";
+  if (takenAt) {
+    try {
+      formattedDate = new Date(takenAt).toLocaleString("vi-VN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      formattedDate = takenAt;
+    }
+  }
   return (
-    <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-400">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl shadow-lg border-l-4 border-indigo-500">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 text-indigo-500 mr-2"
+          className="h-6 w-6 text-indigo-500 mr-2"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor">
@@ -161,7 +180,12 @@ const TestInfoCard = ({ testId, patientId, takenAt, severityLevel }) => {
         </svg>
         Thông tin bài kiểm tra
       </h3>
-      <div className="space-y-2 text-sm text-gray-700">
+      <div className="space-y-3 text-sm text-gray-700">
+        {patientName && (
+          <p>
+            <span className="font-medium">Tên bệnh nhân:</span> {patientName}
+          </p>
+        )}
         <p>
           <span className="font-medium">Mã bài kiểm tra:</span> {testId}
         </p>
@@ -173,128 +197,163 @@ const TestInfoCard = ({ testId, patientId, takenAt, severityLevel }) => {
           {formattedDate}
         </p>
         <p>
-          <span className="font-medium">Mức độ nghiêm trọng tổng thể:</span>{" "}
+          <span className="font-medium">Mức độ nghiêm trọng:</span>{" "}
           <span
-            className={`px-2 py-1 rounded-lg ${
-              severityLevel === "Severe"
-                ? "bg-red-100 text-red-700"
-                : severityLevel === "Moderate"
+            className={`px-3 py-1 rounded-full ${
+              severityLevel === "Rất nặng"
+                ? "bg-rose-100 text-rose-700"
+                : severityLevel === "Nặng"
+                ? "bg-rose-100 text-rose-700"
+                : severityLevel === "Trung bình"
                 ? "bg-orange-100 text-orange-700"
-                : severityLevel === "Mild"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-green-100 text-green-700"
+                : severityLevel === "Nhẹ"
+                ? "bg-amber-100 text-amber-700"
+                : "bg-teal-100 text-teal-700"
             }`}>
             {severityLevel}
           </span>
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// Component to display recommendation
-const RecommendationSection = ({ formattedRecommendation, recommend }) => {
-  if (!formattedRecommendation) {
+const RecommendationSection = ({ recommendation }) => {
+  // Nếu recommendation là string (lỗi hoặc không có), chỉ hiển thị thông báo
+  if (!recommendation || typeof recommendation === "string") {
     return (
-      <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-400">
-        <div className="flex items-center mb-2">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white p-5 rounded-2xl shadow-lg border-l-4 border-amber-500">
+        <div className="flex items-center mb-3">
           <Lottie
             animationData={alertIcon}
             loop={true}
             style={{
-              width: 24,
-              height: 24,
+              width: 28,
+              height: 28,
               filter:
                 "brightness(0) saturate(100%) invert(14%) sepia(93%) saturate(7481%) hue-rotate(1deg) brightness(92%) contrast(119%)",
             }}
           />
-          <p className="text-lg font-semibold text-gray-700 ml-2">Lời khuyên</p>
+          <p className="text-lg font-semibold text-gray-800 ml-3">Lời khuyên</p>
         </div>
         <p className="text-sm text-gray-600">
-          {recommend || "Đang phân tích kết quả, vui lòng đợi..."}
+          {typeof recommendation === "string"
+            ? recommendation
+            : "Đang phân tích kết quả, vui lòng đợi..."}
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {formattedRecommendation.intro && (
-        <div className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-purple-400">
+    <div className="space-y-5">
+      {recommendation.overview && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-purple-50 to-white p-5 rounded-2xl shadow-lg border-l-4 border-purple-500">
           <p className="text-sm text-gray-700 leading-relaxed">
-            {formattedRecommendation.intro}
+            {recommendation.overview}
           </p>
-        </div>
+        </motion.div>
       )}
-      {formattedRecommendation.analysis && (
-        <div className="bg-white p-4 rounded-xl shadow-sm">
+      {recommendation.emotionAnalysis && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-5 rounded-2xl shadow-lg">
           <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-3">
             <span className="mr-2">🧠</span>Phân tích cảm xúc
           </h3>
           <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-            {formattedRecommendation.analysis}
+            {recommendation.emotionAnalysis}
           </p>
-        </div>
+        </motion.div>
       )}
-      {formattedRecommendation.suggestions && (
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-3">
+      {Array.isArray(recommendation.personalizedSuggestions) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-5 rounded-2xl shadow-lg">
+          <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4">
             <span className="mr-2">🎯</span>Gợi ý cải thiện cá nhân hóa
           </h3>
-          <div className="space-y-3">
-            {formattedRecommendation.suggestions.map((suggestion, index) => (
+          <div className="space-y-4">
+            {recommendation.personalizedSuggestions.map((suggestion, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="p-3 rounded-lg border border-purple-100 hover:shadow-sm transition-shadow">
+                className="p-4 rounded-lg border border-purple-100 hover:shadow-md transition-shadow bg-gradient-to-r from-purple-50 to-white">
                 <div className="flex items-start">
-                  <span className="text-2xl mr-3">{suggestion.icon}</span>
+                  <span className="text-2xl mr-3">
+                    {suggestion.icon || "✨"}
+                  </span>
                   <div>
                     <h4 className="font-semibold text-gray-800">
                       {suggestion.title}
                     </h4>
-                    <p className="text-sm text-gray-700 mt-1">
-                      {suggestion.subtitle}
+                    <p className="text-sm text-gray-600 mt-1 font-medium">
+                      {suggestion.description}
                     </p>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {suggestion.content}
-                    </p>
+                    {Array.isArray(suggestion.tips) && (
+                      <ul className="mt-2 text-sm text-gray-600 list-disc list-inside">
+                        {suggestion.tips.map((tip, i) => (
+                          <li key={i}>{tip}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {suggestion.reference && (
+                      <p className="text-xs text-gray-500 mt-2 italic">
+                        {suggestion.reference}
+                      </p>
+                    )}
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
-      {formattedRecommendation.outro && (
-        <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-purple-400">
+      {recommendation.closing && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-teal-50 to-white p-5 rounded-2xl shadow-lg border-t-4 border-teal-500">
           <p className="text-sm text-gray-700 leading-relaxed">
-            💌 {formattedRecommendation.outro}
+            💌 {recommendation.closing}
           </p>
-        </div>
+        </motion.div>
       )}
     </div>
   );
 };
 
-// Component to display incomplete assessment
 const IncompleteAssessment = ({ currentIndex, totalQuestions }) => (
-  <div className="h-full flex flex-col items-center justify-center bg-purple-50 rounded-xl p-6">
-    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="h-full flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 to-purple-50 rounded-2xl p-12">
+    <motion.div
+      animate={{ scale: [1, 1.1, 1] }}
+      transition={{ duration: 1.5, repeat: Infinity }}
+      className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-6">
       <Lottie
         animationData={arrowDownAnimation}
         loop={true}
-        style={{ width: 20, height: 20 }}
+        style={{ width: 24, height: 24 }}
       />
-    </div>
-    <h3 className="text-xl font-semibold text-gray-800 mb-4">
+    </motion.div>
+    <h3 className="text-2xl font-semibold text-gray-800 mb-6">
       Bài kiểm tra chưa hoàn thành
     </h3>
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4 w-full max-w-sm">
-      <div className="flex items-center mb-2">
-        <div className="bg-indigo-100 p-2 rounded-full mr-2">
+    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 w-full max-w-md">
+      <div className="flex items-center mb-3">
+        <div className="bg-indigo-100 p-2 rounded-full mr-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-indigo-600"
@@ -313,22 +372,23 @@ const IncompleteAssessment = ({ currentIndex, totalQuestions }) => (
           Còn lại {totalQuestions - currentIndex} / {totalQuestions} câu hỏi
         </p>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-        <div
-          className="bg-purple-500 h-2 rounded-full transition-all duration-500"
-          style={{ width: `${(currentIndex / totalQuestions) * 100}%` }}
+      <div className="w-full bg-gray-100 rounded-full h-3 mb-3">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${(currentIndex / totalQuestions) * 100}%` }}
+          className="bg-teal-500 h-3 rounded-full transition-all duration-500"
         />
       </div>
       <p className="text-sm text-gray-600">
         Vui lòng trả lời tất cả câu hỏi để nhận kết quả đánh giá cá nhân hóa.
       </p>
     </div>
-    <div className="space-y-3 w-full max-w-sm">
-      <div className="bg-white p-3 rounded-lg shadow-sm border-l-4 border-blue-400">
-        <div className="flex items-center mb-1">
+    <div className="space-y-4 w-full max-w-md">
+      <div className="bg-white p-4 rounded-2xl shadow-lg border-l-4 border-indigo-500">
+        <div className="flex items-center mb-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-blue-500 mr-2"
+            className="h-5 w-5 text-indigo-500 mr-2"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor">
@@ -347,11 +407,11 @@ const IncompleteAssessment = ({ currentIndex, totalQuestions }) => (
           thẳng.
         </p>
       </div>
-      <div className="bg-white p-3 rounded-lg shadow-sm border-l-4 border-green-400">
-        <div className="flex items-center mb-1">
+      <div className="bg-white p-4 rounded-2xl shadow-lg border-l-4 border-teal-500">
+        <div className="flex items-center mb-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-green-500 mr-2"
+            className="h-5 w-5 text-teal-500 mr-2"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor">
@@ -370,8 +430,32 @@ const IncompleteAssessment = ({ currentIndex, totalQuestions }) => (
         </p>
       </div>
     </div>
-  </div>
+  </motion.div>
 );
+
+const RecommendationModal = ({ open, onClose, recommendation }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white max-w-2xl w-full rounded-2xl shadow-2xl p-6 md:p-10 relative overflow-y-auto max-h-[90vh]">
+        <button
+          onClick={onClose}
+          className="absolute hover:cursor-pointer top-3 right-3 text-gray-400 hover:text-purple-600 text-2xl font-bold"
+          aria-label="Đóng">
+          &times;
+        </button>
+        <h2 className="text-2xl font-bold text-purple-700 mb-4 text-center">
+          Báo cáo cá nhân hóa
+        </h2>
+        <RecommendationSection recommendation={recommendation} />
+      </motion.div>
+    </div>
+  );
+};
 
 const TestEmotion = () => {
   const [questions, setQuestions] = useState([]);
@@ -379,9 +463,7 @@ const TestEmotion = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
-  const [recommend, setRecommend] = useState(null);
-  const [formattedRecommendation, setFormattedRecommendation] = useState(null);
-  // Thêm state totalQuestions
+  const [recommendation, setRecommendation] = useState(null);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [scores, setScores] = useState({
     depression: 0,
@@ -393,7 +475,9 @@ const TestEmotion = () => {
     patientId: "",
     takenAt: "",
     severityLevel: "",
+    patientName: "",
   });
+  const [showRecommendation, setShowRecommendation] = useState(false);
   const patientId = useSelector((state) => state.auth.profileId);
   const testId = "8fc88dbb-daee-4b17-9eca-de6cfe886097";
   const API_TEST = import.meta.env.VITE_API_TEST_URL;
@@ -416,7 +500,7 @@ const TestEmotion = () => {
           (a, b) => a.order - b.order
         );
         setQuestions(sortedQuestions);
-        setTotalQuestions(sortedQuestions.length); // Giờ đã có state để lưu trữ
+        setTotalQuestions(sortedQuestions.length);
       } catch (error) {
         console.error("Error fetching questions:", error);
       } finally {
@@ -425,43 +509,6 @@ const TestEmotion = () => {
     };
     fetchQuestions();
   }, [API_TEST, testId, YOUR_TOKEN]);
-
-  // Format recommendation
-  const formatRecommendation = useCallback((rawRecommendation) => {
-    if (!rawRecommendation) return null;
-    const sections = {};
-    const introMatch = rawRecommendation.match(/🌿 Chào.*?\n\n(.*?)(?=🧠)/s);
-    if (introMatch && introMatch[1]) sections.intro = introMatch[1].trim();
-    const analysisMatch = rawRecommendation.match(
-      /🧠 \*\*Phân tích cảm xúc\*\*\n\n(.*?)(?=🎯)/s
-    );
-    if (analysisMatch && analysisMatch[1])
-      sections.analysis = analysisMatch[1].trim();
-    const suggestionsMatch = rawRecommendation.match(
-      /🎯 \*\*3 Gợi ý cải thiện cá nhân hóa\*\*\n\n(.*?)(?=💌)/s
-    );
-    if (suggestionsMatch && suggestionsMatch[1]) {
-      const suggestions = suggestionsMatch[1].trim().split(/\n\n(?=[✨🧘🌙])/);
-      sections.suggestions = suggestions.map((suggestion) => {
-        const suggestionParts = suggestion.match(
-          /([✨🧘🌙]) \*\*(.*?)\*\* - (.*?)(?:\n\s*\*\s*)(.*)/s
-        );
-        return suggestionParts
-          ? {
-              icon: suggestionParts[1],
-              title: suggestionParts[2],
-              subtitle: suggestionParts[3],
-              content: suggestionParts[4],
-            }
-          : { icon: "✨", title: "Gợi ý", subtitle: "", content: suggestion };
-      });
-    }
-    const outroMatch = rawRecommendation.match(
-      /💌 \*\*Lời chúc cuối:\*\*\n\n(.*?)$/s
-    );
-    if (outroMatch && outroMatch[1]) sections.outro = outroMatch[1].trim();
-    return sections;
-  }, []);
 
   // Handle option selection
   const handleOptionChange = useCallback(
@@ -480,13 +527,15 @@ const TestEmotion = () => {
   // Handle test submission
   const handleSubmit = useCallback(async () => {
     setSubmitted(true);
-    const selectedOptionIds = Object.entries(answers).map(
-      ([index, selectedOption]) => {
+    const selectedOptionIds = Object.entries(answers)
+      .map(([index, selectedOption]) => {
         const question = questions[parseInt(index)];
-        return question.options.find((opt) => opt.content === selectedOption)
-          .id;
-      }
-    );
+        const found = question.options.find(
+          (opt) => opt.content === selectedOption
+        );
+        return found ? found.id : null;
+      })
+      .filter(Boolean); // loại bỏ null nếu có
     const payload = { patientId, testId, selectedOptionIds };
     try {
       const response = await fetch(`${API_TEST}/test-results`, {
@@ -498,45 +547,27 @@ const TestEmotion = () => {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      const resultResponse = await fetch(
-        `${API_TEST}/test-result/${data.testResultId}`,
-        {
-          headers: { Authorization: `Bearer ${YOUR_TOKEN}` },
-        }
-      );
-      const resultData = await resultResponse.json();
+      const result = data.testResult;
       setScores({
-        depression: resultData.testResult.depressionScore.value,
-        anxiety: resultData.testResult.anxietyScore.value,
-        stress: resultData.testResult.stressScore.value,
+        depression: result.depressionScore?.value ?? 0,
+        anxiety: result.anxietyScore?.value ?? 0,
+        stress: result.stressScore?.value ?? 0,
       });
       setTestInfo({
-        testId: resultData.testId,
-        patientId: resultData.patientId,
-        takenAt: resultData.takenAt,
-        severityLevel: resultData.severityLevel,
+        testId: result.testId,
+        patientId: result.patientId,
+        takenAt: result.takenAt,
+        severityLevel: result.severityLevel,
+        patientName: result.patientName,
       });
-      if (resultData.testResult.recommendation) {
-        setRecommend(resultData.testResult.recommendation);
-        setFormattedRecommendation(
-          formatRecommendation(resultData.testResult.recommendation)
-        );
-      } else {
-        setRecommend("Không có khuyến nghị cho kết quả này.");
-      }
+      setRecommendation(
+        result.recommendation || "Không có khuyến nghị cho kết quả này."
+      );
     } catch (error) {
       console.error("Error submitting test:", error);
-      setRecommend("Đã xảy ra lỗi khi lấy kết quả. Vui lòng thử lại sau.");
+      setRecommendation("Đã xảy ra lỗi khi lấy kết quả. Vui lòng thử lại sau.");
     }
-  }, [
-    answers,
-    questions,
-    patientId,
-    testId,
-    API_TEST,
-    YOUR_TOKEN,
-    formatRecommendation,
-  ]);
+  }, [answers, questions, patientId, testId, API_TEST, YOUR_TOKEN]);
 
   // Reset test
   const handleTestAgain = () => {
@@ -544,16 +575,25 @@ const TestEmotion = () => {
     setAnswers({});
     setSubmitted(false);
     setScores({ depression: 0, anxiety: 0, stress: 0 });
-    setTestInfo({ testId: "", patientId: "", takenAt: "", severityLevel: "" });
-    setRecommend(null);
-    setFormattedRecommendation(null);
+    setTestInfo({
+      testId: "",
+      patientId: "",
+      takenAt: "",
+      severityLevel: "",
+      patientName: "",
+    });
+    setRecommendation(null);
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
-        <p className="mt-2 text-gray-600">Đang tải...</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-teal-50 to-purple-50">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="h-10 w-10 border-t-2 border-b-2 border-teal-500 rounded-full"
+        />
+        <p className="mt-3 text-gray-600 font-medium">Đang tải...</p>
       </div>
     );
   }
@@ -562,134 +602,189 @@ const TestEmotion = () => {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   return (
-    <div className="grid grid-cols-7 min-h-[calc(100vh-110px)] bg-gray-50">
-      {/* Question Section */}
-      <div className="col-span-4 p-6">
-        <div className="flex flex-col h-full">
-          {currentQuestion && (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentQuestionIndex}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="flex flex-col items-center p-6 rounded-xl bg-white shadow-lg">
-                <motion.p
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
-                  className="text-xl font-semibold text-gray-800 mb-6 text-center italic">
-                  {currentQuestionIndex + 1}. {currentQuestion.content}
-                </motion.p>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-purple-50 p-4 md:p-8">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-6 md:gap-8 max-w-7xl mx-auto">
+        {/* Question Section */}
+        <div className="col-span-1 md:col-span-4">
+          <div className="flex flex-col h-full">
+            {currentQuestion && (
+              <AnimatePresence mode="wait">
                 <motion.div
-                  className="flex flex-col w-full space-y-3"
-                  initial={{ opacity: 0 }}
-                  animate={{
-                    opacity: 1,
-                    staggerChildren: 0.1,
-                    delayChildren: 0.3,
-                  }}>
-                  {currentQuestion.options.map((option) => (
-                    <motion.button
-                      key={option.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleOptionChange(option.content)}
-                      className={`p-3 rounded-lg text-left transition-all duration-300 ${
-                        answers[currentQuestionIndex] === option.content
-                          ? `${colorMap[option.content]} ${
-                              textColorMap[option.content]
-                            } shadow-md`
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                      }`}>
-                      {option.content}
-                    </motion.button>
-                  ))}
+                  key={currentQuestionIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="bg-white p-4 md:p-8 rounded-2xl shadow-lg">
+                  <motion.p
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.4 }}
+                    className="text-lg md:text-xl font-semibold text-gray-800 mb-4 md:mb-8 text-center italic">
+                    Câu {currentQuestionIndex + 1}/{totalQuestions}:{" "}
+                    {currentQuestion.content}
+                  </motion.p>
+                  <motion.div
+                    className="flex flex-col w-full space-y-3 md:space-y-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ staggerChildren: 0.1, delayChildren: 0.3 }}>
+                    {currentQuestion.options.map((option) => (
+                      <motion.button
+                        key={option.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleOptionChange(option.content)}
+                        className={`p-3 md:p-4 rounded-lg text-left transition-all duration-300 text-base font-medium ${
+                          answers[currentQuestionIndex] === option.content
+                            ? `${colorMap[option.content]} ${
+                                textColorMap[option.content]
+                              } shadow-md`
+                            : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                        }`}>
+                        {option.content}
+                      </motion.button>
+                    ))}
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            </AnimatePresence>
-          )}
-          <div className="mt-auto flex justify-center mb-4">
-            {isLastQuestion && !submitted && (
-              <button
-                onClick={handleSubmit}
-                disabled={!answers[currentQuestionIndex]}
-                className={`flex items-center px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                  answers[currentQuestionIndex]
-                    ? "bg-gradient-to-r from-blue-500 to-blue-300 text-white hover:scale-105 shadow-md"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}>
-                Nộp bài
-                <svg
-                  className="w-5 h-5 ml-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </button>
+              </AnimatePresence>
             )}
-            {submitted && (
-              <button
-                onClick={handleTestAgain}
-                className="flex items-center px-6 py-3 rounded-full font-semibold bg-gradient-to-r from-blue-500 to-blue-300 text-white hover:scale-105 transition-all duration-300 shadow-md">
-                Thử lại
-                <svg
-                  className="w-5 h-5 ml-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h5m-5 0a7 7 0 1110.392 2.056M4 9a7 7 0 0110.392-2.056"
-                  />
-                </svg>
-              </button>
+            <div className="mt-6 md:mt-8 flex justify-center">
+              {isLastQuestion && !submitted && (
+                <motion.button
+                  onClick={handleSubmit}
+                  disabled={!answers[currentQuestionIndex]}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex items-center px-8 py-3 rounded-full font-semibold transition-all duration-300 ${
+                    answers[currentQuestionIndex]
+                      ? "bg-gradient-to-r from-teal-500 to-indigo-500 text-white shadow-lg"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}>
+                  Nộp bài
+                  <svg
+                    className="w-5 h-5 ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </motion.button>
+              )}
+              {submitted && (
+                <motion.button
+                  onClick={handleTestAgain}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center px-8 py-3 rounded-full font-semibold bg-gradient-to-r from-teal-500 to-indigo-500 text-white shadow-lg transition-all duration-300">
+                  Thử lại
+                  <svg
+                    className="w-5 h-5 ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h5m-5 0a7 7 0 1110.392 2.056M4 9a7 7 0 0110.392-2.056"
+                    />
+                  </svg>
+                </motion.button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        <div className="col-span-1 md:col-span-3">
+          <div className="bg-white rounded-2xl shadow-lg p-3 md:p-4 h-[calc(100vh-120px)] flex flex-col gap-2">
+            {submitted ? (
+              <>
+                <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-1 md:mb-2 text-center">
+                  Kết quả đánh giá của bạn
+                </h2>
+                <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+                  <div className="flex-shrink-0">
+                    <TestInfoCard
+                      testId={testInfo.testId}
+                      patientId={testInfo.patientId}
+                      takenAt={testInfo.takenAt}
+                      severityLevel={testInfo.severityLevel}
+                      patientName={testInfo.patientName}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-shrink-0">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: 0.1,
+                        type: "spring",
+                        stiffness: 200,
+                      }}>
+                      <ScoreCard
+                        type="trầm cảm"
+                        score={scores.depression}
+                        compact
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: 0.2,
+                        type: "spring",
+                        stiffness: 200,
+                      }}>
+                      <ScoreCard type="lo âu" score={scores.anxiety} compact />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay: 0.3,
+                        type: "spring",
+                        stiffness: 200,
+                      }}>
+                      <ScoreCard
+                        type="căng thẳng"
+                        score={scores.stress}
+                        compact
+                      />
+                    </motion.div>
+                  </div>
+                  {/* <div className="flex-1 min-h-0 flex flex-col justify-end"> */}
+                  <button
+                    onClick={() => setShowRecommendation(true)}
+                    className="w-full hover:cursor-pointer py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-base shadow-md hover:scale-105 transition-all duration-300">
+                    Xem báo cáo chi tiết
+                  </button>
+                  {/* </div> */}
+                </div>
+              </>
+            ) : (
+              <IncompleteAssessment
+                currentIndex={currentQuestionIndex}
+                totalQuestions={totalQuestions}
+              />
             )}
           </div>
         </div>
       </div>
-
-      {/* Results Section */}
-      <div className="col-span-3 p-6 bg-white rounded-xl shadow-lg">
-        {submitted ? (
-          <div className="h-[calc(100vh-150px)] bg-purple-50 p-6 rounded-xl overflow-y-auto">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Kết quả đánh giá của bạn
-            </h2>
-            <div className="space-y-4 mb-6">
-              <TestInfoCard
-                testId={testInfo.testId}
-                patientId={testInfo.patientId}
-                takenAt={testInfo.takenAt}
-                severityLevel={testInfo.severityLevel}
-              />
-              <ScoreCard type="trầm cảm" score={scores.depression} />
-              <ScoreCard type="lo âu" score={scores.anxiety} />
-              <ScoreCard type="căng thẳng" score={scores.stress} />
-            </div>
-            <RecommendationSection
-              formattedRecommendation={formattedRecommendation}
-              recommend={recommend}
-            />
-          </div>
-        ) : (
-          <IncompleteAssessment
-            currentIndex={currentQuestionIndex}
-            totalQuestions={totalQuestions}
-          />
-        )}
-      </div>
+      {/* Recommendation Modal */}
+      <RecommendationModal
+        open={showRecommendation}
+        onClose={() => setShowRecommendation(false)}
+        recommendation={recommendation}
+      />
     </div>
   );
 };
