@@ -384,15 +384,16 @@ const LogIn = () => {
                 <div class="flex justify-center w-full items-center">
                   <div>
                     <button
-                      onClick={handleGoogleLogin}
-                      class="flex items-center justify-center py-2 px-20 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                      disabled
+                      className="flex items-center justify-center py-2 px-20 bg-gray-200 text-gray-400 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md rounded-lg cursor-not-allowed relative">
                       <svg
                         viewBox="0 0 24 24"
                         height="25"
                         width="25"
                         y="0px"
                         x="0px"
-                        xmlns="http://www.w3.org/2000/svg">
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="mr-2">
                         <path
                           d="M12,5c1.6167603,0,3.1012573,0.5535278,4.2863159,1.4740601l3.637146-3.4699707 C17.8087769,1.1399536,15.0406494,0,12,0C7.392395,0,3.3966675,2.5999146,1.3858032,6.4098511l4.0444336,3.1929321 C6.4099731,6.9193726,8.977478,5,12,5z"
                           fill="#F44336"></path>
@@ -445,7 +446,10 @@ const LogIn = () => {
                           d="M12,0.25c2.9750366,0,5.6829224,1.0983887,7.7792969,2.8916016l0.144165-0.1375122 l-0.110014-0.0958166C17.7089558,1.0843592,15.00354,0,12,0C5.3725586,0,0,5.3725586,0,12 c0,0.0421753,0.0058594,0.0828857,0.0062866,0.125C0.0740356,5.5558472,5.4147339,0.25,12,0.25z"
                           fill="#FFF"></path>
                       </svg>
-                      <span class="ml-2">Sign in with Google</span>
+                      <span className="ml-2">Sign in with Google</span>
+                      <span className="absolute -top-2 -right-4 bg-yellow-400 text-xs px-2 rounded-full text-white">
+                        Soon
+                      </span>
                     </button>
                   </div>
                 </div>
