@@ -5,7 +5,7 @@ export const useMultiStepForm = (totalSteps) => {
   const [formData, setFormData] = useState({});
 
   const goToNext = () => {
-    if (currentStep < totalSteps - 1) {
+    if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };

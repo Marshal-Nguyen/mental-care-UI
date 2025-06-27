@@ -16,7 +16,6 @@ const RegisterForm = () => {
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -57,7 +56,6 @@ const RegisterForm = () => {
         "https://api.emoease.vn/auth-service/Auth/register",
         formData
       );
-      console.log("Registration successful:", response.data);
       setError("");
       setFormData({
         fullName: "",
@@ -67,49 +65,75 @@ const RegisterForm = () => {
         password: "",
         confirmPassword: "",
       });
-      setIsRegistered(true);
-      toast.success("Registration successful!", {
-        position: "top-right",
-        autoClose: 3000,
+      toast.success("Registration successful! Redirecting to login...", {
+        position: "top-center",
+        autoClose: 1800,
         hideProgressBar: false,
         closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        pauseOnHover: false,
+        draggable: false,
+        theme: "colored",
       });
+      setTimeout(() => {
+        navigate("/EMO");
+      }, 1800);
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      // Ưu tiên lấy thông báo từ detail nếu có
+      const backendDetail = err.response?.data?.detail;
+      setError(
+        backendDetail || err.response?.data?.message || "Registration failed"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleLoginRedirect = () => {
-    navigate("/emo");
+  const handleLoginRedirect = (e) => {
+    e.preventDefault();
+    navigate("/EMO");
   };
 
   return (
     <div
-      className="h-screen flex items-center justify-center"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100"
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}>
-      <div className="bg-white bg-opacity-90 p-8 rounded-xl shadow-lg w-full max-w-md transform transition-all duration-500">
-        <h2 className="text-2xl font-bold text-center text-purple-600 animate-fade-in">
-          Sign Up
-        </h2>
+      <div
+        className="bg-white/90 shadow-xl rounded-2xl px-6 py-6 w-full max-w-md flex flex-col items-center"
+        style={{
+          maxHeight: "95vh",
+          minHeight: "auto",
+        }}>
+        <div className="mb-4 flex flex-col items-center">
+          <img
+            src="/emo.webp"
+            alt="Logo"
+            className="w-12 h-12 rounded-xl shadow mb-1"
+          />
+          <h2 className="text-2xl font-bold text-purple-700 mb-0.5">
+            Create Account
+          </h2>
+          <p className="text-gray-500 text-xs">
+            Join EmoEase and start your wellness journey!
+          </p>
+        </div>
 
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-4 animate-slide-in">
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 px-3 py-2 rounded mb-2 w-full text-xs">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-2">
-            <label className="block text-gray-700 mb-2 font-medium">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full space-y-2 overflow-y-auto"
+          style={{ maxHeight: "60vh" }}>
+          <div>
+            <label className="block text-gray-700 mb-0.5 text-sm">
               Full Name
             </label>
             <input
@@ -117,43 +141,38 @@ const RegisterForm = () => {
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 hover:border-purple-500"
+              className="w-full px-3 py-2 border border-purple-200 rounded focus:outline-none focus:ring-2 focus:ring-purple-400 bg-purple-50 text-sm"
               placeholder="Enter your full name"
+              autoComplete="off"
             />
           </div>
-
-          <div className="mb-2">
-            <label className="block text-gray-700 mb-2 font-medium">
-              Gender
-            </label>
+          <div>
+            <label className="block text-gray-700 mb-0.5 text-sm">Gender</label>
             <select
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 hover:border-purple-500 appearance-none">
+              className="w-full px-3 py-2 border border-purple-200 rounded focus:outline-none focus:ring-2 focus:ring-purple-400 bg-purple-50 text-sm">
               <option value="">Select gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Else">Other</option>
             </select>
           </div>
-
-          <div className="mb-2">
-            <label className="block text-gray-700 mb-2 font-medium">
-              Email
-            </label>
+          <div>
+            <label className="block text-gray-700 mb-0.5 text-sm">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 hover:border-purple-500"
+              className="w-full px-3 py-2 border border-purple-200 rounded focus:outline-none focus:ring-2 focus:ring-purple-400 bg-purple-50 text-sm"
               placeholder="Enter your email"
+              autoComplete="off"
             />
           </div>
-
-          <div className="mb-2">
-            <label className="block text-gray-700 mb-2 font-medium">
+          <div>
+            <label className="block text-gray-700 mb-0.5 text-sm">
               Phone Number
             </label>
             <input
@@ -161,13 +180,13 @@ const RegisterForm = () => {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 hover:border-purple-500"
+              className="w-full px-3 py-2 border border-purple-200 rounded focus:outline-none focus:ring-2 focus:ring-purple-400 bg-purple-50 text-sm"
               placeholder="Enter your phone number"
+              autoComplete="off"
             />
           </div>
-
-          <div className="mb-2 relative">
-            <label className="block text-gray-700 mb-2 font-medium">
+          <div className="relative">
+            <label className="block text-gray-700 mb-0.5 text-sm">
               Password
             </label>
             <input
@@ -175,16 +194,18 @@ const RegisterForm = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 hover:border-purple-500 pr-12"
+              className="w-full px-3 py-2 border border-purple-200 rounded focus:outline-none focus:ring-2 focus:ring-purple-400 bg-purple-50 text-sm pr-10"
               placeholder="Enter your password"
+              autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-10 text-gray-500 hover:text-gray-700">
+              className="absolute right-2 top-7 text-gray-400 hover:text-purple-600"
+              tabIndex={-1}>
               {showPassword ? (
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24">
@@ -203,7 +224,7 @@ const RegisterForm = () => {
                 </svg>
               ) : (
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24">
@@ -217,9 +238,8 @@ const RegisterForm = () => {
               )}
             </button>
           </div>
-
-          <div className="mb-6 relative">
-            <label className="block text-gray-700 mb-2 font-medium">
+          <div className="relative">
+            <label className="block text-gray-700 mb-0.5 text-sm">
               Confirm Password
             </label>
             <input
@@ -227,16 +247,18 @@ const RegisterForm = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-300 hover:border-purple-500 pr-12"
+              className="w-full px-3 py-2 border border-purple-200 rounded focus:outline-none focus:ring-2 focus:ring-purple-400 bg-purple-50 text-sm pr-10"
               placeholder="Confirm your password"
+              autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-10 text-gray-500 hover:text-gray-700">
+              className="absolute right-2 top-7 text-gray-400 hover:text-purple-600"
+              tabIndex={-1}>
               {showConfirmPassword ? (
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24">
@@ -255,7 +277,7 @@ const RegisterForm = () => {
                 </svg>
               ) : (
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24">
@@ -269,24 +291,28 @@ const RegisterForm = () => {
               )}
             </button>
           </div>
-
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-3 rounded-lg text-white font-semibold transition-all duration-300 transform ${
+            className={`w-full py-2 rounded text-white font-semibold text-base shadow transition-all duration-300 ${
               isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-purple-500 hover:bg-purple-600 hover:scale-105 active:scale-95"
+                : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 hover:scale-105 active:scale-95"
             }`}>
             {isSubmitting ? "Signing Up..." : "Sign Up"}
           </button>
+        </form>
 
+        <div className="mt-3 w-full flex flex-col items-center">
+          <span className="text-gray-500 text-xs mb-1">
+            Already have an account?
+          </span>
           <button
             onClick={handleLoginRedirect}
-            className="w-full text-pink-500 font-semibold hover:text-indigo-600 underline">
+            className="text-purple-600 font-semibold hover:underline hover:text-pink-500 text-sm transition">
             Go to Login
           </button>
-        </form>
+        </div>
       </div>
       <ToastContainer />
     </div>

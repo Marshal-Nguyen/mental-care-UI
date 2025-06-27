@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MoodQuestion } from "../../../components/IntroComponents/MoodOption";
 import { SleepQuestion } from "../../../components/IntroComponents/SleepOption";
@@ -7,6 +7,11 @@ import { EntertainmentQuestion } from "../../../components/IntroComponents/Enter
 import { FavoriteFoodQuestion } from "../../../components/IntroComponents/FavoriteFoodQuestion";
 import { PhysicalActivityQuestion } from "../../../components/IntroComponents/PhysicalActivityQuestion";
 import { TherapeuticActivityQuestion } from "../../../components/IntroComponents/TherapeuticActivityQuestion";
+import { IndustryQuestion } from "../../../components/IntroComponents/IndustryQuestion";
+import { PersonalityQuestion } from "../../../components/IntroComponents/PersonalityQuestion";
+import { AllergiesQuestion } from "../../../components/IntroComponents/AllergiesQuestion";
+import { BirthDateQuestion } from "../../../components/IntroComponents/BirthDateQuestion";
+import { AddressQuestion } from "../../../components/IntroComponents/AddressQuestion";
 import { ThankYouScreen } from "../../../components/IntroComponents/ThankYouScreen";
 import { WelcomePopup } from "../../../components/IntroComponents/WelcomePopup";
 import {
@@ -27,21 +32,119 @@ const Intro = () => {
   const question7Ref = useRef(null);
   const question8Ref = useRef(null);
   const question9Ref = useRef(null);
+  const question10Ref = useRef(null);
+  const question11Ref = useRef(null);
+  const question12Ref = useRef(null);
+  const question13Ref = useRef(null);
   const thankYouRef = useRef(null);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const [selectedMoods, setSelectedMoods] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
   const [submitError, setSubmitError] = useState(null);
+  const [isFetchingProfile, setIsFetchingProfile] = useState(true);
+  const [fetchProfileError, setFetchProfileError] = useState(null);
+  const [hasFetchedProfile, setHasFetchedProfile] = useState(false);
+  const [availableJobs, setAvailableJobs] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState(null);
   const BASE_URL = import.meta.env.VITE_API_LIFESTYLE_URL;
+  const PROFILE_URL =
+    import.meta.env.VITE_API_PROFILE_URL ||
+    "https://api.emoease.vn/profile-service";
   const { currentStep, formData, goToNext, goToPrevious, updateFormData } =
-    useMultiStepForm(10);
+    useMultiStepForm(15);
   const {
     playing,
     muted,
     toggle: toggleAudio,
     toggleMute,
   } = useAudio("/sounds/chill.mp3");
+
+  // Fetch patient profile only once
+  const fetchPatientProfile = useCallback(async () => {
+    if (hasFetchedProfile) return;
+
+    try {
+      setIsFetchingProfile(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(
+        `${PROFILE_URL}/patients/${localStorage.getItem("profileId")}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          signal: controller.signal,
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(
+          `Patient profile API returned status: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Patient profile API response:", data);
+      const { patientProfileDto } = data;
+      updateFormData("fullName", patientProfileDto.fullName || "");
+      updateFormData("gender", patientProfileDto.gender || "");
+      updateFormData("email", patientProfileDto.contactInfo?.email || "");
+      updateFormData(
+        "phoneNumber",
+        patientProfileDto.contactInfo?.phoneNumber || ""
+      );
+      if (patientProfileDto.jobId) setSelectedJobId(patientProfileDto.jobId);
+      setHasFetchedProfile(true);
+    } catch (error) {
+      console.error("Error fetching patient profile:", error);
+      setFetchProfileError(error.message);
+    } finally {
+      setIsFetchingProfile(false);
+    }
+  }, [hasFetchedProfile, updateFormData]);
+
+  useEffect(() => {
+    fetchPatientProfile();
+  }, [fetchPatientProfile]);
+
+  // Fetch jobs based on industryId
+  const fetchJobsByIndustry = useCallback(async (industryId) => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(
+        `${PROFILE_URL}/industries/${industryId}/jobs`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          signal: controller.signal,
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Jobs API returned status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Jobs API response:", data);
+      setAvailableJobs(data.jobs || []);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      setAvailableJobs([]);
+    }
+  }, []);
 
   const closeWelcomeAndStart = () => {
     setShowWelcomePopup(false);
@@ -168,7 +271,9 @@ const Intro = () => {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Improvement goals API returned status: ${response.status}`);
+        throw new Error(
+          `Improvement goals API returned status: ${response.status}`
+        );
       }
 
       const data = await response.json();
@@ -217,7 +322,9 @@ const Intro = () => {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Entertainment API returned status: ${response.status}`);
+        throw new Error(
+          `Entertainment API returned status: ${response.status}`
+        );
       }
 
       const data = await response.json();
@@ -247,7 +354,7 @@ const Intro = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(`${BASE_URL}/patient-Food-activities`, {
+      const response = await fetch(`${BASE_URL}/patient-food-activities`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -303,7 +410,9 @@ const Intro = () => {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Physical activities API returned status: ${response.status}`);
+        throw new Error(
+          `Physical activities API returned status: ${response.status}`
+        );
       }
 
       const data = await response.json();
@@ -364,24 +473,93 @@ const Intro = () => {
     }
   };
 
+  const updatePatientProfile = async () => {
+    try {
+      console.log("Updating patient profile:", {
+        fullName: formData.fullName,
+        gender: formData.gender,
+        allergies: formData.allergies ?? "",
+        personalityTraits: formData.personalityTraits || "None",
+        contactInfo: {
+          address: formData.address,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+        },
+        jobId: selectedJobId,
+        birthDate: formData.birthDate,
+      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(
+        `${PROFILE_URL}/patients/${localStorage.getItem("profileId")}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            patientProfileUpdate: {
+              fullName:
+                formData.fullName ||
+                localStorage.getItem("username") ||
+                "Unknown",
+              gender: formData.gender || "Unknown",
+              allergies: formData.allergies ?? "",
+              personalityTraits: formData.personalityTraits || "None",
+              contactInfo: {
+                address: formData.address || null,
+                email: formData.email || null,
+                phoneNumber: formData.phoneNumber || null,
+              },
+              jobId: selectedJobId || null,
+              birthDate: formData.birthDate || null,
+            },
+          }),
+          signal: controller.signal,
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(
+          `Profile update API returned status: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Profile update API response:", data);
+      return true;
+    } catch (error) {
+      console.error("Error updating patient profile:", error);
+      throw error;
+    }
+  };
+
   const submitAllData = async () => {
     setIsSubmitting(true);
     setSubmitProgress(0);
     setSubmitError(null);
-    
+
     const apiCalls = [
       { name: "Emotion Data", function: sendEmotionData },
       { name: "Lifestyle Data", function: sendLifestyleData },
       { name: "Improvement Goals", function: sendImprovementGoals },
-      { name: "Entertainment Activities", function: sendEntertainmentActivities },
+      {
+        name: "Entertainment Activities",
+        function: sendEntertainmentActivities,
+      },
       { name: "Food Activities", function: sendFoodActivities },
       { name: "Physical Activities", function: sendPhysicalActivities },
-      { name: "Therapeutic Activities", function: sendTherapeuticActivities }
+      { name: "Therapeutic Activities", function: sendTherapeuticActivities },
+      { name: "Patient Profile Update", function: updatePatientProfile },
     ];
-    
+
     const totalCalls = apiCalls.length;
     let completedCalls = 0;
-    
+
     try {
       for (const api of apiCalls) {
         try {
@@ -394,9 +572,9 @@ const Intro = () => {
           throw new Error(`Failed to submit ${api.name}: ${error.message}`);
         }
       }
-      
-      console.log("All data submitted successfully!");
-      goToNext();
+
+      console.log("All data submitted successfully, moving to step 15");
+      goToNext(); // Đảm bảo chuyển sang bước 15
       setTimeout(() => {
         if (thankYouRef.current) {
           thankYouRef.current.scrollIntoView({
@@ -427,14 +605,19 @@ const Intro = () => {
 
   const handleOptionSelect = (field, value) => {
     updateFormData(field, value);
-    
+
     if (
       field !== "exerciseFrequency" &&
       field !== "improvementGoal" &&
       field !== "entertainmentActivities" &&
       field !== "foodActivities" &&
       field !== "physicalActivities" &&
-      field !== "therapeuticActivities"
+      field !== "therapeuticActivities" &&
+      field !== "industry" &&
+      field !== "personalityTraits" &&
+      field !== "allergies" &&
+      field !== "birthDate" &&
+      field !== "address"
     ) {
       const currentStepBeforeChange = currentStep;
       goToNext();
@@ -457,6 +640,14 @@ const Intro = () => {
             ? question8Ref
             : currentStepBeforeChange === 7
             ? question9Ref
+            : currentStepBeforeChange === 8
+            ? question10Ref
+            : currentStepBeforeChange === 9
+            ? question11Ref
+            : currentStepBeforeChange === 10
+            ? question12Ref
+            : currentStepBeforeChange === 11
+            ? question13Ref
             : thankYouRef;
         if (nextRef.current) {
           nextRef.current.scrollIntoView({
@@ -529,21 +720,98 @@ const Intro = () => {
   };
 
   const handleTherapeuticActivitySubmit = () => {
+    goToNext();
+    setTimeout(() => {
+      if (question10Ref.current) {
+        question10Ref.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  };
+
+  const handleIndustrySubmit = (industryId) => {
+    fetchJobsByIndustry(industryId);
+    updateFormData("industry", industryId);
+    goToNext();
+    setTimeout(() => {
+      if (question11Ref.current) {
+        question11Ref.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  };
+
+  const handleJobSelect = (jobId) => {
+    setSelectedJobId(jobId);
+    goToNext();
+    setTimeout(() => {
+      if (question12Ref.current) {
+        question12Ref.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  };
+
+  const handlePersonalitySubmit = () => {
+    goToNext();
+    setTimeout(() => {
+      if (question13Ref.current) {
+        question13Ref.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  };
+
+  const handleAllergiesSubmit = () => {
+    goToNext();
+    setTimeout(() => {
+      if (question13Ref.current) {
+        question13Ref.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  };
+
+  const handleBirthDateSubmit = () => {
+    goToNext();
+    setTimeout(() => {
+      if (thankYouRef.current) {
+        thankYouRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 300);
+  };
+
+  const handleAddressSubmit = () => {
     submitAllData();
   };
 
   const SubmitProgressOverlay = ({ isSubmitting, progress, error }) => {
     if (!isSubmitting && !error) return null;
-    
+
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
         <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl max-w-md w-full">
           {error ? (
             <div className="text-center">
               <div className="text-red-500 text-4xl mb-3">❌</div>
-              <h3 className="text-xl font-bold text-white mb-2">Đã xảy ra lỗi</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Đã xảy ra lỗi
+              </h3>
               <p className="text-white/80 mb-4">{error}</p>
-              <button 
+              <button
                 onClick={() => setSubmitError(null)}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all">
                 Thử lại
@@ -553,16 +821,19 @@ const Intro = () => {
             <div className="text-center">
               <div className="mb-4 relative">
                 <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
                 <p className="text-white mt-2">{progress}% hoàn thành</p>
               </div>
-              <h3 className="text-xl font-bold text-white">Đang gửi dữ liệu...</h3>
+              <h3 className="text-xl font-bold text-white">
+                Đang gửi dữ liệu...
+              </h3>
               <p className="text-white/70 text-sm mt-2">
-                Vui lòng đợi trong khi chúng tôi đang xử lý các câu trả lời của bạn
+                Vui lòng đợi trong khi chúng tôi đang xử lý các câu trả lời của
+                bạn
               </p>
             </div>
           )}
@@ -570,6 +841,34 @@ const Intro = () => {
       </div>
     );
   };
+
+  if (isFetchingProfile) {
+    return (
+      <div className="h-screen flex flex-col justify-center items-center p-4 relative z-10">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-3 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+          <p className="text-white mt-3 text-sm">Đang tải thông tin hồ sơ...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchProfileError) {
+    return (
+      <div className="h-screen flex flex-col justify-center items-center p-4 relative z-10">
+        <div className="bg-red-500/20 backdrop-blur-sm p-4 rounded-lg">
+          <p className="text-white text-center text-sm">
+            <span className="font-bold">Lỗi:</span> {fetchProfileError}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 px-3 py-1.5 bg-white text-red-600 rounded-lg hover:bg-gray-100 text-sm">
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -580,11 +879,11 @@ const Intro = () => {
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}>
-      <ProgressIndicator currentStep={currentStep} totalSteps={10} />
+      <ProgressIndicator currentStep={currentStep} totalSteps={15} />
       {!showWelcomePopup && (
         <MuteButton isMuted={muted} onToggle={toggleMute} />
       )}
-      {currentStep > 0 && currentStep < 9 && !showWelcomePopup && (
+      {currentStep > 0 && currentStep < 15 && !showWelcomePopup && (
         <motion.button
           onClick={goToPrevious}
           initial={{ opacity: 0, x: -20 }}
@@ -630,7 +929,7 @@ const Intro = () => {
               selectedMoods={selectedMoods}
               onMoodSelect={handleMoodSelect}
               onConfirm={handleMoodConfirm}
-              isLoading={false} // Không cần loading vì không gọi API
+              isLoading={false}
             />
           </motion.div>
         )}
@@ -795,6 +1094,120 @@ const Intro = () => {
 
         {!showWelcomePopup && currentStep === 9 && (
           <motion.div
+            key="industry"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}>
+            <IndustryQuestion
+              ref={question10Ref}
+              selectedIndustry={formData.industry}
+              onIndustrySelect={handleIndustrySubmit}
+              isSubmitting={isSubmitting}
+            />
+          </motion.div>
+        )}
+
+        {!showWelcomePopup && currentStep === 10 && (
+          <motion.div
+            key="job-selection"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}>
+            <SleepQuestion
+              ref={question11Ref}
+              currentQuestion="jobId"
+              formData={{ jobId: selectedJobId }}
+              onOptionSelect={handleJobSelect}
+              options={availableJobs.map((job) => ({
+                value: job.id,
+                label: job.jobTitle,
+              }))}
+              questionText="Chọn công việc của bạn:"
+              showConfirmButton={true}
+              onConfirm={() => handleJobSelect(selectedJobId)}
+              isLoading={availableJobs.length === 0}
+            />
+          </motion.div>
+        )}
+
+        {!showWelcomePopup && currentStep === 11 && (
+          <motion.div
+            key="personality"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}>
+            <PersonalityQuestion
+              ref={question12Ref}
+              selectedPersonality={formData.personalityTraits}
+              onPersonalitySelect={(value) =>
+                handleOptionSelect("personalityTraits", value)
+              }
+              onSubmit={handlePersonalitySubmit}
+              isSubmitting={isSubmitting}
+            />
+          </motion.div>
+        )}
+
+        {!showWelcomePopup && currentStep === 12 && (
+          <motion.div
+            key="allergies"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}>
+            <AllergiesQuestion
+              ref={question13Ref}
+              allergies={formData.allergies}
+              onAllergiesChange={(value) =>
+                handleOptionSelect("allergies", value)
+              }
+              onSubmit={handleAllergiesSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </motion.div>
+        )}
+
+        {!showWelcomePopup && currentStep === 13 && (
+          <motion.div
+            key="birthDate"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}>
+            <BirthDateQuestion
+              ref={question13Ref}
+              birthDate={formData.birthDate}
+              onBirthDateChange={(value) =>
+                handleOptionSelect("birthDate", value)
+              }
+              onSubmit={handleBirthDateSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </motion.div>
+        )}
+
+        {!showWelcomePopup && currentStep === 14 && (
+          <motion.div
+            key="address"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}>
+            <AddressQuestion
+              ref={thankYouRef}
+              address={formData.address}
+              onAddressChange={(value) => handleOptionSelect("address", value)}
+              onSubmit={handleAddressSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </motion.div>
+        )}
+
+        {!showWelcomePopup && currentStep === 15 && (
+          <motion.div
             key="thank-you"
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
@@ -804,11 +1217,11 @@ const Intro = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      <SubmitProgressOverlay 
-        isSubmitting={isSubmitting} 
+
+      <SubmitProgressOverlay
+        isSubmitting={isSubmitting}
         progress={submitProgress}
-        error={submitError} 
+        error={submitError}
       />
     </div>
   );
