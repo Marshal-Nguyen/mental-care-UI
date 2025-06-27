@@ -602,7 +602,7 @@ const TestEmotion = () => {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-purple-50 p-4 md:p-8">
+    <div className="min-h-[calc(100vh-120px)] bg-gradient-to-br from-teal-50 to-purple-50 p-4 md:p-8">
       <div className="grid grid-cols-1 md:grid-cols-7 gap-6 md:gap-8 max-w-7xl mx-auto">
         {/* Question Section */}
         <div className="col-span-1 md:col-span-4">
@@ -705,7 +705,7 @@ const TestEmotion = () => {
 
         {/* Results Section */}
         <div className="col-span-1 md:col-span-3">
-          <div className="bg-white rounded-2xl shadow-lg p-3 md:p-4 h-[calc(100vh-120px)] flex flex-col gap-2">
+          <div className="bg-white rounded-2xl shadow-lg p-3 md:p-4 flex flex-col gap-2 w-full max-w-4xl mx-auto">
             {submitted ? (
               <>
                 <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-1 md:mb-2 text-center">
