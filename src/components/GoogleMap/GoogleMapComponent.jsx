@@ -109,7 +109,7 @@ const GoogleMapComponent = () => {
       <div style={{ textAlign: "center", margin: "20px auto", width: "70%" }}>
         <span className="text-xl font-thin text-purple-700 uppercase">
           Visit us at the address above or contact us at:{" "}
-          <strong className="font-bold">0123 456 789</strong>
+          <strong className="font-bold">0849 260 818</strong>
         </span>
       </div>
     </div>

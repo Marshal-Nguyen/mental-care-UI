@@ -1,6 +1,27 @@
 import styles from "../../styles/Web/DownloadSection.module.css";
-
+import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { openLoginModal } from "../../store/authSlice";
+import { toast } from "react-toastify"; // Import toast
 const DownloadSection = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch();
+
+  // ✅ Lấy role từ Redux
+  const userRole = useSelector((state) => state.auth.userRole);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!userRole);
+
+  useEffect(() => {
+    setIsLoggedIn(!!userRole);
+  }, [userRole]);
+
+  const handleTestClick = (event) => {
+    if (["Doctor", "Staff", "Manager"].includes(userRole)) {
+      event.preventDefault(); // Chặn chuyển trang
+      toast.warning("Bạn không thể truy cập vào bài kiểm tra!"); // Hiển thị thông báo
+    }
+  };
   return (
     <div className={styles.container}>
       <h1 className={`${styles.title}`}>Your story matters</h1>
@@ -10,8 +31,21 @@ const DownloadSection = () => {
         Find comfort, healing, and hope through every conversation.
       </p>
       <div className="flex items-center gap-7 mt-3">
-        <button className="relative border rounded-xl bg-[#492580] max-w-48 h-13 px-3 font-mono font-thin text-white transition-colors duration-10000 ease-linear before:absolute before:right-20 before:top-6 before:-z-[1] before:h-3/4 before:w-2/3 before:origin-center before:-translate-y-1/2 before:translate-x-1/2 before:animate-ping before:rounded-xl before:bg-[#8566b1] hover:bg-[#8566b1] hover:before:bg-[#8566b1]">
-          Talk to our team
+        <button className="relative border hover:cursor-pointer rounded-xl bg-[#492580] max-w-48 h-13 px-3 font-mono font-thin text-white transition-colors duration-1000 ease-linear before:absolute before:inset-0 before:-z-[1] before:m-auto before:h-3/4 before:w-2/3 before:animate-ping before:rounded-xl before:bg-[#8566b1] hover:bg-[#8566b1] hover:before:bg-[#8566b1]">
+          {isLoggedIn ? (
+            <Link
+              to="/EMO/testEmotion"
+              onClick={handleTestClick}
+              className="hover:cursor-pointer">
+              Start Your Journey
+            </Link>
+          ) : (
+            <button
+              className="hover:cursor-pointer"
+              onClick={() => dispatch(openLoginModal())}>
+              Start Your Journey
+            </button>
+          )}
         </button>
         <button className="cursor-pointer">
           <div className="flex max-w-48 h-12 px-3 gap-2 rounded-xl border border-[#6A4C93] items-center justify-center bg-black text-white dark:text-black dark:bg-white sm:h-14">

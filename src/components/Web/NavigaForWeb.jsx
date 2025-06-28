@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { openLoginModal } from "../../store/authSlice"; // Import action mở modal
 import { toast } from "react-toastify"; // Import toast
 import { Tooltip } from "react-tooltip"; // Thêm import này
-
+import StartButton from "../Chat/StartButton"; // Import StartButton component
 const NavigaForWeb = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -136,18 +136,11 @@ const NavigaForWeb = () => {
 
         {/* Test button */}
         {isLoggedIn ? (
-          <Link
-            to="testEmotion"
-            onClick={handleTestClick}
-            className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
-            Take the test
+          <Link to="/AIChatBoxWithEmo" onClick={handleTestClick}>
+            <StartButton />
           </Link>
         ) : (
-          <button
-            onClick={() => dispatch(openLoginModal())}
-            className="bg-[#9553f2] text-white px-4 py-2 rounded-full font-semibold hover:bg-purple-700">
-            Take the test
-          </button>
+          <StartButton onClick={() => dispatch(openLoginModal())} />
         )}
       </div>
 

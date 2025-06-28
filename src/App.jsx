@@ -15,17 +15,16 @@ AOS.init({
 
 import Home from "./pages/User/Web/HomeUser";
 import Intro from "./pages/User/Web/Intro";
-import { ToastContainer, Zoom, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Booking from "./pages/User/Web/Booking";
 import Shop from "./pages/User/Web/Shop";
 import Workshop from "./pages/User/Web/Workshop";
 // import NavigaForWeb from "./components/NavigaForWeb";
 
-import { Outlet } from "react-router-dom";
+import AIChatBoxWithEmo from "./pages/User/Web/AIChatBoxWithEmo";
 // manager
 import TestButton from "../src/components/manager/TestButton";
-import Manager1 from "../src/components/manager/sildebarLeft/SildebarLeft";
 import Manager from "./pages/manager/manager";
 import DashboardManager from "./pages/manager/dashboard/Dashboard";
 import AddCustomerManager from "./pages/manager/customer/AddCustomer";
@@ -41,7 +40,6 @@ import AddPackages from "./pages/manager/services/AddService";
 import ListPackages from "./pages/manager/services/ListService";
 import ListPendingReplies from "./pages/manager/pending_replies/ListPendingReplies";
 import ProfileManager from "./pages/manager/profile/Profile";
-import HistoryPatient1 from "./components/manager/customer/HistoryPatient";
 import BookingList from "./pages/manager/booking/Booking";
 import BookingDetail from "./pages/manager/booking/BookingDetail";
 import Transactions from "./pages/manager/transaction/Transactions";
@@ -53,7 +51,6 @@ import ListCustomerStaff from "./pages/staff/listCustomer/ListCustomer";
 import MessengerUI from "./pages/staff/messager/Message";
 import DashboardStaff from "./pages/staff/dashboard/Dashboard";
 import Regist from "./components/Web/Regist";
-import ListDoctorStaff from "./pages/staff/doctor/ListOfDoctor";
 import StaffProfile from "./pages/staff/profile/StaffProfile";
 import BlogStaff from "../src/pages/staff/blog/Blog";
 //user
@@ -83,7 +80,7 @@ import PaymentCallback from "./components/Payment/PaymentCallback";
 import Chat from "./components/Chatbox/Chat";
 import PatientBooking from "./pages/doctor/Dashboard/PatientBooking";
 import Shopping from "./pages/User/Dashboard/Shopping";
-import VerifyDoctorEmail from "./components/mental_veri/verifiEmail";
+
 function App() {
   return (
     <>
@@ -93,7 +90,7 @@ function App() {
           <Route path="/daily-habits" element={<Intro />} />
           <Route path="/" element={<Navigate to="/EMO" replace />} />
           <Route path="regist" element={<Regist />} />
-          <Route path="/verify-email" element={<VerifyDoctorEmail />} />
+
           <Route path="/EMO" element={<Home />}>
             <Route index element={<Navigate to="learnAboutEmo" replace />} />
             <Route path="learnAboutEmo" element={<LearnAboutEmo />} />
@@ -108,6 +105,7 @@ function App() {
             <Route path="payment-success" element={<PaymentSuccess />} />
             <Route path="payment-failure" element={<PaymentFailure />} />
           </Route>
+          <Route path="/AIChatBoxWithEmo" element={<AIChatBoxWithEmo />} />
           <Route path="/payments/callback" element={<PaymentCallback />} />
           <Route element={<PrivateRoute allowedRoles={["User"]} />}>
             <Route path="/DashboardPartient" element={<DashboardPartient />}>
