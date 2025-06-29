@@ -1,6 +1,5 @@
 import React from "react";
 import Header from "../Chat/Header";
-import Footer from "./Footer";
 import FloatingParticles from "../Chat/FloatingParticles";
 
 const MainLayout = ({ children }) => {
@@ -11,7 +10,6 @@ const MainLayout = ({ children }) => {
       <FloatingParticles />
       <Header />
       <main className="flex-1 relative z-10">{children}</main>
-      {/* <Footer /> */}
     </div>
   );
 };

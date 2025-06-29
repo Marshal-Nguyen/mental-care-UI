@@ -40,11 +40,11 @@ const DownloadSection = () => {
               Start Your Journey
             </Link>
           ) : (
-            <button
+            <span
               className="hover:cursor-pointer"
               onClick={() => dispatch(openLoginModal())}>
               Start Your Journey
-            </button>
+            </span>
           )}
         </button>
         <button className="cursor-pointer">

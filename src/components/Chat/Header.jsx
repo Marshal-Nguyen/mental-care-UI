@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import { Heart, Home, MessageCircle } from "lucide-react";
+import FancyHomeButton from "./FancyHomeButton";
 
 const Header = () => {
   const location = useLocation();
@@ -11,7 +12,7 @@ const Header = () => {
       initial={{ y: -50, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="relative z-30 p-4 md:p-6 bg-gradient-to-r from-white via-[#f8f4fa] to-white shadow-sm">
+      className="relative z-30 p-4 md:p-6 ">
       <nav className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo + Title */}
         <Link to="/" className="flex items-center gap-3 group">
@@ -23,29 +24,18 @@ const Header = () => {
             />
           </motion.div>
           <div>
-            <h1 className="font-bold text-2xl text-gray-700 group-hover:text-[#795596] transition-colors tracking-tight">
-              EmoEase – Ở đây để bạn được là chính mình
+            <h1 className="font-extrabold text-xl sm:text-2xl text-white group-hover:text-[#F3D1F4] transition-all tracking-tight">
+              EmoEase – Ở đây để bạn là chính mình
             </h1>
-            <p className="text-xs text-gray-600/80 font-light italic">
-              Nơi an toàn cho mọi cảm xúc lên tiếng
+            <p className="text-xs sm:text-sm text-purple-100/90 font-serif italic mt-1">
+              Một nơi đủ dịu để trái tim bạn được nghỉ ngơi
             </p>
           </div>
         </Link>
 
         {/* Menu Items */}
-        <div className="flex items-center gap-2">
-          {/* Home */}
-          <Link
-            to="/"
-            className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-300 ${
-              location.pathname === "/"
-                ? "bg-[#C8A2C8]/20 text-[#C8A2C8] shadow"
-                : "text-gray-400/80 hover:text-[#C8A2C8] hover:bg-[#C8A2C8]/10"
-            }`}>
-            <Home className="w-5 h-5" />
-            <span className="hidden sm:inline">Home</span>
-          </Link>
-        </div>
+
+        <FancyHomeButton />
       </nav>
     </motion.header>
   );

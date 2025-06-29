@@ -4,13 +4,14 @@ import { Send, Heart } from "lucide-react";
 import ConversationSidebar from "../../../components/Chat/ConversationSidebar";
 import ChatbotAvatar from "../../../components/Chat/ChatbotAvatar";
 import MainLayout from "../../../components/Chat/MainLayout";
+import TypewriterMessage from "../../../components/Chat/TypewriterMessage";
 
 // API Base URL
 const BASE_URL = "https://api.emoease.vn/chatbox-service/api/AIChat";
 const TOKEN = localStorage.getItem("token"); // Thay bằng logic lấy token thực tế
 
 // Component hiển thị tin nhắn
-const ChatMessages = ({ messages }) => {
+const ChatMessages = ({ messages, isLoadingMessages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,8 +20,11 @@ const ChatMessages = ({ messages }) => {
     }
   }, [messages]);
 
+  // Xác định index của tin nhắn đang loading (nếu có)
+  const lastIndex = messages.length - 1;
+
   return (
-    <div className="flex-1 bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl p-6 mb-4 overflow-y-auto border border-white/40">
+    <div className="flex-1 bg-[#6b728e00] rounded-2xl p-6 mb-4 overflow-y-auto ">
       <AnimatePresence>
         {messages &&
           messages.map((message, index) => (
@@ -34,18 +38,28 @@ const ChatMessages = ({ messages }) => {
               }`}>
               {message.senderIsEmo && (
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C8A2C8] to-[#6B728E] flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <Heart className="w-4 h-4 text-white" />
+                  <img
+                    src="/emo.webp"
+                    alt="Emo Avatar"
+                    className="rounded-full"
+                  />
                 </div>
               )}
               <motion.div
                 className={`max-w-xs p-3 rounded-xl ${
                   message.senderIsEmo
                     ? "bg-white/90 text-gray-700 shadow"
-                    : "bg-[#C8A2C8] text-white ml-auto shadow"
+                    : "bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-300 text-gray-800 ml-auto shadow"
                 }`}
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}>
-                <p className="text-sm leading-relaxed">{message.content}</p>
+                {message.senderIsEmo &&
+                index === lastIndex &&
+                isLoadingMessages ? (
+                  <TypewriterMessage text={message.content} onDone={() => {}} />
+                ) : (
+                  <span>{message.content}</span>
+                )}
                 <p className="text-xs opacity-60 mt-1">
                   {message.createdDate
                     ? new Date(message.createdDate).toLocaleTimeString([], {
@@ -57,6 +71,27 @@ const ChatMessages = ({ messages }) => {
               </motion.div>
             </motion.div>
           ))}
+        {/* Hiển thị ... khi đang loading tin nhắn */}
+        {isLoadingMessages && (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex gap-3 mb-4 justify-start">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#C8A2C8] to-[#6B728E] flex items-center justify-center flex-shrink-0 shadow-lg">
+              <img src="/emo.webp" alt="Emo Avatar" className="rounded-full" />
+            </div>
+            <motion.div
+              className="max-w-xs p-3 rounded-xl bg-white/90 text-gray-700 shadow flex items-center"
+              animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.1, 1] }}
+              transition={{ repeat: Infinity, duration: 1.2 }}>
+              <span className="text-lg font-bold tracking-widest animate-pulse">
+                ...
+              </span>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
       <div ref={messagesEndRef} />
     </div>
@@ -76,11 +111,11 @@ const ChatInput = ({ onSendMessage, disabled }) => {
   };
   return (
     <motion.div
-      className="bg-white/80 backdrop-blur-lg shadow-xl p-4 rounded-2xl border border-white/40"
+      className="bg-white/80 backdrop-blur-xl shadow-2xl p-4 rounded-3xl border border-white/30 ring-1 ring-purple-100/40"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}>
-      <form className="flex gap-3" onSubmit={handleSubmit}>
+      <form className="flex gap-3 items-center" onSubmit={handleSubmit}>
         <input
           type="text"
           value={message}
@@ -88,14 +123,14 @@ const ChatInput = ({ onSendMessage, disabled }) => {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) handleSubmit(e);
           }}
-          placeholder="Share what's on your mind..."
-          className="flex-1 px-4 py-3 bg-white/60 border border-[#C8A2C8]/30 rounded-xl focus:outline-none focus:border-[#C8A2C8] transition-colors placeholder-gray-400/60"
+          placeholder="Bạn đang cảm thấy thế nào? 🌈"
+          className="flex-1 px-4 py-3 bg-white/60 border border-pink-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#C8A2C8] placeholder:text-sm placeholder:text-gray-400/80 transition-all"
           disabled={disabled}
         />
         <motion.button
           type="submit"
-          className="px-4 py-3 bg-[#C8A2C8] hover:bg-[#C8A2C8]/80 text-white rounded-xl transition-colors shadow"
-          whileHover={{ scale: 1.05 }}
+          className="px-4 py-3 bg-gradient-to-tr from-[#C8A2C8] to-[#a78bfa] hover:brightness-110 text-white rounded-full shadow-md disabled:opacity-50 transition-all"
+          whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
           disabled={disabled || !message.trim()}>
           <Send className="w-5 h-5" />
@@ -123,6 +158,10 @@ const AIChatBoxWithEmo = () => {
   };
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionName, setSessionName] = useState("Your Zen Companion");
+  const [showNewSessionModal, setShowNewSessionModal] = useState(false);
+  const [newSessionName, setNewSessionName] = useState("");
+  const [pendingMessages, setPendingMessages] = useState<any[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   // Lấy danh sách phiên
   const fetchSessions = async () => {
@@ -130,7 +169,7 @@ const AIChatBoxWithEmo = () => {
       const response = await fetch(
         `${BASE_URL}/sessions?PageIndex=1&PageSize=10`,
         {
-          headers: { Authorization: `Bearer ${TOKEN}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const data = await response.json();
@@ -146,7 +185,9 @@ const AIChatBoxWithEmo = () => {
     try {
       const response = await fetch(
         `${BASE_URL}/sessions/${sessionId}/messages?PageIndex=1&PageSize=20`,
-        { headers: { Authorization: `Bearer ${TOKEN}` } }
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
       );
       const data = await response.json();
       setMessages(Array.isArray(data.data) ? data.data : []);
@@ -160,14 +201,14 @@ const AIChatBoxWithEmo = () => {
     }
   };
 
-  // Tạo phiên mới
-  const createSession = async () => {
+  // Tạo phiên mới với tên tuỳ chỉnh
+  const createSessionWithCustomName = async (sessionName: string) => {
     try {
       const response = await fetch(
-        `${BASE_URL}/sessions?sessionName=Đoạn chat mới`,
+        `${BASE_URL}/sessions?sessionName=${encodeURIComponent(sessionName)}`,
         {
           method: "POST",
-          headers: { Authorization: `Bearer ${TOKEN}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const data = await response.json();
@@ -185,7 +226,7 @@ const AIChatBoxWithEmo = () => {
     try {
       await fetch(`${BASE_URL}/sessions/${sessionId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${TOKEN}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
       if (currentSessionId === sessionId) {
@@ -202,10 +243,21 @@ const AIChatBoxWithEmo = () => {
   const sendMessage = async (message) => {
     if (!currentSessionId) return;
     try {
+      setIsLoadingMessages(true);
+      // Hiển thị tin nhắn người dùng ngay lập tức
+      setMessages((prev) => [
+        ...prev,
+        {
+          senderIsEmo: false,
+          content: message,
+          createdDate: new Date().toISOString(),
+        },
+      ]);
+      // Gửi API
       const response = await fetch(`${BASE_URL}/messages`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${TOKEN}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -214,19 +266,31 @@ const AIChatBoxWithEmo = () => {
         }),
       });
       const data = await response.json();
-      setMessages((prev) => [
-        ...prev,
-        {
-          senderIsEmo: false,
-          content: message,
-          createdDate: new Date().toISOString(),
-        },
-        ...(Array.isArray(data) ? data : []),
-      ]);
+      // Nếu API trả về mảng tin nhắn, hiển thị từng tin nhắn cách nhau 1s
+      if (Array.isArray(data)) {
+        setPendingMessages(data);
+      } else {
+        setPendingMessages([]);
+      }
     } catch (error) {
+      setIsLoadingMessages(false);
       console.error("Lỗi khi gửi tin nhắn:", error);
     }
   };
+
+  // Hiệu ứng hiển thị từng tin nhắn pendingMessages cách nhau 1s
+  useEffect(() => {
+    if (pendingMessages.length === 0) {
+      setIsLoadingMessages(false);
+      return;
+    }
+    setIsLoadingMessages(true);
+    const timer = setTimeout(() => {
+      setMessages((prev) => [...prev, pendingMessages[0]]);
+      setPendingMessages((prev) => prev.slice(1));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [pendingMessages]);
 
   // Xử lý chọn phiên
   const handleSelectSession = (sessionId) => {
@@ -257,50 +321,124 @@ const AIChatBoxWithEmo = () => {
         <ConversationSidebar
           sessions={sessions}
           onConversationSelect={handleSelectSession}
-          onNewChat={createSession}
+          onNewChat={() => setShowNewSessionModal(true)}
           activeConversation={currentSessionId}
           onDeleteConversation={deleteSession}
         />
         <div className="flex-1 flex flex-col px-4 md:px-8">
           {currentSessionId ? (
             <>
-              <motion.div
-                className="flex items-center gap-4 bg-white/80 backdrop-blur-lg shadow-xl p-6 rounded-2xl mb-4 border border-white/40"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}>
-                <ChatbotAvatar />
-                <div>
-                  <h2 className="text-2xl font-bold text-[#6B728E] drop-shadow">
-                    {sessionName}
-                  </h2>
-                  <p className="text-[#C8A2C8]/80 text-base font-medium">
-                    Always here to listen and support you
-                  </p>
-                </div>
-              </motion.div>
-              <ChatMessages messages={messages} />
+              <ChatMessages
+                messages={messages}
+                isLoadingMessages={isLoadingMessages}
+              />
               <ChatInput
                 onSendMessage={sendMessage}
                 disabled={!currentSessionId}
               />
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl border border-white/40">
+            // Thiết kế lại khi chưa chọn phiên
+            <motion.section
+              className="relative flex flex-col items-center justify-center text-center px-6 py-20 md:py-28 z-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}>
+              {/* Glow & Blur Layer */}
+              <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#EBDCF1]/40 to-[#FDF2F8]/30 backdrop-blur-3xl rounded-[2rem] shadow-2xl" />
+
+              {/* Floating Emoji */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-center">
-                <Heart className="w-14 h-14 text-[#C8A2C8] mx-auto mb-4 drop-shadow-lg" />
-                <p className="text-[#6B728E]/70 text-lg font-semibold">
-                  Select or start a new conversation to begin!
-                </p>
+                className="text-6xl relative z-10 mb-6"
+                animate={{ y: [0, -10, 0] }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}>
+                🧸
               </motion.div>
-            </div>
+
+              {/* Title */}
+              <h1 className="text-2xl md:text-4xl font-bold text-[#ffffff] tracking-tight relative z-10 drop-shadow-md break-words text-center max-w-screen-sm sm:max-w-xl px-2">
+                Chào mừng <br />
+                <span className="text-[#C8A2C8]">
+                  {localStorage.getItem("username")}
+                </span>{" "}
+                đến với{" "}
+                <span className="text-[#C8A2C8] font-extrabold">EmoEase</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="mt-3 text-base md:text-lg text-[#ffffff]/80 font-medium max-w-2xl relative z-10 leading-relaxed">
+                Một nơi an toàn để bạn chia sẻ mọi cảm xúc không bị đánh giá,
+                không cần phải gồng mình.
+              </p>
+
+              {/* Button */}
+              <motion.button
+                onClick={() => setShowNewSessionModal(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="mt-8 bg-gradient-to-r from-[#c8a2c8] to-[#6b728e] text-white px-7 py-3 rounded-full font-semibold shadow-xl relative z-10">
+                🌟 Bắt đầu hành trình cảm xúc
+              </motion.button>
+
+              {/* Soft glow lights */}
+              <motion.div
+                className="absolute -bottom-10 -left-10 w-44 h-44 bg-pink-200/20 rounded-full blur-3xl"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.35, 0.2] }}
+                transition={{ repeat: Infinity, duration: 7 }}
+              />
+              <motion.div
+                className="absolute -top-10 -right-10 w-40 h-40 bg-purple-300/20 rounded-full blur-2xl"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+                transition={{ repeat: Infinity, duration: 6 }}
+              />
+            </motion.section>
           )}
         </div>
       </div>
+
+      {/* Modal nhập tên phiên mới */}
+      {showNewSessionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-xs w-full flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-[#6B728E] text-center">
+              Tạo cuộc trò chuyện mới
+            </h3>
+            <input
+              type="text"
+              className="border border-[#C8A2C8]/40 rounded-lg px-4 py-2 focus:outline-none focus:border-[#C8A2C8]"
+              placeholder="Nhập tên cuộc trò chuyện..."
+              value={newSessionName}
+              onChange={(e) => setNewSessionName(e.target.value)}
+              autoFocus
+              maxLength={40}
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                className="flex-1 py-2 rounded-lg bg-gradient-to-r from-[#c8a2c8] to-[#6b728e] text-white font-semibold shadow hover:scale-105 transition-all"
+                disabled={!newSessionName.trim()}
+                onClick={() => {
+                  createSessionWithCustomName(newSessionName.trim());
+                  setShowNewSessionModal(false);
+                  setNewSessionName("");
+                }}>
+                Tạo mới
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg bg-gray-200 text-gray-600 font-semibold hover:bg-gray-300 transition-all"
+                onClick={() => {
+                  setShowNewSessionModal(false);
+                  setNewSessionName("");
+                }}>
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   );
 };

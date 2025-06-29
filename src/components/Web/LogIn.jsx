@@ -12,35 +12,61 @@ import {
   closeLoginModal,
   openLoginModal,
 } from "../../store/authSlice";
+import { v4 as uuidv4 } from "uuid";
+
 const LogIn = () => {
   const userId = localStorage.getItem("userId");
   const dispatch = useDispatch();
   const isModalOpen = useSelector((state) => state.auth.isLoginModalOpen);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Thêm state kiểm tra đăng nhập
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    deviceType: "Web",
+    clientDeviceId: "",
   });
-
   const [error, setError] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const API_AUTH = import.meta.env.VITE_API_AUTH_URL;
+  const API_SUBSCRIPTION = import.meta.env.VITE_API_SUBSCRIPTION_URL;
+  const API_IMAGE = import.meta.env.VITE_API_IMAGE_URL;
+
+  const getOrCreateDeviceId = () => {
+    let deviceId = localStorage.getItem("clientDeviceId");
+    if (!deviceId) {
+      deviceId = uuidv4();
+      localStorage.setItem("clientDeviceId", deviceId);
+    }
+    return deviceId;
+  };
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      clientDeviceId: getOrCreateDeviceId(),
+    }));
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+    setError("");
   };
-  const [avatarUrl, setAvatarUrl] = useState(null);
-  const API_AUTH = import.meta.env.VITE_API_AUTH_URL;
-  const API_SUBSCRIPTION = import.meta.env.VITE_API_SUBSCRIPTION_URL;
-  const API_IMAGE = import.meta.env.VITE_API_IMAGE_URL;
-  // Xử lý đăng nhập
+
   const fetchAvatar = async (userId) => {
+    const cachedAvatar = localStorage.getItem(`avatar_${userId}`);
+    if (cachedAvatar) {
+      setAvatarUrl(cachedAvatar);
+      return;
+    }
     try {
       const avatarResponse = await axios.get(
         `${API_IMAGE}/get?ownerType=User&ownerId=${userId}`,
@@ -48,12 +74,12 @@ const LogIn = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      setAvatarUrl(
-        avatarResponse.data.url || "https://i.pravatar.cc/150?img=3"
-      );
+      const url = avatarResponse.data.url || "https://i.pravatar.cc/150?img=3";
+      setAvatarUrl(url);
+      localStorage.setItem(`avatar_${userId}`, url);
     } catch (err) {
       console.log("No avatar found or error fetching avatar:", err);
-      setAvatarUrl("https://i.pravatar.cc/150?img=3"); // Giá trị mặc định
+      setAvatarUrl("https://i.pravatar.cc/150?img=3");
     }
   };
 
@@ -61,16 +87,14 @@ const LogIn = () => {
     const storedToken = localStorage.getItem("token");
     const storedUserRole = localStorage.getItem("userRole");
     const storedProfileId = localStorage.getItem("profileId");
-
     const storedUserId = localStorage.getItem("userId");
 
     if (storedToken && storedUserRole) {
+      setIsLoading(true);
       try {
         const decodedToken = jwtDecode(storedToken);
-        // Kiểm tra token hết hạn
         if (decodedToken.exp * 1000 > Date.now()) {
           setIsLoggedIn(true);
-
           dispatch(
             setCredentials({
               token: storedToken,
@@ -81,61 +105,138 @@ const LogIn = () => {
           );
           fetchAvatar(storedUserId);
         } else {
-          handleLogout();
-          toast.warn("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
+          tryRefreshToken();
         }
       } catch (error) {
         console.error("Token decode error:", error);
-        handleLogout();
         toast.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!");
+        handleLogout();
+      } finally {
+        setIsLoading(false);
       }
     }
-  }, [dispatch]);
+
+    // Thiết lập interval để kiểm tra và làm mới token
+    let refreshInterval;
+    if (isLoggedIn && storedToken) {
+      refreshInterval = setInterval(() => {
+        try {
+          const decodedToken = jwtDecode(storedToken);
+          const currentTime = Date.now();
+          const expiryTime = decodedToken.exp * 1000;
+          const timeLeft = expiryTime - currentTime;
+          const refreshThreshold = 5 * 60 * 1000; // 5 phút trước khi hết hạn
+
+          if (timeLeft < refreshThreshold) {
+            tryRefreshToken();
+          }
+        } catch (error) {
+          console.error("Error checking token expiry:", error);
+          toast.error("Lỗi kiểm tra token, vui lòng đăng nhập lại!");
+          handleLogout();
+        }
+      }, 60 * 1000); // Kiểm tra mỗi 1 phút
+    }
+
+    // Dọn dẹp interval khi component unmount hoặc đăng xuất
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
+  }, [isLoggedIn, dispatch]);
+
+  const tryRefreshToken = async () => {
+    const refreshToken = localStorage.getItem("refresh_token") || "";
+    if (!refreshToken) {
+      toast.error("Không tìm thấy refresh token. Vui lòng đăng nhập lại!");
+      handleLogout();
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const formRefreshToken = {
+        token: localStorage.getItem("token") || "",
+        refreshToken,
+        clientDeviceId: localStorage.getItem("clientDeviceId") || "",
+      };
+      const refreshResponse = await axios.post(
+        `${API_AUTH}/Auth/refresh-token`,
+        formRefreshToken,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      await handleAuthSuccess(refreshResponse.data);
+    } catch (refreshErr) {
+      console.error("Refresh token failed:", refreshErr);
+      if (refreshErr.response?.status === 400) {
+        toast.error("Refresh token không hợp lệ!");
+      } else if (refreshErr.response?.status === 403) {
+        toast.error("Thiết bị bị chặn, vui lòng liên hệ hỗ trợ!");
+      } else {
+        toast.error("Lỗi làm mới phiên, vui lòng đăng nhập lại!");
+      }
+      handleLogout();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
     try {
       const response = await axios.post(`${API_AUTH}/Auth/login`, formData, {
         headers: { "Content-Type": "application/json" },
       });
-
       await handleAuthSuccess(response.data);
     } catch (err) {
       console.error("Login error:", err);
-
-      // Kiểm tra nếu lỗi là 401 (Unauthorized) thì thử refresh token
-      if (err.response && err.response.status === 401) {
+      if (err.response?.status === 400) {
+        setError("Email hoặc mật khẩu không đúng!");
+      } else if (err.response?.status === 401) {
+        const refreshToken = localStorage.getItem("refresh_token") || "";
+        if (!refreshToken) {
+          setError("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
+          tryRefreshToken();
+          return;
+        }
         try {
           const formRefreshToken = {
             token: localStorage.getItem("token") || "",
-            refreshToken: localStorage.getItem("refresh_token") || "",
+            refreshToken,
           };
-
           const refreshResponse = await axios.post(
             `${API_AUTH}/Auth/refresh-token`,
             formRefreshToken,
             { headers: { "Content-Type": "application/json" } }
           );
-
           await handleAuthSuccess(refreshResponse.data);
         } catch (refreshErr) {
           console.error("Refresh token failed:", refreshErr);
-          toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!");
-          logout();
+          if (refreshErr.response?.status === 400) {
+            setError("Refresh token không hợp lệ!");
+          } else if (refreshErr.response?.status === 403) {
+            setError("Thiết bị bị chặn, vui lòng liên hệ hỗ trợ!");
+          } else {
+            setError("Lỗi làm mới phiên, vui lòng đăng nhập lại!");
+          }
+          handleLogout();
         }
+      } else if (err.response?.status === 500) {
+        setError("Lỗi server, vui lòng thử lại sau!");
       } else {
-        toast.error("Lỗi đăng nhập, vui lòng thử lại!");
+        setError("Lỗi đăng nhập, vui lòng thử lại!");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // ✅ Hàm lưu token và cập nhật state
   const handleAuthSuccess = async (data) => {
     const token = data.token;
     const refresh_token = data.refreshToken;
     const decodedToken = jwtDecode(token);
-    console.log("data from login:", data);
-    // Lấy thông tin từ JWT
     const userRole =
       decodedToken[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
@@ -147,7 +248,7 @@ const LogIn = () => {
         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
       ];
     const IsProfileCompleted = decodedToken.IsProfileCompleted;
-    // Lưu vào localStorage
+
     localStorage.setItem("token", token);
     localStorage.setItem("refresh_token", refresh_token);
     localStorage.setItem("isLoggedIn", "true");
@@ -158,8 +259,6 @@ const LogIn = () => {
     localStorage.setItem("userImage", "https://i.pravatar.cc/150?img=3");
 
     setIsLoggedIn(true);
-
-    // Dispatch Redux
     dispatch(setCredentials({ token, userRole, profileId, userId }));
     dispatch(closeLoginModal());
     fetchAvatar(userId);
@@ -174,8 +273,9 @@ const LogIn = () => {
     }
   };
 
-  // Sửa lại handleGoogleLogin để cũng navigate ngay
   const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError("");
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
@@ -187,27 +287,28 @@ const LogIn = () => {
       }
 
       const token = await user.getIdToken();
-      const decodedToken = jwtDecode(token); // Giải mã token Firebase
-      const userId = user.uid; // Sử dụng uid từ Firebase làm userId
+      const decodedToken = jwtDecode(token);
+      const userId = user.uid;
 
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userRole", "User");
       localStorage.setItem("userImage", user.photoURL);
       localStorage.setItem("firebaseToken", token);
-      localStorage.setItem("userId", userId); // Lưu userId
+      localStorage.setItem("userId", userId);
 
       setIsLoggedIn(true);
-
       dispatch(setCredentials({ token, userRole: "User", userId }));
       dispatch(closeLoginModal());
       toast.success("Đăng nhập thành công!");
-      fetchAvatar(userId); // Gọi fetchAvatar sau khi có userId
-      console.log("token for firebase", token);
+      fetchAvatar(userId);
     } catch (error) {
       console.error("Google login error:", error);
-      toast.error("Lỗi đăng nhập! Vui lòng thử lại.");
+      setError("Lỗi đăng nhập! Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const checkPurchasedPackage = async (profileId) => {
     try {
       const baseUrl = `${API_SUBSCRIPTION}/service-packages`;
@@ -217,41 +318,74 @@ const LogIn = () => {
 
       const response = await axios.get(url);
       const packages = response.data.servicePackages.data;
-      console.log("Packages:", packages);
-      // Kiểm tra xem có gói nào đã được mua không
-      const hasPurchased = packages.some(
-        (pkg) => pkg.purchaseStatus === "Purchased"
-      );
-      console.log("Purchased packages:", hasPurchased);
-      return hasPurchased;
+      return packages.some((pkg) => pkg.purchaseStatus === "Purchased");
     } catch (error) {
       console.error("Error checking purchased packages:", error);
-      return false; // Trả về false nếu có lỗi
+      return false;
     }
   };
-  // Xử lý đăng xuất
+
   const handleLogout = async () => {
+    setIsLoading(true);
     try {
-      // await auth.signOut();
+      const token = localStorage.getItem("token") || "";
+      const refreshToken = localStorage.getItem("refresh_token") || "";
+      const clientDeviceId = localStorage.getItem("clientDeviceId") || "";
+
+      if (!clientDeviceId) {
+        throw new Error("Không tìm thấy clientDeviceId!");
+      }
+
+      await axios.post(
+        `${API_AUTH}/Auth/revoke-token`,
+        {
+          token,
+          refreshToken,
+          clientDeviceId,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
       dispatch(clearCredentials());
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("profileId");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("username");
+      localStorage.removeItem("userImage");
+      localStorage.removeItem("firebaseToken");
+
       setIsLoggedIn(false);
-
-      setAvatarUrl(null); // Reset avatarUrl
-
+      setAvatarUrl(null);
       navigate("learnAboutEmo");
-      toast.warn("Đã đăng xuất thành công!");
+      toast.success("Đã đăng xuất thành công!", { position: "top-right" });
     } catch (error) {
-      toast.error("Lỗi đăng xuất! Vui lòng thử lại.", {
-        position: "top-right",
-      });
+      console.error("Logout error:", error);
+      if (error.response?.status === 400) {
+        toast.error("Thông tin đăng xuất không hợp lệ!");
+      } else if (error.response?.status === 403) {
+        toast.error("Thiết bị bị chặn, vui lòng liên hệ hỗ trợ!");
+      } else {
+        toast.error("Lỗi đăng xuất! Vui lòng thử lại.", {
+          position: "top-right",
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const handleDropdownClick = () => {
     setDropdownOpen(!dropdownOpen);
     if (!isLoggedIn && !isModalOpen) {
-      dispatch(openLoginModal()); // Mở modal nếu chưa đăng nhập
+      dispatch(openLoginModal());
     }
   };
+
   const handleDashboardClick = async () => {
     if (!isLoggedIn) {
       dispatch(openLoginModal());
@@ -261,7 +395,6 @@ const LogIn = () => {
     const currentRole = localStorage.getItem("userRole");
     const profileId = localStorage.getItem("profileId");
 
-    // Chỉ kiểm tra gói đã mua nếu role là "User"
     if (currentRole === "User") {
       const hasPurchased = await checkPurchasedPackage(profileId);
       if (hasPurchased) {
@@ -270,7 +403,6 @@ const LogIn = () => {
         toast.error("Bạn cần đăng ký một gói dịch vụ để truy cập Dashboard!");
       }
     } else {
-      // Các role khác không cần kiểm tra isPurchased
       if (currentRole === "Doctor") {
         navigate("/DashboardDoctor");
       } else if (currentRole === "Staff") {
@@ -281,14 +413,14 @@ const LogIn = () => {
     }
     setDropdownOpen(false);
   };
+
   return (
     <div className="relative">
       <div className="flex items-center gap-4">
-        {/* <span className="text-lg font-medium text-purple-400">{userRole}</span> */}
-        {/* Avatar Button */}
         <button
           onClick={handleDropdownClick}
-          className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all overflow-hidden border-2 border-purple-500">
+          disabled={isLoading}
+          className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center shadow-md hover:shadow-lg transition-all overflow-hidden border-2 border-purple-500 disabled:opacity-50">
           {isLoggedIn && avatarUrl ? (
             <img
               src={avatarUrl || "https://i.pravatar.cc/150?img=3"}
@@ -305,42 +437,49 @@ const LogIn = () => {
         </button>
       </div>
 
-      {/* Dropdown Menu */}
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-30  bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
-          {/* Login Button */}
+        <div className="absolute right-0 mt-2 w-30 bg-white border border-purple-600 rounded-3xl shadow-lg shadow-purple-300 p-2 z-51">
           <button
             onClick={handleDashboardClick}
-            className="w-full bg-purple-300 py-1 text-[#4d4d4d] font-mono rounded-2xl mb-2 hover:bg-purple-400">
+            disabled={isLoading}
+            className="w-full bg-purple-300 py-1 text-[#4d4d4d] font-mono rounded-2xl mb-2 hover:bg-purple-400 disabled:opacity-50">
             {isLoggedIn ? "Dashboard" : "LogIn"}
           </button>
-
-          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="w-full bg-purple-300 py-2 flex items-center justify-center text-gray-700 font-semibold rounded-2xl hover:bg-purple-400">
-            <FaSignOutAlt className="mr-2" color="white" />
+            disabled={isLoading}
+            className="w-full bg-purple-300 py-2 flex items-center justify-center text-gray-700 font-semibold rounded-2xl hover:bg-purple-400 disabled:opacity-50">
+            {isLoading ? (
+              "Đang đăng xuất..."
+            ) : (
+              <FaSignOutAlt className="mr-2" color="white" />
+            )}
           </button>
         </div>
       )}
 
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-[#4e4d4dbb] bg-opacity-50 z-51">
-          <div class="relative py-3 sm:max-w-xl sm:mx-auto">
-            <div class="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-              <div class="max-w-md mx-auto">
-                <div class="flex items-center space-x-5 justify-center">
+          <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+            <div className="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
+              <div className="max-w-md mx-auto">
+                <div className="flex items-center space-x-5 justify-center">
                   <button
                     onClick={() => dispatch(closeLoginModal())}
-                    className="absolute top-3 right-0 text-gray-600 hover:text-black text-xl">
+                    disabled={isLoading}
+                    className="absolute top-3 right-0 text-gray-600 hover:text-black text-xl disabled:opacity-50">
                     ✖
                   </button>
                   <h1 className="text-[#4e0986] text-2xl font-serif">Login</h1>
                 </div>
-                {error && <p className="text-red-500 text-center">{error}</p>}
-                <div class="mt-5">
+                {error && (
+                  <p className="text-red-500 text-sm mt-2 text-center">
+                    {error}
+                  </p>
+                )}
+                <div className="mt-5">
                   <label
-                    class="font-semibold text-sm text-gray-600 pb-1 block"
+                    className="font-semibold text-sm text-gray-600 pb-1 block"
                     htmlFor="login">
                     E-mail or Phone Number
                   </label>
@@ -351,6 +490,7 @@ const LogIn = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    disabled={isLoading}
                   />
                   <label
                     className="font-semibold text-sm text-gray-600 pb-1 block"
@@ -365,23 +505,25 @@ const LogIn = () => {
                       value={formData.password}
                       onChange={handleChange}
                       required
+                      disabled={isLoading}
                     />
                     <button
                       type="button"
                       className="absolute inset-y-0 right-2 flex items-center text-gray-600"
-                      onClick={() => setShowPassword(!showPassword)}>
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}>
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
                 </div>
-                <div class="text-right mb-4">
+                <div className="text-right mb-4">
                   <a
-                    class="text-xs font-display font-semibold text-gray-500 hover:text-gray-600 cursor-pointer"
+                    className="text-xs font-display font-semibold text-gray-500 hover:text-gray-600 cursor-pointer"
                     href="#">
                     Forgot Password?
                   </a>
                 </div>
-                <div class="flex justify-center w-full items-center">
+                <div className="flex justify-center w-full items-center">
                   <div>
                     <button
                       disabled
@@ -453,29 +595,29 @@ const LogIn = () => {
                     </button>
                   </div>
                 </div>
-                <div class="mt-5">
+                <div className="mt-5">
                   <button
-                    class="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-                    onClick={handleLogin}>
-                    Log in
+                    className="py-2 px-4 bg-blue-600 hover:bg-blue-700 cursor-pointer focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg disabled:opacity-50"
+                    onClick={handleLogin}
+                    disabled={isLoading}>
+                    {isLoading ? "Đang đăng nhập..." : "Log in"}
                   </button>
                 </div>
-                <div class="flex items-center justify-between mt-4">
-                  <span class="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
+                <div className="flex items-center justify-between mt-4">
+                  <span className="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
                   <a
                     className="text-xs text-blue-500 underline hover:text-blue-700 cursor-pointer"
                     onClick={() => {
-                      navigate("/regist", { replace: true }); // Chỉ giữ lại "/regist"
+                      navigate("/regist", { replace: true });
                       dispatch(closeLoginModal());
                     }}>
                     or sign up
                   </a>
-                  <span class="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
+                  <span className="w-1/5 border-b dark:border-gray-400 md:w-1/4"></span>
                 </div>
               </div>
             </div>
           </div>
-          {/*  */}
         </div>
       )}
     </div>

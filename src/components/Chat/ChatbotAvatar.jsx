@@ -12,7 +12,7 @@ const ChatbotAvatar = React.memo(() => {
       const newExpression =
         expressions[Math.floor(Math.random() * expressions.length)];
       setCurrentExpression(newExpression);
-    }, 3000);
+    }, 3500);
     return () => clearInterval(interval);
   }, []);
 
@@ -22,18 +22,21 @@ const ChatbotAvatar = React.memo(() => {
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       animate={{
-        scale: isHovered ? 1.1 : 1,
-        rotate: isHovered ? [0, 5, -5, 0] : 0,
+        scale: isHovered ? 1.12 : 1,
+        rotate: isHovered ? [0, 6, -6, 0] : 0,
       }}
       transition={{
-        duration: 0.3,
-        rotate: { duration: 0.6, ease: "easeInOut" },
-      }}>
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#C8A2C8]/40 to-[#6B728E]/40 animate-pulse -z-10 blur-lg scale-110" />
+        duration: 0.35,
+        rotate: { duration: 0.7, ease: "easeInOut" },
+      }}
+      style={{ minWidth: 56, minHeight: 56 }}>
+      {/* Viền gradient nổi bật */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#C8A2C8]/60 to-[#6B728E]/60 animate-pulse -z-10 blur-md scale-110" />
+      {/* Avatar chính */}
       <motion.div
-        className="w-16 h-16 bg-white/90 backdrop-blur-sm shadow-md rounded-full flex items-center justify-center text-3xl cursor-pointer"
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+        className="w-14 h-14 bg-white/95 backdrop-blur-md shadow-lg rounded-full flex items-center justify-center text-3xl cursor-pointer border-2 border-[#C8A2C8]/40"
+        animate={{ y: [0, -6, 0] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}>
         <motion.span
           key={currentExpression}
           initial={{ scale: 0, rotate: -180 }}
@@ -42,6 +45,7 @@ const ChatbotAvatar = React.memo(() => {
           {currentExpression}
         </motion.span>
       </motion.div>
+      {/* Hiệu ứng trái tim khi hover */}
       {isHovered && (
         <>
           {[...Array(3)].map((_, i) => (

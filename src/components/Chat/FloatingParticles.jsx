@@ -1,66 +1,105 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 
-const FloatingParticles = () => {
-  console.log("FloatingParticles component rendered");
+// Cấu hình số lượng, màu và kích thước hạt
+const PARTICLE_COUNT = 12;
+const CLOUD_COUNT = 5;
 
-  const particles = [
-    { size: "w-3 h-3", color: "bg-[#C8A2C8]/30", delay: 0 },
-    { size: "w-2 h-2", color: "bg-[#6B728E]/40", delay: 1 },
-    { size: "w-4 h-4", color: "bg-[#F06292]/25", delay: 2 },
-    { size: "w-2 h-2", color: "bg-[#C8A2C8]/20", delay: 3 },
-    { size: "w-3 h-3", color: "bg-[#6B728E]/30", delay: 4 },
-    { size: "w-5 h-5", color: "bg-[#F06292]/20", delay: 5 },
-  ];
+const particleColors = [
+  "bg-[#C8A2C8]/30",
+  "bg-[#6B728E]/30",
+  "bg-[#F06292]/20",
+  "bg-pink-200/40",
+  "bg-purple-300/30",
+  "bg-indigo-200/30",
+];
+
+const particleSizes = ["w-2 h-2", "w-3 h-3", "w-4 h-4", "w-5 h-5", "w-6 h-6"];
+
+// Có thể thay bằng SVG icons hoặc cloud component
+const cloudIcons = ["☁️", "🌥️", "🌤️", "⛅", "🌦️"];
+
+const FloatingParticles = React.memo(() => {
+  // Tạo particles một lần
+  const particles = useMemo(
+    () =>
+      Array.from({ length: PARTICLE_COUNT }).map(() => ({
+        size: particleSizes[Math.floor(Math.random() * particleSizes.length)],
+        color:
+          particleColors[Math.floor(Math.random() * particleColors.length)],
+        delay: Math.random() * 5,
+        left: `${10 + Math.random() * 80}%`,
+        top: `${10 + Math.random() * 80}%`,
+        duration: 12 + Math.random() * 10,
+      })),
+    []
+  );
+
+  // Tạo clouds một lần
+  const clouds = useMemo(
+    () =>
+      Array.from({ length: CLOUD_COUNT }).map((_, i) => ({
+        left: `${5 + Math.random() * 90}%`,
+        top: `${5 + Math.random() * 80}%`,
+        fontSize: `${3 + Math.random() * 3}rem`,
+        icon: cloudIcons[i % cloudIcons.length],
+        delay: i * 1.2,
+        duration: 20 + Math.random() * 10,
+      })),
+    []
+  );
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 z-[999] pointer-events-none overflow-hidden">
       {particles.map((particle, index) => (
         <motion.div
-          key={index}
-          className={`absolute rounded-full ${particle.size} ${particle.color}`}
+          key={`particle-${index}`}
+          className={`absolute rounded-[50%] ${particle.size} ${particle.color}`}
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
+            left: particle.left,
+            top: particle.top,
+            filter: "blur(1px)",
           }}
           animate={{
-            x: [0, 30, -20, 0],
-            y: [0, -30, 20, 0],
-            scale: [1, 1.2, 0.8, 1],
-            opacity: [0.3, 0.7, 0.4, 0.3],
+            x: [0, 20, -10, 0],
+            y: [0, -10, 10, 0],
+            opacity: [0.3, 0.6, 0.4, 0.3],
           }}
           transition={{
-            duration: 15 + Math.random() * 10,
+            duration: particle.duration,
             repeat: Infinity,
             delay: particle.delay,
             ease: "easeInOut",
           }}
         />
       ))}
-      {[...Array(3)].map((_, i) => (
+
+      {clouds.map((cloud, i) => (
         <motion.div
           key={`cloud-${i}`}
-          className="absolute opacity-10"
+          className="absolute text-gray-500 opacity-20"
           style={{
-            left: `${20 + i * 30}%`,
-            top: `${10 + i * 25}%`,
-            fontSize: "4rem",
+            left: cloud.left,
+            top: cloud.top,
+            fontSize: cloud.fontSize,
+            filter: "blur(1.5px)",
           }}
           animate={{
             x: [0, 50, -30, 0],
             y: [0, -20, 10, 0],
-            rotate: [0, 5, -5, 0],
+            rotate: [0, 3, -3, 0],
           }}
           transition={{
-            duration: 20 + i * 5,
+            duration: cloud.duration,
             repeat: Infinity,
+            delay: cloud.delay,
             ease: "easeInOut",
           }}>
-          ☁️
+          {cloud.icon}
         </motion.div>
       ))}
     </div>
   );
-};
+});
 
 export default FloatingParticles;
